@@ -1838,7 +1838,16 @@ document.querySelectorAll('.auth-mode-btn').forEach(b => b.addEventListener('cli
 
 function normEmail(e) { return (e || '').trim().toLowerCase(); }
 
+function roleConflict(email) {
+  const mine = loginRole === 'teacher' ? DB.teachers : DB.students;
+  const other = loginRole === 'teacher' ? DB.students : DB.teachers;
+  if (mine.some(a => normEmail(a.email) === email) || !other.some(a => normEmail(a.email) === email)) return false;
+  const otherName = loginRole === 'teacher' ? 'student' : 'teacher';
+  toast('This email is registered as a ' + otherName + '. Please use the ' + otherName + ' login instead.', 'error');
+  return true;
+}
 function finishLogin(email, name, idNumber) {
+  if (roleConflict(email)) { if (sb) sb.auth.signOut(); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
   const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
   let account = list.find(a => normEmail(a.email) === email);
@@ -1909,6 +1918,7 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
   const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
   if (list.some(a => normEmail(a.email) === email)) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
+  if (roleConflict(email)) return;
   const byId = list.find(a => (a[idKey] || '').trim().toLowerCase() === idNumber.toLowerCase());
   if (byId && byId.email) { toast('That ID is already registered to an account. Log in instead.', 'warning'); return; }
   const r = await sb.auth.signUp({ email, password: pw, options: { data: { name } } });
