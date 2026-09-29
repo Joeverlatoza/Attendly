@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendly — Online Classroom &amp; QR Attendance Portal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234f46e5'/%3E%3Cpath d='M7 12.5l3 3 7-7.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: { fontFamily: { sans: ['Inter','system-ui','-apple-system','sans-serif'] } } }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js" onerror="var x=document.createElement('script');x.src='https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js';x.onload=function(){window.lucide&&lucide.createIcons()};document.head.appendChild(x)"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
+<style>
+  :root { color-scheme: light dark; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgb(148 163 184 / 0.4); border-radius: 999px; }
+  .dark ::-webkit-scrollbar-thumb { background: rgb(100 116 139 / 0.5); }
+  :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; border-radius: 4px; }
+  @keyframes toast-in { from { opacity:0; transform: translateY(8px) scale(.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+  .toast-anim { animation: toast-in .18s ease-out; }
+  @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+  .scan-flash { animation: scan-flash-kf .5s ease-out; }
+  @keyframes scan-flash-kf { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); } 100% { box-shadow: 0 0 0 12px rgba(16,185,129,0); } }
+  #qr-reader video { border-radius: 0.75rem; width: 100% !important; }
+  #qr-reader { border: none !important; }
+  #qr-reader__scan_region { background: transparent !important; }
+  #qr-reader__dashboard { display: none !important; }
+  .id-card-bg { background: linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#312e81 100%); }
+  @media print {
+    body * { visibility: hidden; }
+    #print-card, #print-card * { visibility: visible; }
+    #print-card { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); }
+  }
+  .view-section { display: none; }
+  .view-section.active { display: block; }
+  input[type="checkbox"].switch { appearance: none; width: 36px; height: 20px; border-radius: 999px; background: #cbd5e1; position: relative; cursor: pointer; transition: background .15s; flex-shrink:0; }
+  input[type="checkbox"].switch:checked { background: #4f46e5; }
+  input[type="checkbox"].switch::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:999px; background:white; transition: transform .15s; }
+  input[type="checkbox"].switch:checked::after { transform: translateX(16px); }
+  body { background-image: radial-gradient(1200px 500px at 10% -10%, rgba(99,102,241,.14), transparent 60%), radial-gradient(900px 400px at 100% 0%, rgba(14,165,233,.12), transparent 60%); background-attachment: fixed; }
+  .dark body { background-image: radial-gradient(1200px 500px at 10% -10%, rgba(99,102,241,.22), transparent 60%), radial-gradient(900px 400px at 100% 0%, rgba(14,165,233,.14), transparent 60%); }
+  .rounded-xl { border-radius: 1rem; }
+  .bg-white.rounded-xl, .dark .bg-slate-900.rounded-xl { box-shadow: 0 8px 24px -12px rgba(15,23,42,.18); }
+  button { transition: transform .12s ease, background-color .15s ease, box-shadow .15s ease; }
+  button:active { transform: scale(.97); }
+  .bg-indigo-600 { background-image: linear-gradient(135deg,#4f46e5,#7c3aed); }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased">
+
+<!-- CLOUD SETUP (first launch only) -->
+<div id="screen-cloud" class="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 overflow-y-auto" style="display:none">
+  <div class="min-h-full flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="flex items-center gap-2.5 justify-center mb-6">
+        <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center"><i data-lucide="cloud" class="w-5 h-5 text-white"></i></div>
+        <div class="leading-tight text-center"><p class="font-semibold">Attendly</p><p class="text-[11px] text-slate-500 dark:text-slate-400">Connect cloud sync</p></div>
+      </div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-3">
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">To share accounts and attendance between phones, connect a free Firebase project: go to <span class="font-medium">console.firebase.google.com</span>, create a project, add a Web App, turn on <span class="font-medium">Firestore Database</span> (start in test mode), then paste the config object shown there below.</p>
+        <textarea id="cloud-config-input" rows="6" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}' class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs px-3 py-2 font-mono"></textarea>
+        <button id="cloud-connect" type="button" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
+          <i data-lucide="link" class="w-4 h-4"></i>Connect
+        </button>
+        <button id="cloud-skip" type="button" class="w-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:underline text-center py-1">Cancel</button>
+        <p id="cloud-status" class="text-xs text-center min-h-[1rem]"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN / SIGN UP -->
+<div id="screen-login" class="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 overflow-y-auto" style="display:none">
+  <div class="min-h-full flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="flex items-center gap-2.5 justify-center mb-6">
+        <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <i data-lucide="check-check" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="leading-tight text-center">
+          <p class="font-semibold" id="login-school-name">Attendly</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Sign in to continue</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mb-4">
+          <button data-login-role="teacher" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Teacher</button>
+          <button data-login-role="student" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Student</button>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 mb-4">
+          <button data-auth-mode="login" class="auth-mode-btn text-xs font-medium px-2 py-1">Log in</button>
+          <span class="text-slate-300 dark:text-slate-700">·</span>
+          <button data-auth-mode="signup" class="auth-mode-btn text-xs font-medium px-2 py-1">Sign up</button>
+        </div>
+
+        <button type="button" id="login-scan-badge" class="hidden w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 mb-3 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="scan-line" class="w-3.5 h-3.5"></i>Scan your badge instead
+        </button>
+        <div id="login-scan-reader" class="hidden rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-[220px] mx-auto mb-3"></div>
+
+        <div class="space-y-2 mb-3">
+          <button type="button" id="btn-google" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><svg class="w-4 h-4" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continue with Google</button>
+          <button type="button" id="btn-facebook" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium bg-[#1877F2] hover:bg-[#166fe0] text-white rounded-lg px-3 py-2.5"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.400l-.5 3.500h-2.900v8.400A12 12 0 0 0 24 12z"/></svg>Continue with Facebook</button>
+          <p class="text-[11px] text-center text-slate-400">or use your email</p>
+        </div>
+
+        <!-- LOG IN -->
+        <form id="login-form" class="space-y-3">
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
+            <input id="login-email" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
+            <input id="login-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
+            <i data-lucide="log-in" class="w-4 h-4"></i>Log in
+          </button>
+          <button type="button" id="forgot-link" class="w-full text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline text-center pt-1">Forgot password?</button>
+        </form>
+
+        <!-- RESET PASSWORD -->
+        <form id="reset-form" class="space-y-3 hidden">
+          <p class="text-xs text-slate-500 dark:text-slate-400">Enter your email. We will send you a link to choose a new password.</p>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
+            <input id="reset-email" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label id="reset-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
+            <input id="reset-idnum" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">New password</label>
+            <input id="reset-password" type="password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Confirm new password</label>
+            <input id="reset-password-confirm" type="password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
+            <i data-lucide="key-round" class="w-4 h-4"></i>Send reset link
+          </button>
+          <button type="button" id="reset-back" class="w-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:underline text-center">Back to log in</button>
+        </form>
+
+        <!-- SIGN UP -->
+        <form id="signup-form" class="space-y-3 hidden">
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Full name</label>
+            <input id="signup-name" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
+            <input id="signup-email" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div>
+            <label id="signup-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
+            <input id="signup-idnum" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
+              <input id="signup-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Confirm</label>
+              <input id="signup-password-confirm" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            </div>
+          </div>
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>Create account
+          </button>
+        </form>
+
+        <!-- ADMIN ACCESS (Teacher tab only) -->
+        <div id="admin-access-link-wrap" class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+          <button id="admin-access-link" type="button" class="text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">Principal / Head Teacher? Admin access</button>
+          <div id="admin-access-form" class="hidden mt-3 space-y-2 text-left">
+            <input id="admin-access-password" type="password" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <button id="admin-access-submit" type="button" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-3 py-2">
+              <i data-lucide="shield" class="w-4 h-4"></i>Continue as Admin
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center mt-4 flex items-center justify-center gap-1.5"><i data-lucide="hard-drive" class="w-3 h-3"></i>All data stays on this device</p>
+      <div id="storage-warning" class="hidden mt-3 rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 text-xs px-3 py-2 leading-relaxed">
+        This copy of the app is opened from a temporary file address. Accounts and details saved here will not show up if you open a different copy (for example a newly downloaded version). Before switching copies, download a backup, then restore it here.
+      </div>
+      <div class="text-center mt-3">
+        <label class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">Restore from a backup file
+          <input id="login-restore-file" type="file" accept="application/json,.json" class="hidden">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="flex h-screen overflow-hidden" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="hidden md:flex md:flex-col w-64 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <div class="h-16 flex items-center gap-2.5 px-5 border-b border-slate-200 dark:border-slate-800">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+        <i data-lucide="check-check" class="w-4.5 h-4.5 text-white" style="width:18px;height:18px"></i>
+      </div>
+      <div class="leading-tight">
+        <p class="font-semibold text-sm">Attendly</p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">Attendance Portal</p>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
+      <button data-view="admin" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="shield" class="w-4 h-4"></i><span>Admin Console</span>
+      </button>
+      <button data-view="dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Teacher Dashboard</span>
+      </button>
+      <button data-view="scanner" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="scan-line" class="w-4 h-4"></i><span>Live Scanner</span>
+      </button>
+      <button data-view="roster" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="users" class="w-4 h-4"></i><span>Roster Manager</span>
+      </button>
+      <button data-view="studentid" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="id-card" class="w-4 h-4"></i><span>Student ID Card</span>
+      </button>
+      <button data-view="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="settings" class="w-4 h-4"></i><span>Settings</span>
+      </button>
+    </nav>
+    <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
+      <div class="flex items-center justify-between px-2">
+        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+          <i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span>
+        </div>
+        <input type="checkbox" class="switch" id="theme-toggle">
+      </div>
+      <div class="flex items-center gap-2 px-2 text-[11px] text-slate-400 dark:text-slate-500">
+        <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i><span>All data stored on this device</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- TOPBAR -->
+    <header class="h-16 shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-6">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="md:hidden w-7 h-7 rounded-md bg-indigo-600 flex items-center justify-center shrink-0">
+          <i data-lucide="check-check" class="w-3.5 h-3.5 text-white"></i>
+        </div>
+        <h1 id="page-title" class="text-base md:text-lg font-semibold truncate">Teacher Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
+          <i data-lucide="wifi-off" class="w-3 h-3"></i><span>Offline mode</span>
+        </div>
+        <span id="clock" class="text-xs md:text-sm text-slate-500 dark:text-slate-400 tabular-nums"></span>
+        <div class="hidden sm:flex items-center gap-1.5 text-xs pl-1 border-l border-slate-200 dark:border-slate-800 ml-1">
+          <span id="header-user-role" class="px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium capitalize"></span>
+          <span id="header-user-name" class="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[110px]"></span>
+        </div>
+        <button id="logout-btn" class="inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i><span>Log out</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- VIEWS -->
+    <main class="flex-1 overflow-y-auto pb-20 md:pb-0">
+
+      <!-- DASHBOARD -->
+      <section data-view="dashboard" class="view-section active p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Class</label>
+            <select id="dash-class-select" class="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+          </div>
+          <div class="flex gap-2">
+            <button id="dash-export-csv" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <i data-lucide="download" class="w-4 h-4"></i>Export CSV
+            </button>
+            <button data-goto="scanner" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2 transition-colors">
+              <i data-lucide="scan-line" class="w-4 h-4"></i>Open Live Scanner
+            </button>
+          </div>
+        </div>
+
+        <div id="dash-empty" class="hidden border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
+          <i data-lucide="school" class="w-8 h-8 mx-auto text-slate-400 mb-3"></i>
+          <p class="font-medium">No classes yet</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Create a class in Roster Manager to start tracking attendance.</p>
+          <button data-goto="roster" class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>Create a class
+          </button>
+        </div>
+
+        <div id="dash-content" class="space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Enrolled</p>
+              <p id="stat-enrolled" class="text-2xl font-semibold tabular-nums mt-1">0</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Present</p>
+              <p id="stat-present" class="text-2xl font-semibold tabular-nums mt-1 text-emerald-600 dark:text-emerald-400">0</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Late</p>
+              <p id="stat-late" class="text-2xl font-semibold tabular-nums mt-1 text-amber-600 dark:text-amber-400">0</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Attendance rate</p>
+              <p id="stat-rate" class="text-2xl font-semibold tabular-nums mt-1">0%</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
+            <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold">Today's session code</h2>
+                <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>Live
+                </span>
+              </div>
+              <div class="flex flex-col items-center gap-3">
+                <div id="session-qr" class="p-3 bg-white rounded-lg border border-slate-200"></div>
+                <p id="session-meta" class="text-xs text-slate-500 dark:text-slate-400 text-center"></p>
+                <div class="flex items-center gap-2 w-full">
+                  <label class="text-xs text-slate-500 dark:text-slate-400 shrink-0">Start time</label>
+                  <input type="time" id="session-start-time" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-2 py-1.5">
+                </div>
+                <button id="dash-regen-qr" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh code
+                </button>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center leading-relaxed">Code is bound to this class and today's date. Refreshing invalidates screenshots of the previous code.</p>
+              </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <h2 class="text-sm font-semibold mb-4">Today's activity</h2>
+              <div id="activity-empty" class="hidden py-10 text-center text-slate-500 dark:text-slate-400">
+                <i data-lucide="clipboard-list" class="w-7 h-7 mx-auto mb-2 text-slate-400"></i>
+                <p class="text-sm">No check-ins recorded yet today.</p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="activity-table">
+                  <thead>
+                    <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                      <th class="py-2 font-medium">Student</th>
+                      <th class="py-2 font-medium">ID</th>
+                      <th class="py-2 font-medium">Time</th>
+                      <th class="py-2 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activity-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN CONSOLE -->
+      <section data-view="admin" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+        <div class="grid grid-cols-2 gap-3 md:gap-4 max-w-md">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400">Teachers</p>
+            <p id="admin-stat-teachers" class="text-2xl font-semibold tabular-nums mt-1">0</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400">Students</p>
+            <p id="admin-stat-students" class="text-2xl font-semibold tabular-nums mt-1">0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <h2 class="text-sm font-semibold mb-3">Teacher directory</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                    <th class="py-2 font-medium">Name</th><th class="py-2 font-medium">Email</th><th class="py-2 font-medium">Teacher ID</th><th class="py-2 font-medium">Advisory</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-teachers-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+              </table>
+            </div>
+            <p id="admin-teachers-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No teachers registered yet.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <h2 class="text-sm font-semibold mb-3">Student directory</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                    <th class="py-2 font-medium">Name</th><th class="py-2 font-medium">ID / LRN</th><th class="py-2 font-medium">Class</th><th class="py-2 font-medium">Section</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-students-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+              </table>
+            </div>
+            <p id="admin-students-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No students registered yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE SCANNER -->
+      <section data-view="scanner" class="view-section p-4 md:p-6 max-w-4xl mx-auto space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Scanning for class</label>
+            <select id="scanner-class-select" class="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+          </div>
+          <div id="scanner-status" class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 self-start sm:self-auto">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Camera off
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Point the camera at a student's Digital ID QR code to record attendance instantly.</p>
+          <div id="qr-reader" class="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-sm mx-auto flex items-center justify-center">
+            <p class="text-sm text-slate-400 px-6 text-center">Camera preview will appear here once started.</p>
+          </div>
+          <div class="flex gap-2 mt-4 justify-center">
+            <button id="scanner-start" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 transition-colors">
+              <i data-lucide="camera" class="w-4 h-4"></i>Start camera
+            </button>
+            <button id="scanner-stop" class="hidden inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <i data-lucide="square" class="w-4 h-4"></i>Stop camera
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-3">Just scanned</h2>
+          <ul id="scanner-feed" class="space-y-2"></ul>
+          <p id="scanner-feed-empty" class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">Scanned students will appear here.</p>
+        </div>
+      </section>
+
+      <!-- ROSTER MANAGER -->
+      <section data-view="roster" class="view-section p-4 md:p-6 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-fit">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-semibold">Classes</h2>
+              <button id="roster-add-class" style="display:none" class="inline-flex items-center gap-1 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5 py-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>Add
+              </button>
+            </div>
+            <div id="class-list" class="space-y-1"></div>
+            <p id="class-list-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No classes yet. Add your first class.</p>
+          </div>
+
+          <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <div id="roster-noclass" class="py-16 text-center text-slate-500 dark:text-slate-400">
+              <i data-lucide="mouse-pointer-click" class="w-7 h-7 mx-auto mb-2 text-slate-400"></i>
+              <p class="text-sm">Select a class to manage its roster.</p>
+            </div>
+            <div id="roster-students-wrap" class="hidden">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between mb-4">
+                <div class="min-w-0">
+                  <h2 id="roster-class-name" class="text-sm font-semibold truncate"></h2>
+                  <p id="roster-class-meta" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+                </div>
+                <div class="flex gap-2">
+                  <input id="roster-search" type="text" placeholder="Search students" class="text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 w-40">
+                  <button id="roster-add-student" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>Add student
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                      <th class="py-2 font-medium">Full name</th>
+                      <th class="py-2 font-medium">Student ID / LRN</th>
+                      <th class="py-2 font-medium">Section</th>
+                      <th class="py-2 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="student-table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                </table>
+              </div>
+              <p id="student-table-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-8 text-center">No students match. Add one to get started.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDENT ID CARD -->
+      <section data-view="studentid" class="view-section p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <h2 class="text-sm font-semibold mb-4">Your student details</h2>
+            <form id="student-id-form" class="space-y-3">
+              <input type="hidden" id="sid-editing-id">
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Full name</label>
+                <input required id="sid-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Student ID / LRN</label>
+                  <input required id="sid-studentid" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+                </div>
+                <div style="display:none">
+                  <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Section</label>
+                  <input id="sid-section" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+                </div>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Class</label>
+                <select required id="sid-class" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Photo (optional)</label>
+                <input id="sid-photo" type="file" accept="image/*" class="w-full text-sm">
+              </div>
+              <div class="flex gap-2 pt-1">
+                <button type="submit" class="flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">
+                  <i data-lucide="badge-check" class="w-4 h-4"></i>Generate digital ID
+                </button>
+                <button type="button" id="sid-reset" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Revert changes</button>
+              </div>
+            </form>
+            <button id="sid-backup" type="button" class="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download a backup of my data</button>
+
+            <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
+              <h3 class="text-sm font-semibold mb-3">Check in with a session code</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Scan the QR code your teacher is showing to mark yourself present for today.</p>
+              <div id="checkin-reader" class="hidden rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-xs mx-auto"></div>
+              <div class="flex gap-2 justify-center mt-3">
+                <button id="checkin-start" class="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-4 py-2">
+                  <i data-lucide="camera" class="w-4 h-4"></i>Scan teacher's code
+                </button>
+                <button id="checkin-stop" class="hidden inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <i data-lucide="square" class="w-4 h-4"></i>Stop
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center">
+            <h2 class="text-sm font-semibold self-start mb-4">Digital badge</h2>
+            <div id="id-card-empty" class="py-16 text-center text-slate-500 dark:text-slate-400">
+              <i data-lucide="id-card" class="w-7 h-7 mx-auto mb-2 text-slate-400"></i>
+              <p class="text-sm">Fill in the form to generate your badge.</p>
+            </div>
+            <div id="id-card-wrap" class="hidden w-full flex flex-col items-center">
+              <div id="print-card" class="id-card-bg text-white rounded-2xl p-5 w-full max-w-xs shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                  <p class="text-[11px] tracking-wide text-indigo-200" id="card-school">Attendly School</p>
+                  <i data-lucide="shield-check" class="w-4 h-4 text-indigo-200"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <img id="card-photo" class="w-14 h-14 rounded-full object-cover bg-indigo-400 border-2 border-white/30" src="">
+                  <div class="min-w-0">
+                    <p id="card-name" class="font-semibold leading-tight truncate"></p>
+                    <p id="card-class" class="text-xs text-indigo-200 truncate"></p>
+                  </div>
+                </div>
+                <div class="flex items-end justify-between">
+                  <div>
+                    <p class="text-[10px] text-indigo-200">Student ID</p>
+                    <p id="card-id" class="text-sm font-medium tabular-nums"></p>
+                  </div>
+                  <div id="card-qr" class="bg-white p-1.5 rounded-lg"></div>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button id="id-card-print" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <i data-lucide="printer" class="w-4 h-4"></i>Print badge
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">My teachers</h2>
+          <p id="my-teachers-sub" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+          <div id="my-teachers-list" class="space-y-2"></div>
+          <div id="other-teachers-wrap" class="hidden mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <h3 id="other-teachers-title" class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2"></h3>
+            <div id="other-teachers-list" class="space-y-2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section data-view="settings" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+        <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-4">My profile</h2>
+          <form id="t-profile-form" class="space-y-3">
+            <div class="flex items-center gap-3">
+              <img id="t-photo-preview" class="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" src="">
+              <div class="min-w-0">
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Photo (optional)</label>
+                <input id="t-photo" type="file" accept="image/*" class="w-full text-sm">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Full name</label>
+              <input required id="t-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
+                <input id="t-email" type="text" disabled class="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm px-3 py-2 opacity-80">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
+                <input id="t-teacherid" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">School</label>
+              <input id="t-school" type="text" disabled class="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm px-3 py-2 opacity-80">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Advisory class (optional)</label>
+              <select id="t-advisory" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">
+              <i data-lucide="save" class="w-4 h-4"></i>Save profile
+            </button>
+          </form>
+        </div>
+
+        <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">Subjects &amp; schedule</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Add the subjects you teach and their sections, or leave this empty if you have none. If you set a start time, students who check in after it (plus the late threshold) are marked late for that class.</p>
+          <p id="t-sched-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No subjects added yet.</p>
+          <div id="t-sched-list" class="space-y-2 mb-4"></div>
+          <form id="t-sched-form" class="grid grid-cols-2 gap-2">
+            <input id="t-sched-subject" required type="text" placeholder="Subject (e.g. Mathematics)" class="col-span-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <div id="t-sched-classes" class="col-span-2 space-y-2 rounded-lg border border-slate-200 dark:border-slate-800 p-3"></div>
+            <select id="t-sched-day" class="col-span-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              <option value="">Any day</option><option value="Mon">Monday</option><option value="Tue">Tuesday</option><option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option><option value="Sat">Saturday</option>
+            </select>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Start</label>
+              <input id="t-sched-start" type="time" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">End</label>
+              <input id="t-sched-end" type="time" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            </div>
+            <button type="submit" class="col-span-2 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-3 py-2">
+              <i data-lucide="plus" class="w-4 h-4"></i>Add subject
+            </button>
+          </form>
+          <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Upload your schedule (CSV file)</p>
+            <input id="t-sched-csv" type="file" accept=".csv,.txt,text/csv" class="w-full text-sm">
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Columns: Subject, Grade, Section, Day, Start, End. For a combined class write both sections in one cell, like Beethoven/Mozart. Every row becomes a subject automatically.</p>
+            <div class="flex gap-4 mt-2">
+              <button id="t-sched-template" type="button" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download CSV template</button>
+              <button id="t-sched-clear" type="button" class="text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all subjects</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">Cloud sync</h2>
+          <p id="cloud-status-settings" class="text-xs text-slate-500 dark:text-slate-400 mb-3">—</p>
+          <button id="cloud-reconfigure" type="button" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Change cloud connection</button>
+        </div>
+
+        <div class="admin-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-4">Attendance rules</h2>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Default session start time</label>
+                <input id="set-start-time" type="time" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Late threshold (minutes)</label>
+                <input id="set-late-threshold" type="number" min="0" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              </div>
+            </div>
+            <button id="set-save-general" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">
+              <i data-lucide="save" class="w-4 h-4"></i>Save settings
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">Data &amp; backup</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Everything is stored locally in this browser. Back up regularly.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button id="set-export-json" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+              <i data-lucide="file-json" class="w-4 h-4"></i>Export full backup (JSON)
+            </button>
+            <label class="admin-only-setting inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+              <i data-lucide="upload" class="w-4 h-4"></i>Import backup (JSON)
+              <input id="set-import-json" type="file" accept="application/json" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">Portable app file</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Save a copy of this application as a single HTML file you can keep on a USB drive or any offline machine.</p>
+          <button id="set-download-app" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <i data-lucide="file-down" class="w-4 h-4"></i>Download application file (.html)
+          </button>
+        </div>
+
+        <div class="admin-only-setting bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1 text-rose-600 dark:text-rose-400">Danger zone</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Permanently erase all classes, students, sessions and logs from this device.</p>
+          <button id="set-clear-data" class="inline-flex items-center gap-1.5 text-sm font-medium border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-lg px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>Clear all data
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around py-1.5 z-30">
+    <button data-view="admin" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="shield" class="w-5 h-5"></i>Admin
+    </button>
+    <button data-view="dashboard" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>Dashboard
+    </button>
+    <button data-view="scanner" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="scan-line" class="w-5 h-5"></i>Scanner
+    </button>
+    <button data-view="roster" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="users" class="w-5 h-5"></i>Roster
+    </button>
+    <button data-view="studentid" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="id-card" class="w-5 h-5"></i>ID Card
+    </button>
+    <button data-view="settings" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="settings" class="w-5 h-5"></i>Settings
+    </button>
+  </nav>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 w-72 max-w-[90vw]"></div>
+
+<!-- CLASS MODAL -->
+<div id="modal-class" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5">
+    <h3 id="modal-class-title" class="text-sm font-semibold mb-4">Add class</h3>
+    <form id="class-form" class="space-y-3">
+      <input type="hidden" id="class-editing-id">
+      <div>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Class name</label>
+        <input required id="class-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2" placeholder="e.g. Grade 9 — Mathematics">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Section</label>
+        <input id="class-section" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2" placeholder="e.g. Section A">
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="flex-1 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save class</button>
+        <button type="button" data-close-modal="modal-class" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- STUDENT MODAL -->
+<div id="modal-student" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5">
+    <h3 id="modal-student-title" class="text-sm font-semibold mb-4">Add student</h3>
+    <form id="student-form" class="space-y-3">
+      <input type="hidden" id="student-editing-id">
+      <div>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Full name</label>
+        <input required id="student-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Student ID / LRN</label>
+          <input required id="student-sid" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+        </div>
+        <div style="display:none">
+          <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Section</label>
+          <input id="student-section" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Class</label>
+        <select id="student-class-id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="flex-1 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save student</button>
+        <button type="button" data-close-modal="modal-student" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="modal-confirm" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5">
+    <div class="flex items-start gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center shrink-0">
+        <i data-lucide="alert-triangle" class="w-4.5 h-4.5 text-rose-600 dark:text-rose-400" style="width:18px;height:18px"></i>
+      </div>
+      <div>
+        <h3 id="confirm-title" class="text-sm font-semibold">Are you sure?</h3>
+        <p id="confirm-message" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+      </div>
+    </div>
+    <div class="flex gap-2 justify-end">
+      <button type="button" data-close-modal="modal-confirm" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+      <button type="button" id="confirm-action-btn" class="text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg px-3 py-2">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================== STATE & STORAGE ==================== */
+const DB_KEY = 'attendly_db_v1';
+let DB = null;
+
+function defaultDB() {
+  return {
+    settings: { schoolName: 'San Juan Baño High School', sessionStartTime: '08:00', lateThresholdMinutes: 15, theme: 'light' },
+    auth: null,
+    classes: [],
+    students: [],
+    teachers: [],
+    sessions: [],
+    logs: []
+  };
+}
+
+const FIXED_SECTIONS = [
+  ['Grade 7', ['Love', 'Hope', 'Joy', 'Peace']],
+  ['Grade 8', ['Bonifacio', 'Rizal', 'Mabini', 'Luna']],
+  ['Grade 9', ['Newton', 'Galilei', 'Mendel', 'Einstein']],
+  ['Grade 10', ['Athena', 'Artemis', 'Aphrodite']],
+  ['Grade 11', ['Acad', 'TechPro']],
+  ['Grade 12', ['Beethoven', 'Mozart']]
+];
+function ensureFixedClasses() {
+  const keep = [];
+  FIXED_SECTIONS.forEach(([grade, secs]) => secs.forEach(sec => {
+    let c = DB.classes.find(x => x.name === grade && (x.section || '').toLowerCase() === sec.toLowerCase());
+    if (!c) c = { id: 'cls_' + grade.replace(/\D/g, '') + '_' + sec.toLowerCase(), name: grade, section: sec, createdAt: new Date().toISOString() };
+    keep.push(c);
+  }));
+  const extras = DB.classes.filter(c => !keep.some(k => k.id === c.id) &&
+    (DB.students.some(s => s.classId === c.id) || DB.sessions.some(x => x.classId === c.id)));
+  DB.classes = keep.concat(extras);
+  saveDB();
+}
+
+const SESSION_KEY = 'attendly_session_v1';
+function readSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+function dbNoAuth() { const c = Object.assign({}, DB); delete c.auth; return c; }
+
+function normalizeDB() {
+  if (!DB.settings) DB.settings = defaultDB().settings;
+  if (!DB.teachers) DB.teachers = [];
+  if (!DB.students) DB.students = [];
+  if (!DB.classes) DB.classes = [];
+  if (!DB.sessions) DB.sessions = [];
+  if (!DB.logs) DB.logs = [];
+  DB.auth = readSession();
+  DB.settings.schoolName = 'San Juan Baño High School';
+  ensureFixedClasses();
+  migrateSchedules();
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    DB = raw ? Object.assign(defaultDB(), JSON.parse(raw)) : defaultDB();
+  } catch (e) {
+    DB = defaultDB();
+  }
+  normalizeDB();
+}
+
+/* ==================== SUPABASE (online database + accounts) ==================== */
+const SUPABASE_URL = 'https://ykthfmzsuornsqlpcfzc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_G7nHXilIuAdXBiG7CpeeDg_s-YLiEvw';
+let sb = null, cloudDocRef = null, cloudApplyingRemote = false, cloudWriteTimer = null;
+function getCloudConfig() { return true; }
+function applyRemote(d) {
+  cloudApplyingRemote = true;
+  DB = Object.assign(defaultDB(), d); normalizeDB();
+  cloudApplyingRemote = false;
+}
+function connectCloud(_c, onReady, onError) {
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sb.auth.onAuthStateChange(ev => {
+      if (ev === 'PASSWORD_RECOVERY') {
+        const p = prompt('Type your new password (at least 6 characters)');
+        if (p && p.length >= 6) sb.auth.updateUser({ password: p }).then(r => toast(r.error ? r.error.message : 'Password changed.', r.error ? 'error' : 'success'));
+      }
+    });
+    sb.from('school_state').select('data').eq('id', 1).maybeSingle().then(({ data, error }) => {
+      if (error) { onError(error); return; }
+      cloudDocRef = true;
+      if (data && data.data) applyRemote(data.data); else { loadDB(); pushToCloud(); }
+      onReady();
+      sb.channel('school').on('postgres_changes', { event: '*', schema: 'public', table: 'school_state' }, pl => {
+        if (pl.new && pl.new.data) { applyRemote(pl.new.data); refreshAfterRemoteChange(); }
+      }).subscribe();
+    });
+  } catch (e) { onError(e); }
+}
+function pushToCloud() {
+  if (!cloudDocRef || cloudApplyingRemote) return;
+  clearTimeout(cloudWriteTimer);
+  cloudWriteTimer = setTimeout(() => {
+    sb.from('school_state').upsert({ id: 1, data: dbNoAuth() }).then(({ error }) => { if (error) toast('Could not sync to the cloud. Check your connection.', 'warning'); });
+  }, 250);
+}
+function refreshAfterRemoteChange() {
+  if (!DB.auth) return;
+  applyRoleNav();
+  const activeSection = document.querySelector('.view-section.active');
+  if (activeSection) goToView(activeSection.dataset.view);
+}
+document.getElementById('cloud-reconfigure').classList.add('hidden');
+
+function saveDB() {
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(dbNoAuth()));
+    localStorage.setItem(SESSION_KEY, JSON.stringify(DB.auth || null));
+    if (cloudDocRef) pushToCloud();
+    return true;
+  }
+  catch (e) { toast('Could not save: device storage is full. Try a smaller photo.', 'error'); return false; }
+}
+function imageFileToDataUrl(file, maxSize, cb) {
+  const reader = new FileReader();
+  reader.onerror = () => cb(null);
+  reader.onload = ev => {
+    const img = new Image();
+    img.onerror = () => cb(null);
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      cb(c.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ==================== UTILS ==================== */
+function uid(prefix) {
+  return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+/* ==================== TOASTS ==================== */
+function toast(message, type) {
+  type = type || 'info';
+  const icons = { success: 'check-circle', error: 'x-circle', warning: 'alert-triangle', info: 'info' };
+  const colors = {
+    success: 'border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400',
+    error: 'border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400',
+    warning: 'border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400',
+    info: 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+  };
+  const el = document.createElement('div');
+  el.className = 'toast-anim bg-white dark:bg-slate-900 border ' + colors[type] + ' rounded-lg shadow-md px-3.5 py-3 flex items-start gap-2.5';
+  el.innerHTML = '<i data-lucide="' + icons[type] + '" class="w-4 h-4 mt-0.5 shrink-0"></i><p class="text-sm text-slate-700 dark:text-slate-200 leading-snug">' + escapeHtml(message) + '</p>';
+  document.getElementById('toast-container').appendChild(el);
+  refreshIcons();
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(4px)'; el.style.transition = 'all .2s'; setTimeout(() => el.remove(), 200); }, 3200);
+}
+
+/* ==================== AUDIO CONFIRMATION ==================== */
+function beep(freq, dur) {
+  freq = freq || 880; dur = dur || 130;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = freq;
+    osc.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.16, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur / 1000);
+    osc.start(); osc.stop(ctx.currentTime + dur / 1000);
+    osc.onended = () => ctx.close();
+  } catch (e) { /* audio unavailable, ignore */ }
+}
+
+/* ==================== THEME ==================== */
+function applyTheme() {
+  const dark = !!(DB && DB.settings && DB.settings.theme === 'dark');
+  document.documentElement.classList.toggle('dark', dark);
+  document.getElementById('theme-toggle').checked = dark;
+}
+document.getElementById('theme-toggle').addEventListener('change', e => {
+  DB.settings.theme = e.target.checked ? 'dark' : 'light';
+  saveDB(); applyTheme();
+});
+
+/* ==================== CLOCK ==================== */
+function tickClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+/* ==================== NAVIGATION ==================== */
+const PAGE_TITLES = {
+  admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
+  studentid: 'Student ID Card', settings: 'Settings'
+};
+const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], settings: ['admin', 'teacher'] };
+function defaultViewForRole(role) {
+  if (role === 'admin') return 'admin';
+  if (role === 'teacher') return 'dashboard';
+  return 'studentid';
+}
+function goToView(view) {
+  const role = DB.auth ? DB.auth.role : null;
+  const allowedRoles = NAV_ROLES[view];
+  if (!role || !allowedRoles || !allowedRoles.includes(role)) view = defaultViewForRole(role);
+  document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.dataset.view === view));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const active = b.dataset.view === view;
+    b.classList.toggle('bg-indigo-50', active);
+    b.classList.toggle('dark:bg-indigo-950/40', active);
+    b.classList.toggle('text-indigo-600', active);
+    b.classList.toggle('dark:text-indigo-400', active);
+    b.classList.toggle('text-slate-600', !active);
+    b.classList.toggle('dark:text-slate-300', !active);
+  });
+  document.querySelectorAll('.nav-btn-m').forEach(b => {
+    const active = b.dataset.view === view;
+    b.classList.toggle('text-indigo-600', active);
+    b.classList.toggle('dark:text-indigo-400', active);
+    b.classList.toggle('text-slate-500', !active);
+    b.classList.toggle('dark:text-slate-400', !active);
+  });
+  document.getElementById('page-title').textContent = (view === 'settings' && role === 'teacher') ? 'My Profile' : (PAGE_TITLES[view] || 'Attendly');
+  if (view !== 'scanner') stopScanner();
+  if (view !== 'studentid') stopCheckinScanner();
+  if (view === 'dashboard') renderDashboard();
+  if (view === 'scanner') renderScannerView();
+  if (view === 'roster') renderRoster();
+  if (view === 'studentid') renderStudentIdView();
+  if (view === 'settings') renderSettings();
+  if (view === 'admin') renderAdminView();
+}
+document.querySelectorAll('.nav-btn, .nav-btn-m').forEach(b => b.addEventListener('click', () => goToView(b.dataset.view)));
+document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goToView(b.dataset.goto)));
+
+/* ==================== MODALS ==================== */
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('[data-close-modal]').forEach(b => b.addEventListener('click', () => closeModal(b.dataset.closeModal)));
+
+let pendingConfirmAction = null;
+function askConfirm(title, message, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').textContent = message;
+  pendingConfirmAction = onConfirm;
+  openModal('modal-confirm');
+}
+document.getElementById('confirm-action-btn').addEventListener('click', () => {
+  if (pendingConfirmAction) pendingConfirmAction();
+  pendingConfirmAction = null;
+  closeModal('modal-confirm');
+});
+
+/* ==================== SESSIONS & ATTENDANCE LOGIC ==================== */
+function getOrCreateSession(classId) {
+  const date = todayStr();
+  let session = DB.sessions.find(s => s.classId === classId && s.date === date);
+  if (!session) {
+    session = { id: uid('sess'), classId, date, sessionKey: uid('key'), startTime: scheduledStartFor(classId) || DB.settings.sessionStartTime || '08:00', createdAt: new Date().toISOString() };
+    DB.sessions.push(session);
+    saveDB();
+  }
+  return session;
+}
+function computeStatus(session) {
+  const now = new Date();
+  const parts = (session.startTime || '08:00').split(':').map(Number);
+  const start = new Date(); start.setHours(parts[0] || 0, parts[1] || 0, 0, 0);
+  const lateAt = new Date(start.getTime() + (Number(DB.settings.lateThresholdMinutes) || 0) * 60000);
+  return now.getTime() > lateAt.getTime() ? 'late' : 'present';
+}
+function logAttendance(session, student, status, method) {
+  DB.logs.push({ id: uid('log'), sessionId: session.id, classId: session.classId, studentId: student.id, role: 'student', date: session.date, timestamp: new Date().toISOString(), status, method });
+  saveDB();
+}
+function statusBadge(status) {
+  if (status === 'present') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full"><i data-lucide="check-circle" class="w-3 h-3"></i>Present</span>';
+  if (status === 'late') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i>Late</span>';
+  return '<span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full"><i data-lucide="minus-circle" class="w-3 h-3"></i>Absent</span>';
+}
+
+/* ==================== DASHBOARD ==================== */
+let dashSelectedClassId = null;
+
+function populateClassSelect(selectEl, includeEmpty) {
+  const current = selectEl.value;
+  const groups = {};
+  DB.classes.forEach(c => { (groups[c.name] = groups[c.name] || []).push(c); });
+  let html = includeEmpty ? '<option value="">Select a class</option>' : '';
+  Object.keys(groups).forEach(g => {
+    html += '<optgroup label="' + escapeHtml(g) + '">' + groups[g].map(c =>
+      '<option value="' + c.id + '">' + escapeHtml(g + (c.section ? ' — ' + c.section : '')) + '</option>').join('') + '</optgroup>';
+  });
+  selectEl.innerHTML = html;
+  if (DB.classes.some(c => c.id === current)) selectEl.value = current;
+}
+
+function renderDashboard() {
+  populateClassSelect(document.getElementById('dash-class-select'), false);
+  if (!dashSelectedClassId || !DB.classes.some(c => c.id === dashSelectedClassId)) {
+    dashSelectedClassId = DB.classes[0] ? DB.classes[0].id : null;
+  }
+  if (dashSelectedClassId) document.getElementById('dash-class-select').value = dashSelectedClassId;
+
+  const hasClasses = DB.classes.length > 0;
+  document.getElementById('dash-empty').classList.toggle('hidden', hasClasses);
+  document.getElementById('dash-content').classList.toggle('hidden', !hasClasses);
+  if (!hasClasses) { refreshIcons(); return; }
+
+  renderSessionQR(dashSelectedClassId);
+  renderDashboardStats();
+  refreshIcons();
+}
+
+function renderSessionQR(classId) {
+  const session = getOrCreateSession(classId);
+  const payload = ['ATTENDLY', 'SESSION', classId, session.date, session.sessionKey].join('|');
+  const container = document.getElementById('session-qr');
+  container.innerHTML = '';
+  new QRCode(container, { text: payload, width: 176, height: 176, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  const cls = DB.classes.find(c => c.id === classId);
+  document.getElementById('session-meta').textContent = (cls ? cls.name : '') + ' · ' + session.date + ' · Code ' + session.sessionKey.slice(-6).toUpperCase();
+  document.getElementById('session-start-time').value = session.startTime;
+}
+
+function renderDashboardStats() {
+  const classId = dashSelectedClassId;
+  if (!classId) return;
+  const session = getOrCreateSession(classId);
+  const roster = DB.students.filter(s => s.classId === classId);
+  const logs = DB.logs.filter(l => l.sessionId === session.id);
+  const present = logs.filter(l => l.status === 'present').length;
+  const late = logs.filter(l => l.status === 'late').length;
+  const enrolled = roster.length;
+  const rate = enrolled ? Math.round(((present + late) / enrolled) * 100) : 0;
+  document.getElementById('stat-enrolled').textContent = enrolled;
+  document.getElementById('stat-present').textContent = present;
+  document.getElementById('stat-late').textContent = late;
+  document.getElementById('stat-rate').textContent = rate + '%';
+
+  const sorted = logs.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const body = document.getElementById('activity-body');
+  document.getElementById('activity-empty').classList.toggle('hidden', sorted.length > 0);
+  document.getElementById('activity-table').classList.toggle('hidden', sorted.length === 0);
+  body.innerHTML = sorted.map(l => {
+    const st = DB.students.find(s => s.id === l.studentId);
+    return '<tr><td class="py-2.5">' + escapeHtml(st ? st.name : 'Unknown') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(st ? st.studentId : '—') +
+      '</td><td class="py-2.5 tabular-nums text-slate-500 dark:text-slate-400">' + formatTime(l.timestamp) + '</td><td class="py-2.5">' + statusBadge(l.status) + '</td></tr>';
+  }).join('');
+  refreshIcons();
+}
+
+document.getElementById('dash-class-select').addEventListener('change', e => {
+  dashSelectedClassId = e.target.value;
+  renderSessionQR(dashSelectedClassId);
+  renderDashboardStats();
+  refreshIcons();
+});
+document.getElementById('dash-regen-qr').addEventListener('click', () => {
+  if (!dashSelectedClassId) return;
+  DB.sessions = DB.sessions.filter(s => !(s.classId === dashSelectedClassId && s.date === todayStr()));
+  saveDB();
+  renderSessionQR(dashSelectedClassId);
+  toast('Session code refreshed. The previous code is now invalid.', 'success');
+});
+document.getElementById('session-start-time').addEventListener('change', e => {
+  if (!dashSelectedClassId) return;
+  const session = getOrCreateSession(dashSelectedClassId);
+  session.startTime = e.target.value || '08:00';
+  saveDB();
+  renderDashboardStats();
+  toast('Session start time updated.', 'success');
+});
+document.getElementById('dash-export-csv').addEventListener('click', () => {
+  if (!dashSelectedClassId) { toast('Select a class first.', 'warning'); return; }
+  exportClassCSV(dashSelectedClassId);
+});
+
+function exportClassCSV(classId) {
+  const cls = DB.classes.find(c => c.id === classId);
+  const session = getOrCreateSession(classId);
+  const roster = DB.students.filter(s => s.classId === classId);
+  const rows = [['Full Name', 'Student ID', 'Section', 'Status', 'Time']];
+  roster.forEach(s => {
+    const log = DB.logs.find(l => l.sessionId === session.id && l.studentId === s.id);
+    rows.push([s.name, s.studentId, s.section || '', log ? log.status : 'absent', log ? formatTime(log.timestamp) : '']);
+  });
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  downloadBlob(csv, 'attendance-' + (cls ? cls.name.replace(/[^a-z0-9]+/gi, '-') : 'class') + '-' + session.date + '.csv', 'text/csv');
+  toast('Attendance exported as CSV.', 'success');
+}
+
+/* ==================== SCAN DUPLICATE GUARD ==================== */
+const lastScanMap = {};
+function isDuplicateScan(key, text) {
+  const now = Date.now();
+  const last = lastScanMap[key];
+  if (last && last.text === text && now - last.time < 3000) return true;
+  lastScanMap[key] = { text, time: now };
+  return false;
+}
+
+/* ==================== LIVE SCANNER (TEACHER) ==================== */
+let teacherScanner = null;
+let teacherScannerActive = false;
+
+function renderScannerView() {
+  populateClassSelect(document.getElementById('scanner-class-select'), true);
+  document.getElementById('scanner-feed').innerHTML = '';
+  document.getElementById('scanner-feed-empty').classList.remove('hidden');
+  refreshIcons();
+}
+
+function setScannerStatus(active) {
+  const el = document.getElementById('scanner-status');
+  if (active) {
+    el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>Camera active';
+    el.className = 'inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 self-start sm:self-auto';
+  } else {
+    el.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Camera off';
+    el.className = 'inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 self-start sm:self-auto';
+  }
+}
+
+/* ==================== CAMERA HELPER ==================== */
+function camErrorMsg(err) {
+  const n = ((err && (err.name || err.message)) || err || '') + '';
+  if (!window.isSecureContext || /secure-context/.test(n)) return 'The camera only works on a secure (https) page. Open the site from its https link, not from a saved file.';
+  if (/NotAllowed|Permission|denied/i.test(n)) return 'Camera is blocked. Tap the lock icon in the address bar, set Camera to Allow, then try again.';
+  if (/NotFound|Devices|No camera/i.test(n)) return 'No camera found on this device.';
+  if (/NotReadable|TrackStart|in use/i.test(n)) return 'The camera is busy. Close other apps using it and try again.';
+  return 'Could not start the camera: ' + n;
+}
+async function startCamera(scanner, onDecode) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('secure-context');
+  const cfg = { fps: 10, qrbox: (w, h) => { const m = Math.max(120, Math.floor(Math.min(w, h) * 0.7)); return { width: m, height: m }; } };
+  const reset = async () => {
+    try { await scanner.stop(); } catch (e) {}
+    try { scanner.clear(); } catch (e) {}
+    await new Promise(r => setTimeout(r, 300));
+  };
+  let firstErr;
+  for (const c of [{ facingMode: 'environment' }, { facingMode: 'user' }]) {
+    try { await scanner.start(c, cfg, onDecode, () => {}); return; }
+    catch (e) {
+      firstErr = firstErr || e;
+      if (/NotAllowed|Permission|denied/i.test(((e && e.name) || e) + '')) throw e;
+      await reset();
+    }
+  }
+  try {
+    const cams = await Html5Qrcode.getCameras();
+    if (cams && cams.length) { await scanner.start(cams[cams.length - 1].id, cfg, onDecode, () => {}); return; }
+  } catch (e) { firstErr = firstErr || e; }
+  throw firstErr || new Error('NotFound');
+}
+
+function startTeacherScanner() {
+  if (teacherScannerActive) return;
+  if (typeof Html5Qrcode === 'undefined') { toast('Scanner library failed to load. Check your internet connection.', 'error'); return; }
+  const regionEl = document.getElementById('qr-reader');
+  regionEl.innerHTML = '';
+  teacherScanner = new Html5Qrcode('qr-reader');
+  startCamera(teacherScanner, decodedText => handleTeacherScan(decodedText)).then(() => {
+    teacherScannerActive = true;
+    setScannerStatus(true);
+    document.getElementById('scanner-start').classList.add('hidden');
+    document.getElementById('scanner-stop').classList.remove('hidden');
+  }).catch(err => toast(camErrorMsg(err), 'error'));
+}
+
+function stopScanner() {
+  document.getElementById('scanner-start').classList.remove('hidden');
+  document.getElementById('scanner-stop').classList.add('hidden');
+  setScannerStatus(false);
+  if (teacherScanner && teacherScannerActive) {
+    teacherScanner.stop().then(() => { teacherScanner.clear(); teacherScannerActive = false; }).catch(() => { teacherScannerActive = false; });
+  }
+}
+document.getElementById('scanner-start').addEventListener('click', startTeacherScanner);
+document.getElementById('scanner-stop').addEventListener('click', stopScanner);
+
+function handleTeacherScan(decodedText) {
+  if (isDuplicateScan('teacher', decodedText)) return;
+  const parts = decodedText.split('|');
+  if (parts[0] !== 'ATTENDLY' || parts[1] !== 'STUDENT') { toast('Unrecognized QR code.', 'error'); beep(220, 200); return; }
+  const student = DB.students.find(s => s.id === parts[2]);
+  if (!student) { toast('This student ID is not in local records.', 'error'); beep(220, 200); return; }
+  const selectedClassId = document.getElementById('scanner-class-select').value;
+  if (selectedClassId && student.classId !== selectedClassId) {
+    toast(student.name + ' is not enrolled in the selected class.', 'error'); beep(220, 200); return;
+  }
+  const session = getOrCreateSession(student.classId);
+  const already = DB.logs.find(l => l.sessionId === session.id && l.studentId === student.id);
+  if (already) { toast(student.name + ' is already checked in today.', 'warning'); beep(440, 150); return; }
+  const status = computeStatus(session);
+  logAttendance(session, student, status, 'scan');
+  beep(880, 140);
+  toast(student.name + ' marked ' + status + '.', 'success');
+  addToScannerFeed(student, status);
+  if (dashSelectedClassId === student.classId) renderDashboardStats();
+}
+
+function addToScannerFeed(student, status) {
+  document.getElementById('scanner-feed-empty').classList.add('hidden');
+  const li = document.createElement('li');
+  li.className = 'scan-flash flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 rounded-lg px-3 py-2';
+  li.innerHTML = '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(student.name) + '</p><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(student.studentId) + '</p></div>' + statusBadge(status);
+  document.getElementById('scanner-feed').prepend(li);
+  refreshIcons();
+}
+
+/* ==================== SELF CHECK-IN (STUDENT) ==================== */
+let checkinScanner = null;
+let checkinScannerActive = false;
+
+function startCheckinScanner() {
+  if (checkinScannerActive) return;
+  if (!DB.auth || !DB.auth.userId) { toast('You need to be signed in to check in.', 'error'); return; }
+  if (typeof Html5Qrcode === 'undefined') { toast('Scanner library failed to load. Check your internet connection.', 'error'); return; }
+  const region = document.getElementById('checkin-reader');
+  region.classList.remove('hidden');
+  region.innerHTML = '';
+  checkinScanner = new Html5Qrcode('checkin-reader');
+  startCamera(checkinScanner, decodedText => handleStudentScan(decodedText)).then(() => {
+    checkinScannerActive = true;
+    document.getElementById('checkin-start').classList.add('hidden');
+    document.getElementById('checkin-stop').classList.remove('hidden');
+  }).catch(err => { region.classList.add('hidden'); toast(camErrorMsg(err), 'error'); });
+}
+function stopCheckinScanner() {
+  document.getElementById('checkin-start').classList.remove('hidden');
+  document.getElementById('checkin-stop').classList.add('hidden');
+  if (checkinScanner && checkinScannerActive) {
+    checkinScanner.stop().then(() => { checkinScanner.clear(); checkinScannerActive = false; document.getElementById('checkin-reader').classList.add('hidden'); }).catch(() => { checkinScannerActive = false; });
+  } else {
+    document.getElementById('checkin-reader').classList.add('hidden');
+  }
+}
+document.getElementById('checkin-start').addEventListener('click', startCheckinScanner);
+document.getElementById('checkin-stop').addEventListener('click', stopCheckinScanner);
+
+function handleStudentScan(decodedText) {
+  if (isDuplicateScan('student', decodedText)) return;
+  const parts = decodedText.split('|');
+  if (parts[0] !== 'ATTENDLY' || parts[1] !== 'SESSION') { toast('This is not a valid session code.', 'error'); beep(220, 200); return; }
+  const classId = parts[2], date = parts[3], sessionKey = parts[4];
+  if (date !== todayStr()) { toast('This code is not valid for today.', 'error'); beep(220, 200); return; }
+  const session = DB.sessions.find(s => s.classId === classId && s.date === date);
+  if (!session || session.sessionKey !== sessionKey) { toast("Session code has expired. Ask your teacher to refresh it.", 'error'); beep(220, 200); return; }
+  const myId = DB.auth ? DB.auth.userId : null;
+  const student = DB.students.find(s => s.id === myId);
+  if (!student) { toast('Save your student details first (name, ID and class) before checking in.', 'warning'); return; }
+  if (student.classId !== classId) { toast('Your saved profile is not enrolled in this class.', 'error'); beep(220, 200); return; }
+  const already = DB.logs.find(l => l.sessionId === session.id && l.studentId === student.id);
+  if (already) { toast('You are already checked in today.', 'warning'); beep(440, 150); return; }
+  const status = computeStatus(session);
+  logAttendance(session, student, status, 'self');
+  beep(880, 140);
+  toast('Checked in — marked ' + status + '.', 'success');
+  if (dashSelectedClassId === classId) renderDashboardStats();
+}
+
+/* ==================== ROSTER MANAGER ==================== */
+let rosterSelectedClassId = null;
+
+function renderRoster() {
+  const listEl = document.getElementById('class-list');
+  document.getElementById('class-list-empty').classList.toggle('hidden', DB.classes.length > 0);
+  if (rosterSelectedClassId && rosterSelectedClassId !== '__unassigned__' && !DB.classes.some(c => c.id === rosterSelectedClassId)) rosterSelectedClassId = null;
+
+  const unassignedCount = DB.students.filter(s => !s.classId).length;
+  let listHtml = '';
+  if (unassignedCount > 0) {
+    const active = rosterSelectedClassId === '__unassigned__';
+    listHtml += '<div data-class-row="__unassigned__" class="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer border border-dashed border-amber-300 dark:border-amber-800 ' +
+      (active ? 'bg-amber-50 dark:bg-amber-950/30' : 'hover:bg-amber-50/60 dark:hover:bg-amber-950/20') + '">' +
+      '<div class="min-w-0"><p class="text-sm font-medium truncate ' + (active ? 'text-amber-700 dark:text-amber-400' : 'text-amber-600 dark:text-amber-400') + '">Unassigned</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + unassignedCount + ' student' + (unassignedCount === 1 ? '' : 's') + ' without a class</p></div></div>';
+  }
+  listHtml += DB.classes.map(c => {
+    const count = DB.students.filter(s => s.classId === c.id).length;
+    const active = c.id === rosterSelectedClassId;
+    return '<div data-class-row="' + c.id + '" class="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer ' +
+      (active ? 'bg-indigo-50 dark:bg-indigo-950/40' : 'hover:bg-slate-100 dark:hover:bg-slate-800') + '">' +
+      '<div class="min-w-0"><p class="text-sm font-medium truncate ' + (active ? 'text-indigo-700 dark:text-indigo-400' : '') + '">' + escapeHtml(c.name) + '</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + (c.section ? escapeHtml(c.section) + ' · ' : '') + count + ' student' + (count === 1 ? '' : 's') + '</p></div>' +
+      '</div>';
+  }).join('');
+  listEl.innerHTML = listHtml;
+
+  listEl.querySelectorAll('[data-class-row]').forEach(row => row.addEventListener('click', e => {
+    if (e.target.closest('[data-edit-class]') || e.target.closest('[data-delete-class]')) return;
+    rosterSelectedClassId = row.dataset.classRow;
+    renderRoster();
+  }));
+  listEl.querySelectorAll('[data-edit-class]').forEach(btn => btn.addEventListener('click', () => openClassModal(btn.dataset.editClass)));
+  listEl.querySelectorAll('[data-delete-class]').forEach(btn => btn.addEventListener('click', () => {
+    const cls = DB.classes.find(c => c.id === btn.dataset.deleteClass);
+    askConfirm('Delete class', 'This removes "' + cls.name + '" along with its roster, sessions and attendance logs. This cannot be undone.', () => deleteClass(btn.dataset.deleteClass));
+  }));
+
+  const wrap = document.getElementById('roster-students-wrap');
+  const noclass = document.getElementById('roster-noclass');
+  wrap.classList.toggle('hidden', !rosterSelectedClassId);
+  noclass.classList.toggle('hidden', !!rosterSelectedClassId);
+  if (rosterSelectedClassId) renderStudentTable();
+  refreshIcons();
+}
+
+function renderStudentTable() {
+  const isUnassigned = rosterSelectedClassId === '__unassigned__';
+  const cls = isUnassigned ? null : DB.classes.find(c => c.id === rosterSelectedClassId);
+  if (!isUnassigned && !cls) return;
+  document.getElementById('roster-class-name').textContent = isUnassigned ? 'Unassigned students' : cls.name;
+  document.getElementById('roster-class-meta').textContent = isUnassigned ? 'Signed up without a class yet — assign one below.' : (cls.section || 'No section set');
+  const query = (document.getElementById('roster-search').value || '').toLowerCase();
+  const rows = DB.students.filter(s => (isUnassigned ? !s.classId : s.classId === rosterSelectedClassId) &&
+    (s.name.toLowerCase().includes(query) || s.studentId.toLowerCase().includes(query)));
+  const body = document.getElementById('student-table-body');
+  document.getElementById('student-table-empty').classList.toggle('hidden', rows.length > 0);
+  body.innerHTML = rows.map(s => '<tr><td class="py-2.5">' + escapeHtml(s.name) + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.studentId) +
+    '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.section || '—') + '</td>' +
+    '<td class="py-2.5 text-right"><button data-edit-student="' + s.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>' +
+    '<button data-delete-student="' + s.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('');
+  body.querySelectorAll('[data-edit-student]').forEach(btn => btn.addEventListener('click', () => openStudentModal(btn.dataset.editStudent)));
+  body.querySelectorAll('[data-delete-student]').forEach(btn => btn.addEventListener('click', () => {
+    const st = DB.students.find(s => s.id === btn.dataset.deleteStudent);
+    askConfirm('Remove student', 'Remove "' + st.name + '" from this class along with their attendance logs.', () => deleteStudent(btn.dataset.deleteStudent));
+  }));
+  refreshIcons();
+}
+document.getElementById('roster-search').addEventListener('input', renderStudentTable);
+
+function openClassModal(classId) {
+  const editing = !!classId;
+  document.getElementById('modal-class-title').textContent = editing ? 'Edit class' : 'Add class';
+  document.getElementById('class-editing-id').value = classId || '';
+  const cls = editing ? DB.classes.find(c => c.id === classId) : null;
+  document.getElementById('class-name').value = cls ? cls.name : '';
+  document.getElementById('class-section').value = cls ? (cls.section || '') : '';
+  openModal('modal-class');
+}
+document.getElementById('roster-add-class').addEventListener('click', () => openClassModal(null));
+document.getElementById('class-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('class-editing-id').value;
+  const name = document.getElementById('class-name').value.trim();
+  const section = document.getElementById('class-section').value.trim();
+  if (!name) return;
+  if (id) {
+    const cls = DB.classes.find(c => c.id === id);
+    cls.name = name; cls.section = section;
+    toast('Class updated.', 'success');
+  } else {
+    DB.classes.push({ id: uid('cls'), name, section, createdAt: new Date().toISOString() });
+    toast('Class created.', 'success');
+  }
+  saveDB();
+  closeModal('modal-class');
+  renderRoster();
+});
+function deleteClass(classId) {
+  DB.students = DB.students.filter(s => s.classId !== classId);
+  const sessIds = DB.sessions.filter(s => s.classId === classId).map(s => s.id);
+  DB.logs = DB.logs.filter(l => !sessIds.includes(l.sessionId));
+  DB.sessions = DB.sessions.filter(s => s.classId !== classId);
+  DB.classes = DB.classes.filter(c => c.id !== classId);
+  if (rosterSelectedClassId === classId) rosterSelectedClassId = null;
+  saveDB();
+  toast('Class deleted.', 'success');
+  renderRoster();
+}
+
+function openStudentModal(studentId) {
+  const editing = !!studentId;
+  document.getElementById('modal-student-title').textContent = editing ? 'Edit student' : 'Add student';
+  document.getElementById('student-editing-id').value = studentId || '';
+  const st = editing ? DB.students.find(s => s.id === studentId) : null;
+  document.getElementById('student-name').value = st ? st.name : '';
+  document.getElementById('student-sid').value = st ? st.studentId : '';
+  document.getElementById('student-section').value = st ? (st.section || '') : '';
+  const classSel = document.getElementById('student-class-id');
+  populateClassSelect(classSel, true);
+  const defaultClassId = st ? (st.classId || '') : (rosterSelectedClassId === '__unassigned__' ? '' : (rosterSelectedClassId || ''));
+  classSel.value = defaultClassId;
+  openModal('modal-student');
+}
+document.getElementById('roster-add-student').addEventListener('click', () => openStudentModal(null));
+document.getElementById('student-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('student-editing-id').value;
+  const classId = document.getElementById('student-class-id').value;
+  const name = document.getElementById('student-name').value.trim();
+  const studentId = document.getElementById('student-sid').value.trim();
+  const _c = DB.classes.find(c => c.id === classId);
+  const section = _c ? (_c.section || '') : '';
+  if (!name || !studentId) return;
+  if (id) {
+    const st = DB.students.find(s => s.id === id);
+    st.name = name; st.studentId = studentId; st.section = section; st.classId = classId;
+    toast('Student updated.', 'success');
+  } else {
+    DB.students.push({ id: uid('stu'), name, studentId, section, classId, photo: '', createdAt: new Date().toISOString() });
+    toast('Student added.', 'success');
+  }
+  saveDB();
+  closeModal('modal-student');
+  renderRoster();
+}
+);
+function deleteStudent(studentId) {
+  DB.logs = DB.logs.filter(l => l.studentId !== studentId);
+  DB.students = DB.students.filter(s => s.id !== studentId);
+  saveDB();
+  toast('Student removed.', 'success');
+  renderRoster();
+}
+
+/* ==================== STUDENT ID CARD ==================== */
+function initialsAvatar(name) {
+  const canvas = document.createElement('canvas'); canvas.width = 112; canvas.height = 112;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#6366f1'; ctx.beginPath(); ctx.arc(56, 56, 56, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.font = '600 42px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const initials = (name || '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  ctx.fillText(initials || '?', 56, 60);
+  return canvas.toDataURL('image/png');
+}
+function renderStudentQR(containerId, student) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  new QRCode(el, { text: ['ATTENDLY', 'STUDENT', student.id].join('|'), width: 88, height: 88, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+}
+
+function renderStudentIdView() {
+  populateClassSelect(document.getElementById('sid-class'), true);
+  const myId = DB.auth ? DB.auth.userId : null;
+  document.getElementById('sid-editing-id').value = myId || '';
+  const st = myId ? DB.students.find(s => s.id === myId) : null;
+  if (st) {
+    document.getElementById('sid-name').value = st.name || '';
+    document.getElementById('sid-studentid').value = st.studentId || '';
+    document.getElementById('sid-section').value = st.section || '';
+    document.getElementById('sid-class').value = st.classId || '';
+    renderBadge(st);
+  } else {
+    showIdCardEmpty();
+  }
+  renderMyTeachers();
+  refreshIcons();
+}
+function showIdCardEmpty() {
+  document.getElementById('id-card-empty').classList.remove('hidden');
+  document.getElementById('id-card-wrap').classList.add('hidden');
+}
+function renderBadge(student) {
+  document.getElementById('card-school').textContent = DB.settings.schoolName || 'Attendly School';
+  document.getElementById('card-name').textContent = student.name;
+  const cls = DB.classes.find(c => c.id === student.classId);
+  document.getElementById('card-class').textContent = (cls ? cls.name : 'Unassigned class') + (student.section ? ' · ' + student.section : '');
+  document.getElementById('card-id').textContent = student.studentId;
+  document.getElementById('card-photo').src = student.photo || initialsAvatar(student.name);
+  renderStudentQR('card-qr', student);
+  document.getElementById('id-card-empty').classList.add('hidden');
+  document.getElementById('id-card-wrap').classList.remove('hidden');
+  refreshIcons();
+}
+
+document.getElementById('student-id-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const myId = DB.auth ? DB.auth.userId : null;
+  if (!myId) { toast('You need to be signed in to save your details.', 'error'); return; }
+  const name = document.getElementById('sid-name').value.trim();
+  const studentId = document.getElementById('sid-studentid').value.trim();
+  const classId = document.getElementById('sid-class').value;
+  const _c = DB.classes.find(c => c.id === classId);
+  const section = _c ? (_c.section || '') : '';
+  if (!name || !studentId || !classId) { toast('Fill in name, student ID and class.', 'warning'); return; }
+  const photoFile = document.getElementById('sid-photo').files[0];
+
+  const finish = (photoDataUrl) => {
+    let student = DB.students.find(s => s.id === myId);
+    if (!student) {
+      student = { id: myId, createdAt: new Date().toISOString() };
+      DB.students.push(student);
+    }
+    student.name = name; student.studentId = studentId; student.section = section; student.classId = classId;
+    if (photoDataUrl) student.photo = photoDataUrl;
+    if (DB.auth) DB.auth.name = name;
+    if (!saveDB()) return;
+    toast('Your details were saved.', 'success');
+    renderStudentIdView();
+  };
+
+  if (photoFile) {
+    imageFileToDataUrl(photoFile, 320, url => {
+      if (!url) { toast('That photo could not be read. Try a different image.', 'error'); return; }
+      finish(url);
+    });
+  } else finish(null);
+});
+
+document.getElementById('sid-reset').addEventListener('click', () => {
+  renderStudentIdView();
+  toast('Reverted to your saved details.', 'info');
+});
+document.getElementById('id-card-print').addEventListener('click', () => window.print());
+
+/* ==================== SETTINGS ==================== */
+function renderSettings() {
+  document.getElementById('set-start-time').value = DB.settings.sessionStartTime || '08:00';
+  document.getElementById('set-late-threshold').value = DB.settings.lateThresholdMinutes ?? 15;
+  const isAdmin = !!(DB.auth && DB.auth.role === 'admin');
+  const isTeacher = !!(DB.auth && DB.auth.role === 'teacher');
+  const cloudStatusEl = document.getElementById('cloud-status-settings');
+  if (cloudStatusEl) cloudStatusEl.textContent = cloudDocRef ? 'Connected — data syncs automatically across devices.' : 'Not connected — data is saved only on this device.';
+  document.querySelectorAll('.admin-only-setting').forEach(el => el.classList.toggle('hidden', !isAdmin));
+  document.querySelectorAll('.teacher-only-setting').forEach(el => el.classList.toggle('hidden', !isTeacher));
+  if (isTeacher) renderTeacherProfile();
+}
+document.getElementById('set-save-general').addEventListener('click', () => {
+  DB.settings.sessionStartTime = document.getElementById('set-start-time').value || '08:00';
+  DB.settings.lateThresholdMinutes = Math.max(0, Number(document.getElementById('set-late-threshold').value) || 0);
+  saveDB();
+  toast('Settings saved.', 'success');
+});
+
+function exportBackup() {
+  downloadBlob(JSON.stringify(Object.assign({}, DB, { auth: null }), null, 2), 'attendly-backup-' + todayStr() + '.json', 'application/json');
+  toast('Backup downloaded.', 'success');
+}
+document.getElementById('set-export-json').addEventListener('click', exportBackup);
+document.getElementById('sid-backup').addEventListener('click', exportBackup);
+document.getElementById('set-import-json').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (!parsed || typeof parsed !== 'object') throw new Error('invalid');
+      askConfirm('Import backup', 'This replaces all current data on this device with the contents of the selected file.', () => {
+        DB = Object.assign(defaultDB(), parsed);
+        saveDB();
+        toast('Backup imported successfully.', 'success');
+        goToView('dashboard');
+      });
+    } catch (err) {
+      toast('That file could not be read as a valid Attendly backup.', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('set-download-app').addEventListener('click', () => {
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  downloadBlob(html, 'Attendly.html', 'text/html');
+  toast('Application file downloaded. Data is not included — use JSON backup for that.', 'success');
+});
+
+document.getElementById('set-clear-data').addEventListener('click', () => {
+  askConfirm('Clear all data', 'This permanently deletes every class, student, session and attendance log on this device.', () => {
+    DB = defaultDB();
+    saveDB();
+    dashSelectedClassId = null; rosterSelectedClassId = null;
+    toast('All data cleared.', 'success');
+    goToView('dashboard');
+  });
+});
+
+/* ==================== AUTH: PASSWORD HASH & FIXED ADMIN PASSCODE ==================== */
+async function sha256Hex(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function fileToDataUrl(file, cb) {
+  const reader = new FileReader();
+  reader.onload = ev => cb(ev.target.result);
+  reader.readAsDataURL(file);
+}
+// SHA-256 hash of the fixed Admin passcode. The plain passcode is never stored or shown in the source.
+const ADMIN_PASSWORD_HASH = '6dadc5f51023c1e98b8ce958b08102f60a05e03093c42748de708ea9665d8348';
+
+/* ==================== AUTH: ROLE NAV & SCREEN SWITCHING ==================== */
+function applyRoleNav() {
+  const role = DB.auth ? DB.auth.role : null;
+  document.querySelectorAll('.nav-btn, .nav-btn-m').forEach(b => {
+    const allowed = NAV_ROLES[b.dataset.view] || [];
+    b.classList.toggle('hidden', !(role && allowed.includes(role)));
+  });
+  document.querySelectorAll('.nav-btn[data-view="settings"], .nav-btn-m[data-view="settings"]').forEach(b => {
+    const label = role === 'teacher' ? 'My Profile' : 'Settings';
+    const span = b.querySelector('span');
+    if (span) span.textContent = label;
+    else { const t = Array.from(b.childNodes).filter(n => n.nodeType === 3).pop(); if (t) t.textContent = label; }
+  });
+  document.getElementById('header-user-role').textContent = role || '';
+  document.getElementById('header-user-name').textContent = DB.auth ? DB.auth.name : '';
+}
+function hideAllAuthScreens() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  stopLoginBadgeScanner();
+}
+function renderAuthGate() {
+  hideAllAuthScreens();
+  if (DB.auth && DB.auth.role) {
+    showApp();
+  } else {
+    showLoginScreen();
+  }
+}
+function showApp() {
+  hideAllAuthScreens();
+  document.getElementById('app').style.display = '';
+  applyRoleNav();
+  goToView(defaultViewForRole(DB.auth.role));
+  refreshIcons();
+}
+function logout() {
+  askConfirm('Log out', 'You will need to sign in again to continue.', () => {
+    DB.auth = null;
+    saveDB();
+    renderAuthGate();
+    toast('Signed out.', 'success');
+  });
+}
+document.getElementById('logout-btn').addEventListener('click', logout);
+
+/* ==================== AUTH: LOGIN / SIGN UP ==================== */
+let loginRole = 'teacher';
+
+function showLoginScreen() {
+  document.getElementById('screen-login').style.display = '';
+  document.getElementById('login-school-name').textContent = DB.settings.schoolName || 'Attendly';
+  document.getElementById('storage-warning').classList.toggle('hidden', !!cloudDocRef || /^https?:$/.test(location.protocol));
+  document.getElementById('login-form').reset();
+  document.getElementById('signup-form').reset();
+  document.getElementById('reset-form').reset();
+  setLoginRole('teacher');
+  setAuthMode('login');
+  refreshIcons();
+}
+function setLoginRole(role) {
+  loginRole = role;
+  document.querySelectorAll('.role-tab-btn').forEach(b => {
+    const active = b.dataset.loginRole === role;
+    b.className = 'role-tab-btn text-xs font-medium rounded-md px-2 py-1.5 ' + (active ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400');
+  });
+  document.getElementById('signup-idnum-label').textContent = role === 'teacher' ? 'Teacher ID' : 'Student ID / LRN';
+  document.getElementById('reset-idnum-label').textContent = role === 'teacher' ? 'Teacher ID' : 'Student ID / LRN';
+  document.getElementById('admin-access-link-wrap').classList.toggle('hidden', role !== 'teacher');
+  document.getElementById('admin-access-form').classList.add('hidden');
+  document.getElementById('admin-access-password').value = '';
+  document.getElementById('login-scan-badge').classList.toggle('hidden', role !== 'student');
+  stopLoginBadgeScanner();
+}
+function setAuthMode(mode) {
+  document.getElementById('login-form').classList.toggle('hidden', mode !== 'login');
+  document.getElementById('signup-form').classList.toggle('hidden', mode !== 'signup');
+  document.getElementById('reset-form').classList.toggle('hidden', mode !== 'reset');
+  document.querySelectorAll('.auth-mode-btn').forEach(b => {
+    const active = b.dataset.authMode === mode;
+    b.className = 'auth-mode-btn text-xs font-medium px-2 py-1 ' + (active ? 'text-indigo-600 dark:text-indigo-400 underline underline-offset-2' : 'text-slate-500 dark:text-slate-400');
+  });
+}
+document.querySelectorAll('.role-tab-btn').forEach(b => b.addEventListener('click', () => setLoginRole(b.dataset.loginRole)));
+document.querySelectorAll('.auth-mode-btn').forEach(b => b.addEventListener('click', () => setAuthMode(b.dataset.authMode)));
+
+function normEmail(e) { return (e || '').trim().toLowerCase(); }
+
+function finishLogin(email, name, idNumber) {
+  const list = loginRole === 'teacher' ? DB.teachers : DB.students;
+  const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
+  let account = list.find(a => normEmail(a.email) === email);
+  if (!account && idNumber) account = list.find(a => !a.email && (a[idKey] || '').trim().toLowerCase() === idNumber.toLowerCase());
+  if (!account) {
+    account = { id: uid(loginRole === 'teacher' ? 'tch' : 'stu'), name: name || email.split('@')[0], email, createdAt: new Date().toISOString() };
+    account[idKey] = idNumber || '';
+    if (loginRole === 'student') { account.section = ''; account.classId = ''; account.photo = ''; }
+    list.push(account);
+  }
+  if (!account.email) account.email = email;
+  DB.auth = { role: loginRole, userId: account.id, name: account.name, loginAt: new Date().toISOString() };
+  saveDB();
+  toast('Welcome, ' + account.name + '.', 'success');
+  showApp();
+}
+function needSb() { if (!sb) { toast('Not connected to the online database. Check your internet and reload.', 'error'); return true; } return false; }
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (needSb()) return;
+  const email = normEmail(document.getElementById('login-email').value);
+  const pw = document.getElementById('login-password').value;
+  if (!email || !pw) { toast('Enter your email and password.', 'warning'); return; }
+  const r = await sb.auth.signInWithPassword({ email, password: pw });
+  if (r.error) {
+    const list = loginRole === 'teacher' ? DB.teachers : DB.students;
+    const old = list.find(a => normEmail(a.email) === email);
+    if (old && old.passwordHash && old.passwordHash === await sha256Hex(pw)) {
+      const su = await sb.auth.signUp({ email, password: pw });
+      if (su.error) { toast(su.error.message, 'error'); return; }
+    } else { toast(/confirm/i.test(r.error.message) ? 'Please confirm your email first.' : 'Incorrect email or password.', 'error'); return; }
+  }
+  finishLogin(email);
+});
+
+async function socialSignIn(kind) {
+  if (needSb()) return;
+  localStorage.setItem('attendly_oauth_role', loginRole);
+  const r = await sb.auth.signInWithOAuth({ provider: kind, options: { redirectTo: location.origin + location.pathname } });
+  if (r.error) toast(r.error.message, 'error');
+}
+document.getElementById('btn-google').addEventListener('click', () => socialSignIn('google'));
+document.getElementById('btn-facebook').addEventListener('click', () => socialSignIn('facebook'));
+async function handleOAuthReturn() {
+  const role = localStorage.getItem('attendly_oauth_role');
+  if (!sb || !role) return;
+  const { data } = await sb.auth.getSession();
+  const u = data && data.session && data.session.user;
+  if (!u) return;
+  localStorage.removeItem('attendly_oauth_role');
+  loginRole = role;
+  const m = u.user_metadata || {};
+  finishLogin(normEmail(u.email), m.full_name || m.name);
+}
+
+document.getElementById('signup-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (needSb()) return;
+  const name = document.getElementById('signup-name').value.trim();
+  const email = normEmail(document.getElementById('signup-email').value);
+  const idNumber = document.getElementById('signup-idnum').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const pw2 = document.getElementById('signup-password-confirm').value;
+  if (!name || !email || !idNumber) { toast('Fill in your name, email and ID number.', 'warning'); return; }
+  if (pw.length < 6) { toast('Choose a password of at least 6 characters.', 'warning'); return; }
+  if (pw !== pw2) { toast('Passwords do not match.', 'warning'); return; }
+  const list = loginRole === 'teacher' ? DB.teachers : DB.students;
+  const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
+  if (list.some(a => normEmail(a.email) === email)) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
+  const byId = list.find(a => (a[idKey] || '').trim().toLowerCase() === idNumber.toLowerCase());
+  if (byId && byId.email) { toast('That ID is already registered to an account. Log in instead.', 'warning'); return; }
+  const r = await sb.auth.signUp({ email, password: pw, options: { data: { name } } });
+  if (r.error) { toast(r.error.message, 'error'); return; }
+  if (r.data.user && r.data.user.identities && !r.data.user.identities.length) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
+  if (!r.data.session) { toast('Check your email to confirm your account, then log in.', 'success'); setAuthMode('login'); return; }
+  if (byId) byId.name = name;
+  finishLogin(email, name, idNumber);
+});
+
+document.getElementById('forgot-link').addEventListener('click', () => {
+  document.getElementById('reset-email').value = document.getElementById('login-email').value;
+  setAuthMode('reset');
+});
+document.getElementById('reset-back').addEventListener('click', () => setAuthMode('login'));
+document.getElementById('reset-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (needSb()) return;
+  const email = normEmail(document.getElementById('reset-email').value);
+  const r = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (r.error) { toast(r.error.message, 'error'); return; }
+  setAuthMode('login');
+  toast('If that email has an account, a reset link is on its way.', 'success');
+});
+
+/* Show/hide password (eye) toggles */
+function addPasswordToggles() {
+  document.querySelectorAll('#screen-login input[type="password"]').forEach(input => {
+    if (input.dataset.eye) return;
+    input.dataset.eye = '1';
+    const wrap = document.createElement('div');
+    wrap.className = 'relative';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    input.classList.add('pr-10');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Show password');
+    btn.className = 'absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200';
+    const EYE = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.5 10.5 0 0 1 12 19c-6.5 0-10-7-10-7a18 18 0 0 1 4.06-5.06"/><path d="M9.9 4.24A9.6 9.6 0 0 1 12 4c6.5 0 10 7 10 7a18 18 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M2 2l20 20"/></svg>';
+    const draw = () => { btn.innerHTML = input.type === 'password' ? EYE : EYE_OFF; };
+    btn.addEventListener('click', () => {
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
+      draw();
+    });
+    wrap.appendChild(btn);
+    draw();
+  });
+}
+addPasswordToggles();
+
+/* ==================== TEACHER PROFILE & SCHEDULE ==================== */
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function classLabel(classId) {
+  const c = DB.classes.find(x => x.id === classId);
+  return c ? c.name + (c.section ? ' — ' + c.section : '') : '';
+}
+function getMyTeacher() {
+  return DB.auth && DB.auth.role === 'teacher' ? DB.teachers.find(t => t.id === DB.auth.userId) : null;
+}
+function classesLabel(ids) {
+  const byGrade = {};
+  (ids || []).map(id => DB.classes.find(c => c.id === id)).filter(Boolean).forEach(c => { (byGrade[c.name] = byGrade[c.name] || []).push(c.section); });
+  return Object.keys(byGrade).map(g => g + ' — ' + byGrade[g].join(' + ')).join(' & ');
+}
+function entryHasClass(e, classId) { return (e.classIds || []).includes(classId); }
+function migrateSchedules() {
+  DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
+    if (!e.classIds) { e.classIds = e.classId ? [e.classId] : []; }
+  }));
+}
+function scheduledStartFor(classId) {
+  const t = getMyTeacher();
+  if (!t || !t.schedule) return null;
+  const today = DAY_NAMES[new Date().getDay()];
+  const e = t.schedule.find(x => entryHasClass(x, classId) && x.start && x.day === today) ||
+            t.schedule.find(x => entryHasClass(x, classId) && x.start && !x.day);
+  return e ? e.start : null;
+}
+function renderSchedClassChips() {
+  const box = document.getElementById('t-sched-classes');
+  const groups = {};
+  DB.classes.forEach(c => { (groups[c.name] = groups[c.name] || []).push(c); });
+  box.innerHTML = '<p class="text-xs font-medium text-slate-500 dark:text-slate-400">Section(s) — tick more than one if you teach them together (combined class)</p>' +
+    Object.keys(groups).map(g => '<div><p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1">' + escapeHtml(g) + '</p><div class="flex flex-wrap gap-1.5">' +
+      groups[g].map(c => '<label class="cursor-pointer"><input type="checkbox" value="' + c.id + '" class="peer sr-only"><span class="inline-block text-xs font-medium px-2.5 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600">' + escapeHtml(c.section) + '</span></label>').join('') +
+      '</div></div>').join('');
+}
+function renderTeacherProfile() {
+  const t = getMyTeacher();
+  if (!t) return;
+  document.getElementById('t-name').value = t.name || '';
+  document.getElementById('t-email').value = t.email || '';
+  document.getElementById('t-teacherid').value = t.teacherId || '';
+  document.getElementById('t-school').value = DB.settings.schoolName;
+  document.getElementById('t-photo-preview').src = t.photo || initialsAvatar(t.name);
+  const adv = document.getElementById('t-advisory');
+  populateClassSelect(adv, true);
+  adv.options[0].textContent = 'None — no advisory class';
+  adv.value = t.advisoryClassId || '';
+  renderSchedClassChips();
+  renderScheduleList();
+}
+function renderScheduleList() {
+  const t = getMyTeacher();
+  if (!t) return;
+  const list = t.schedule || [];
+  document.getElementById('t-sched-empty').classList.toggle('hidden', list.length > 0);
+  document.getElementById('t-sched-list').innerHTML = list.map(e => {
+    const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' · ');
+    return '<div class="flex items-center justify-between gap-3 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-2">' +
+      '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(e.subject) + '</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(classesLabel(e.classIds)) + (when ? ' · ' + escapeHtml(when) : '') + '</p>' +
+      ((e.classIds || []).length > 1 ? '<span class="inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">Combined class</span>' : '') + '</div>' +
+      '<button data-del-sched="' + e.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500 text-xs font-medium">Remove</button></div>';
+  }).join('');
+  document.querySelectorAll('[data-del-sched]').forEach(b => b.addEventListener('click', () => {
+    t.schedule = (t.schedule || []).filter(x => x.id !== b.dataset.delSched);
+    saveDB(); renderScheduleList();
+  }));
+}
+document.getElementById('t-profile-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const t = getMyTeacher();
+  if (!t) return;
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) return;
+  const finish = photoUrl => {
+    t.name = name;
+    t.teacherId = document.getElementById('t-teacherid').value.trim();
+    t.advisoryClassId = document.getElementById('t-advisory').value;
+    if (photoUrl) t.photo = photoUrl;
+    DB.auth.name = name;
+    if (!saveDB()) return;
+    document.getElementById('header-user-name').textContent = name;
+    toast('Profile saved.', 'success');
+    renderTeacherProfile();
+  };
+  const file = document.getElementById('t-photo').files[0];
+  if (file) imageFileToDataUrl(file, 320, url => { if (!url) { toast('That photo could not be read.', 'error'); return; } finish(url); });
+  else finish(null);
+});
+document.getElementById('t-sched-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const t = getMyTeacher();
+  if (!t) return;
+  const subject = document.getElementById('t-sched-subject').value.trim();
+  const classIds = Array.from(document.querySelectorAll('#t-sched-classes input:checked')).map(i => i.value);
+  if (!subject || !classIds.length) { toast('Enter a subject and tick at least one section.', 'warning'); return; }
+  t.schedule = t.schedule || [];
+  t.schedule.push({ id: uid('sch'), subject, classIds, day: document.getElementById('t-sched-day').value,
+    start: document.getElementById('t-sched-start').value, end: document.getElementById('t-sched-end').value });
+  if (!saveDB()) return;
+  document.getElementById('t-sched-form').reset();
+  renderScheduleList();
+  toast('Subject added.', 'success');
+});
+document.getElementById('t-sched-clear').addEventListener('click', () => {
+  const t = getMyTeacher();
+  if (!t || !(t.schedule || []).length) return;
+  askConfirm('Remove all subjects', 'This clears every subject in your schedule.', () => { t.schedule = []; saveDB(); renderScheduleList(); });
+});
+document.getElementById('t-sched-template').addEventListener('click', () => {
+  downloadBlob('Subject,Grade,Section,Day,Start,End\nMathematics,Grade 12,Beethoven,Mon,08:00,09:00\nEnglish,Grade 12,Beethoven/Mozart,Tue,09:00,10:00\n', 'attendly-schedule-template.csv', 'text/csv');
+});
+function splitCsvLine(line, d) {
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (q) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === d) { out.push(cur.trim()); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+function normTime(v) {
+  const m = /^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i.exec((v || '').trim());
+  if (!m) return '';
+  let h = Number(m[1]); const min = m[2] || '00';
+  if (m[3]) { const pm = m[3].toLowerCase() === 'pm'; if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0; }
+  if (h > 23) return '';
+  return String(h).padStart(2, '0') + ':' + min;
+}
+function normDay(v) {
+  const d = (v || '').trim().slice(0, 3).toLowerCase();
+  return DAY_NAMES.find(x => x.toLowerCase() === d && x !== 'Sun') || '';
+}
+document.getElementById('t-sched-csv').addEventListener('change', e => {
+  const file = e.target.files[0];
+  const t = getMyTeacher();
+  if (!file || !t) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const lines = String(ev.target.result).replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim());
+    if (!lines.length) { toast('That file is empty.', 'warning'); return; }
+    const d = [',', '\t', ';'].sort((a, b) => lines[0].split(b).length - lines[0].split(a).length)[0];
+    let cols = { subject: 0, grade: 1, section: 2, day: 3, start: 4, end: 5 };
+    const first = splitCsvLine(lines[0], d).map(x => x.toLowerCase());
+    if (first.includes('subject')) {
+      cols = {}; ['subject', 'grade', 'section', 'day', 'start', 'end'].forEach(k => { cols[k] = first.findIndex(x => x.startsWith(k)); });
+      lines.shift();
+    }
+    let added = 0, skipped = 0;
+    t.schedule = t.schedule || [];
+    lines.forEach(line => {
+      const r = splitCsvLine(line, d);
+      const get = k => (cols[k] >= 0 ? r[cols[k]] || '' : '');
+      const gradeNum = (get('grade').match(/\d+/) || [''])[0];
+      const secNames = get('section').split(/[\/+&|]|\band\b/i).map(x => x.trim().toLowerCase()).filter(Boolean);
+      const classIds = secNames.map(n => (DB.classes.find(c => c.name === 'Grade ' + gradeNum && (c.section || '').toLowerCase() === n) || {}).id).filter(Boolean);
+      const subject = get('subject');
+      if (!subject || !classIds.length || classIds.length !== secNames.length) { skipped++; return; }
+      t.schedule.push({ id: uid('sch'), subject, classIds, day: normDay(get('day')), start: normTime(get('start')), end: normTime(get('end')) });
+      added++;
+    });
+    if (!saveDB()) return;
+    renderScheduleList();
+    e.target.value = '';
+    toast(added + ' subject' + (added === 1 ? '' : 's') + ' added' + (skipped ? ', ' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped (check Grade and Section).' : '.'), added ? 'success' : 'warning');
+  };
+  reader.readAsText(file);
+});
+
+/* ==================== STUDENT: MY TEACHERS ==================== */
+function teacherRowHtml(t, lines, isAdviser) {
+  return '<div class="flex items-start gap-3 border border-slate-100 dark:border-slate-800 rounded-lg p-3">' +
+    '<img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-10 h-10 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0">' +
+    '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(t.name) +
+    (isAdviser ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">Adviser</span>' : '') + '</p>' +
+    lines.map(l => '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(l) + '</p>').join('') + '</div></div>';
+}
+function renderMyTeachers() {
+  const st = DB.auth ? DB.students.find(s => s.id === DB.auth.userId) : null;
+  const sub = document.getElementById('my-teachers-sub');
+  const list = document.getElementById('my-teachers-list');
+  const otherWrap = document.getElementById('other-teachers-wrap');
+  otherWrap.classList.add('hidden');
+  const cls = st ? DB.classes.find(c => c.id === st.classId) : null;
+  if (!cls) { sub.textContent = 'Choose your class above and save to see your teachers.'; list.innerHTML = ''; return; }
+  sub.textContent = cls.name + ' — ' + cls.section;
+  const mine = [];
+  DB.teachers.forEach(t => {
+    const entries = (t.schedule || []).filter(e => entryHasClass(e, cls.id));
+    const adviser = t.advisoryClassId === cls.id;
+    if (entries.length || adviser) {
+      mine.push(teacherRowHtml(t, entries.map(e => {
+        const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' ');
+        const others = e.classIds.filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
+        return e.subject + (when ? ' · ' + when : '') + (others.length ? ' · Combined with ' + others.join(', ') : '');
+      }), adviser));
+    }
+  });
+  list.innerHTML = mine.length ? mine.join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 py-2">No teachers have added this section yet.</p>';
+  const others = [];
+  DB.teachers.forEach(t => {
+    const entries = (t.schedule || []).filter(e => !entryHasClass(e, cls.id) && e.classIds.some(id => (DB.classes.find(c => c.id === id) || {}).name === cls.name));
+    if (entries.length) others.push(teacherRowHtml(t, entries.map(e => e.subject + ' · ' + e.classIds.map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean).join(' + ')), false));
+  });
+  if (others.length) {
+    document.getElementById('other-teachers-title').textContent = 'Also teaching ' + cls.name;
+    document.getElementById('other-teachers-list').innerHTML = others.join('');
+    otherWrap.classList.remove('hidden');
+  }
+}
+
+/* ==================== RESTORE (MERGE) FROM BACKUP ==================== */
+function mergeBackup(parsed) {
+  const map = {};
+  (parsed.classes || []).forEach(c => {
+    const local = DB.classes.find(x => x.id === c.id) ||
+      DB.classes.find(x => x.name === c.name && (x.section || '').toLowerCase() === (c.section || '').toLowerCase());
+    if (local) map[c.id] = local.id; else { DB.classes.push(c); map[c.id] = c.id; }
+  });
+  const rid = id => (id && map[id]) || id;
+  let teachers = 0, students = 0;
+  (parsed.teachers || []).forEach(x => {
+    if (DB.teachers.some(y => y.id === x.id || (y.email && x.email && y.email.toLowerCase() === x.email.toLowerCase()))) return;
+    x.advisoryClassId = rid(x.advisoryClassId);
+    (x.schedule || []).forEach(e => { e.classIds = (e.classIds || (e.classId ? [e.classId] : [])).map(rid); });
+    DB.teachers.push(x); teachers++;
+  });
+  (parsed.students || []).forEach(x => {
+    if (DB.students.some(y => y.id === x.id || (y.email && x.email && y.email.toLowerCase() === x.email.toLowerCase()))) return;
+    x.classId = rid(x.classId);
+    DB.students.push(x); students++;
+  });
+  (parsed.sessions || []).forEach(x => { if (!DB.sessions.some(y => y.id === x.id)) { x.classId = rid(x.classId); DB.sessions.push(x); } });
+  (parsed.logs || []).forEach(x => { if (!DB.logs.some(y => y.id === x.id)) { x.classId = rid(x.classId); DB.logs.push(x); } });
+  migrateSchedules();
+  saveDB();
+  return { teachers, students };
+}
+document.getElementById('login-restore-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.students || []) || !Array.isArray(parsed.teachers || [])) throw new Error('invalid');
+      const r = mergeBackup(parsed);
+      toast('Restored ' + r.teachers + ' teacher' + (r.teachers === 1 ? '' : 's') + ' and ' + r.students + ' student' + (r.students === 1 ? '' : 's') + '. You can log in now.', 'success');
+    } catch (err) {
+      toast('That file is not a valid Attendly backup.', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+/* ==================== LOGIN: SCAN YOUR BADGE (prefills email) ==================== */
+let loginBadgeScanner = null;
+function stopLoginBadgeScanner() {
+  const reader = document.getElementById('login-scan-reader');
+  const btn = document.getElementById('login-scan-badge');
+  if (btn) btn.innerHTML = '<i data-lucide="scan-line" class="w-3.5 h-3.5"></i>Scan your badge instead';
+  if (reader) reader.classList.add('hidden');
+  refreshIcons();
+  if (loginBadgeScanner) {
+    const s = loginBadgeScanner;
+    loginBadgeScanner = null;
+    s.stop().then(() => s.clear()).catch(() => {});
+  }
+}
+document.getElementById('login-scan-badge').addEventListener('click', () => {
+  if (loginBadgeScanner) { stopLoginBadgeScanner(); return; }
+  if (typeof Html5Qrcode === 'undefined') { toast('Scanner library failed to load. Check your internet connection.', 'error'); return; }
+  const reader = document.getElementById('login-scan-reader');
+  const btn = document.getElementById('login-scan-badge');
+  reader.classList.remove('hidden');
+  btn.textContent = 'Cancel scan';
+  loginBadgeScanner = new Html5Qrcode('login-scan-reader');
+  startCamera(loginBadgeScanner, decodedText => {
+    const parts = decodedText.split('|');
+    if (parts[0] !== 'ATTENDLY' || parts[1] !== 'STUDENT') return;
+    const st = DB.students.find(x => x.id === parts[2]);
+    stopLoginBadgeScanner();
+    if (!st || !st.email) { toast('That badge is not linked to an account yet.', 'warning'); return; }
+    document.getElementById('login-email').value = st.email;
+    document.getElementById('login-password').focus();
+    toast('Found ' + st.name + ' — enter your password to finish.', 'success');
+  }).catch(err => { toast(camErrorMsg(err), 'error'); stopLoginBadgeScanner(); });
+});
+
+/* ==================== ADMIN CONSOLE ==================== */
+function renderAdminView() {
+  document.getElementById('admin-stat-teachers').textContent = DB.teachers.length;
+  document.getElementById('admin-stat-students').textContent = DB.students.length;
+
+  const tBody = document.getElementById('admin-teachers-body');
+  document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0);
+  tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5">' + escapeHtml(t.name) + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.email || '—') +
+    '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td></tr>').join('');
+
+  const sBody = document.getElementById('admin-students-body');
+  document.getElementById('admin-students-empty').classList.toggle('hidden', DB.students.length > 0);
+  sBody.innerHTML = DB.students.map(s => {
+    const cls = DB.classes.find(c => c.id === s.classId);
+    return '<tr><td class="py-2.5">' + escapeHtml(s.name) + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.studentId) +
+      '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + (cls ? escapeHtml(cls.name) : '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.section || '—') + '</td></tr>';
+  }).join('');
+
+  refreshIcons();
+}
+
+/* ==================== INIT ==================== */
+function init() {
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  tickClock();
+  setInterval(tickClock, 30000);
+  refreshIcons();
+
+  const config = getCloudConfig();
+  if (config) {
+    connectCloud(config, () => { applyTheme(); renderAuthGate(); handleOAuthReturn(); }, () => {
+      toast('Could not reach the school database. Working on this device only for now.', 'warning');
+      loadDB();
+      applyTheme();
+      renderAuthGate();
+    });
+  } else {
+    loadDB();
+    applyTheme();
+    renderAuthGate();
+  }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
