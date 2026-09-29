@@ -1929,6 +1929,24 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   finishLogin(email, name, idNumber);
 });
 
+document.getElementById('admin-access-link').addEventListener('click', () => {
+  document.getElementById('admin-access-form').classList.toggle('hidden');
+  document.getElementById('admin-access-password').focus();
+});
+document.getElementById('admin-access-submit').addEventListener('click', async () => {
+  const pw = document.getElementById('admin-access-password').value;
+  if (!pw) { toast('Enter the admin password.', 'warning'); return; }
+  const hash = await sha256Hex(pw);
+  if (hash === ADMIN_PASSWORD_HASH) {
+    DB.auth = { role: 'admin', userId: 'admin', name: 'Administrator', loginAt: new Date().toISOString() };
+    saveDB();
+    showApp();
+  } else {
+    toast('Incorrect admin password.', 'error');
+  }
+});
+document.getElementById('admin-access-password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('admin-access-submit').click(); });
+
 document.getElementById('forgot-link').addEventListener('click', () => {
   document.getElementById('reset-email').value = document.getElementById('login-email').value;
   setAuthMode('reset');
