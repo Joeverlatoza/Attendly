@@ -1878,7 +1878,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 async function socialSignIn(kind) {
   if (needSb()) return;
   localStorage.setItem('attendly_oauth_role', loginRole);
-  const r = await sb.auth.signInWithOAuth({ provider: kind, options: { redirectTo: location.origin + location.pathname } });
+  const r = await sb.auth.signInWithOAuth({ provider: kind, options: { redirectTo: location.origin + location.pathname, queryParams: kind === 'google' ? { prompt: 'select_account' } : {} } });
   if (r.error) toast(r.error.message, 'error');
 }
 document.getElementById('btn-google').addEventListener('click', () => socialSignIn('google'));
