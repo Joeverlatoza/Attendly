@@ -240,6 +240,12 @@
       <button data-view="roster" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="users" class="w-4 h-4"></i><span>Roster Manager</span>
       </button>
+      <button data-view="classroom" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="graduation-cap" class="w-4 h-4"></i><span>Classroom</span>
+      </button>
+      <button data-view="learning" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="book-open" class="w-4 h-4"></i><span>My Learning</span>
+      </button>
       <button data-view="studentid" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="id-card" class="w-4 h-4"></i><span>Student ID Card</span>
       </button>
@@ -612,6 +618,14 @@
       </section>
 
       <!-- SETTINGS -->
+      <section data-view="learning" class="view-section p-4 md:p-6 max-w-6xl mx-auto">
+        <div id="learning-root"></div>
+      </section>
+
+      <section data-view="classroom" class="view-section p-4 md:p-6 max-w-6xl mx-auto">
+        <div id="classroom-root"></div>
+      </section>
+
       <section data-view="settings" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
         <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h2 class="text-sm font-semibold mb-4">My profile</h2>
@@ -758,6 +772,12 @@
     <button data-view="roster" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="users" class="w-5 h-5"></i>Roster
     </button>
+    <button data-view="classroom" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="graduation-cap" class="w-5 h-5"></i>Classroom
+    </button>
+    <button data-view="learning" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="book-open" class="w-5 h-5"></i>Learning
+    </button>
     <button data-view="studentid" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="id-card" class="w-5 h-5"></i>ID Card
     </button>
@@ -765,6 +785,17 @@
       <i data-lucide="settings" class="w-5 h-5"></i>Settings
     </button>
   </nav>
+</div>
+
+<!-- MATERIAL MODAL -->
+<div id="modal-material" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <h3 id="material-title" class="text-sm font-semibold"></h3>
+      <button type="button" data-close-modal="modal-material" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">Close</button>
+    </div>
+    <div id="material-body"></div>
+  </div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -856,7 +887,11 @@ function defaultDB() {
     students: [],
     teachers: [],
     sessions: [],
-    logs: []
+    logs: [],
+    subjects: [],
+    posts: [],
+    grades: [],
+    submissions: []
   };
 }
 
@@ -892,6 +927,10 @@ function normalizeDB() {
   if (!DB.classes) DB.classes = [];
   if (!DB.sessions) DB.sessions = [];
   if (!DB.logs) DB.logs = [];
+  if (!DB.subjects) DB.subjects = [];
+  if (!DB.posts) DB.posts = [];
+  if (!DB.grades) DB.grades = [];
+  if (!DB.submissions) DB.submissions = [];
   DB.auth = readSession();
   DB.settings.schoolName = 'San Juan Baño High School';
   ensureFixedClasses();
@@ -930,19 +969,74 @@ function connectCloud(_c, onReady, onError) {
     sb.from('school_state').select('data').eq('id', 1).maybeSingle().then(({ data, error }) => {
       if (error) { onError(error); return; }
       cloudDocRef = true;
-      if (data && data.data) applyRemote(data.data); else { loadDB(); pushToCloud(); }
+      if (data && data.data) {
+        let local = null;
+        if (isDirty()) { try { local = JSON.parse(localStorage.getItem(DB_KEY) || 'null'); } catch (e) {} }
+        applyRemote(data.data);
+        if (local) { mergeOfflineWork(local); clearDirty(); saveDB(); }
+      } else { loadDB(); pushToCloud(); }
       onReady();
-      sb.channel('school').on('postgres_changes', { event: '*', schema: 'public', table: 'school_state' }, pl => {
-        if (pl.new && pl.new.data) { applyRemote(pl.new.data); refreshAfterRemoteChange(); }
-      }).subscribe();
-    });
+      subscribeRealtime();
+    }).catch(err => onError(err));
   } catch (e) { onError(e); }
 }
+/* ---- offline support: remember unsynced work and merge it instead of losing it ---- */
+const DIRTY_KEY = 'attendly_dirty_v1';
+function isDirty() { try { return !!localStorage.getItem(DIRTY_KEY); } catch (e) { return false; } }
+function markDirty() { try { localStorage.setItem(DIRTY_KEY, '1'); } catch (e) {} }
+function clearDirty() { try { localStorage.removeItem(DIRTY_KEY); } catch (e) {} }
+// Attendance taken offline lives in logs and sessions: keep this device's copy of those.
+// Students and teachers are only added when missing. Portal data is never edited offline.
+function mergeOfflineWork(local) {
+  if (!local) return;
+  ['logs', 'sessions'].forEach(k => {
+    if (!Array.isArray(local[k])) return;
+    if (!Array.isArray(DB[k])) DB[k] = [];
+    local[k].forEach(x => {
+      if (!x || !x.id) return;
+      const i = DB[k].findIndex(y => y.id === x.id);
+      if (i < 0) DB[k].push(x); else DB[k][i] = x;
+    });
+  });
+  ['students', 'teachers'].forEach(k => {
+    if (!Array.isArray(local[k])) return;
+    if (!Array.isArray(DB[k])) DB[k] = [];
+    local[k].forEach(x => { if (x && x.id && !DB[k].some(y => y.id === x.id)) DB[k].push(x); });
+  });
+}
+let cloudChannel = null;
+function subscribeRealtime() {
+  if (cloudChannel || !sb) return;
+  cloudChannel = sb.channel('school').on('postgres_changes', { event: '*', schema: 'public', table: 'school_state' }, pl => {
+    if (pl.new && pl.new.data) { applyRemote(pl.new.data); refreshAfterRemoteChange(); }
+  }).subscribe();
+}
+function resyncAfterOffline() {
+  if (!sb || !navigator.onLine) return;
+  if (cloudDocRef && !isDirty()) { refreshAfterRemoteChange(); return; }
+  const local = JSON.parse(JSON.stringify(dbNoAuth()));
+  const wasDirty = isDirty();
+  sb.from('school_state').select('data').eq('id', 1).maybeSingle().then(({ data, error }) => {
+    if (error) return;
+    cloudDocRef = true;
+    if (data && data.data) { applyRemote(data.data); if (wasDirty) mergeOfflineWork(local); }
+    clearDirty();
+    saveDB();
+    subscribeRealtime();
+    refreshAfterRemoteChange();
+    toast(wasDirty ? 'Back online. Your offline changes were synced.' : 'Back online.', 'success');
+  }).catch(() => {});
+}
+window.addEventListener('online', resyncAfterOffline);
+window.addEventListener('offline', () => { if (DB && DB.auth) refreshAfterRemoteChange(); });
 function pushToCloud() {
   if (!cloudDocRef || cloudApplyingRemote) return;
   clearTimeout(cloudWriteTimer);
   cloudWriteTimer = setTimeout(() => {
-    sb.from('school_state').upsert({ id: 1, data: dbNoAuth() }).then(({ error }) => { if (error) toast('Could not sync to the cloud. Check your connection.', 'warning'); });
+    sb.from('school_state').upsert({ id: 1, data: dbNoAuth() }).then(({ error }) => {
+      if (error) { markDirty(); toast('Could not sync to the cloud. Your changes are saved on this device and will sync when you are back online.', 'warning'); }
+      else clearDirty();
+    }).catch(() => markDirty());
   }, 250);
 }
 function refreshAfterRemoteChange() {
@@ -957,6 +1051,7 @@ function saveDB() {
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(dbNoAuth()));
     localStorage.setItem(SESSION_KEY, JSON.stringify(DB.auth || null));
+    if (!navigator.onLine || !cloudDocRef) markDirty();
     if (cloudDocRef) pushToCloud();
     return true;
   }
@@ -1057,9 +1152,9 @@ function tickClock() {
 /* ==================== NAVIGATION ==================== */
 const PAGE_TITLES = {
   admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
-  studentid: 'Student ID Card', settings: 'Settings'
+  studentid: 'Student ID Card', classroom: 'Classroom', learning: 'My Learning', settings: 'Settings'
 };
-const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], settings: ['admin', 'teacher'] };
+const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
 function defaultViewForRole(role) {
   if (role === 'admin') return 'admin';
   if (role === 'teacher') return 'dashboard';
@@ -1093,6 +1188,8 @@ function goToView(view) {
   if (view === 'scanner') renderScannerView();
   if (view === 'roster') renderRoster();
   if (view === 'studentid') renderStudentIdView();
+  if (view === 'classroom') renderClassroom();
+  if (view === 'learning') renderLearning();
   if (view === 'settings') renderSettings();
   if (view === 'admin') renderAdminView();
 }
@@ -2229,6 +2326,13 @@ function mergeBackup(parsed) {
   });
   (parsed.sessions || []).forEach(x => { if (!DB.sessions.some(y => y.id === x.id)) { x.classId = rid(x.classId); DB.sessions.push(x); } });
   (parsed.logs || []).forEach(x => { if (!DB.logs.some(y => y.id === x.id)) { x.classId = rid(x.classId); DB.logs.push(x); } });
+  ['subjects','posts','grades','submissions'].forEach(k => {
+    (parsed[k] || []).forEach(x => {
+      if (!x || !x.id || DB[k].some(y => y.id === x.id)) return;
+      if (x.classId) x.classId = rid(x.classId);
+      DB[k].push(x);
+    });
+  });
   migrateSchedules();
   saveDB();
   return { teachers, students };
@@ -2306,8 +2410,398 @@ function renderAdminView() {
   refreshIcons();
 }
 
+/* ==================== CLASSROOM & MY LEARNING ==================== */
+/* ==================== CLASSROOM: LESSONS, QUIZZES & GRADES (merged student portal) ==================== */
+const LC_TYPES = { homework: 'Homework', quiz: 'Quiz', reviewer: 'Study Reviewer', lesson: 'Lesson' };
+let lcStudentTab = 'overview', lcTeacherTab = 'overview', lcFilterType = 'all', lcFilterSub = 'all', lcLedgerSub = '', lcLedgerClass = '', lcPubTarget = '';
+const lcInp = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
+const lcBtn = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2';
+const lcBtn2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800';
+const lcCard = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5';
+const lcLbl = 'text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1';
+const lcMuted = 'text-xs text-slate-500 dark:text-slate-400';
+const lcTh = 'text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 whitespace-nowrap';
+const lcTd = 'px-3 py-2.5 text-sm border-t border-slate-100 dark:border-slate-800 align-top';
+
+function lcE(s) { return escapeHtml(s == null ? '' : String(s)); }
+function lcV(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function lcSafeUrl(u) { u = (u || '').trim(); return /^https?:\/\//i.test(u) ? u : ''; }
+function lcMe() { return DB.auth && DB.auth.role === 'student' ? DB.students.find(s => s.id === DB.auth.userId) || null : null; }
+function lcSubName(id) { const s = DB.subjects.find(x => x.id === id); return s ? s.name : 'Unknown subject'; }
+function lcVisible(p, stu) { return !p.classId || (stu && stu.classId === p.classId); }
+function lcGrade(subjectId, studentId) { return DB.grades.find(g => g.subjectId === subjectId && g.studentId === studentId) || null; }
+function lcMySub(postId, studentId) { return DB.submissions.find(s => s.postId === postId && s.studentId === studentId) || null; }
+function lcNewest(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); }
+function lcAvg(g) {
+  if (!g) return null;
+  const v = ['q1', 'q2', 'q3', 'q4'].map(k => g[k]).filter(x => x !== null && x !== undefined && x !== '' && !isNaN(x)).map(Number);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+function lcStanding(a) {
+  if (a === null) return 'No grades recorded';
+  if (a >= 90) return 'Outstanding';
+  if (a >= 85) return 'Very Satisfactory';
+  if (a >= 80) return 'Satisfactory';
+  if (a >= 75) return 'Fairly Satisfactory';
+  return 'Did Not Meet Expectations';
+}
+const lcF = a => a === null ? '-' : a.toFixed(2);
+function lcFmtDate(d) { return d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'No due date'; }
+function lcFmtTs(t) { return t ? new Date(t).toLocaleString() : ''; }
+function lcChip(text, tone) {
+  const t = { red: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300', amber: 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300', green: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' }[tone] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200';
+  return '<span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ' + t + '">' + lcE(text) + '</span>';
+}
+function lcDueBadge(d) {
+  if (!d) return lcChip('No due date');
+  const days = Math.round((new Date(d + 'T00:00:00') - new Date(new Date().toDateString())) / 864e5);
+  if (days < 0) return lcChip('Overdue, ' + lcFmtDate(d), 'red');
+  if (days <= 2) return lcChip('Due ' + (days === 0 ? 'today' : days === 1 ? 'tomorrow' : 'in 2 days'), 'amber');
+  return lcChip(lcFmtDate(d));
+}
+function lcStat(label, value, sub, tone) {
+  return '<div class="' + lcCard + ' !p-4"><p class="' + lcMuted + '">' + label + '</p><p class="text-2xl font-bold mt-1 tabular-nums ' + (tone || '') + '">' + value + '</p><p class="' + lcMuted + ' mt-0.5">' + (sub || '') + '</p></div>';
+}
+function lcEmpty(text) { return '<div class="' + lcCard + ' text-sm text-slate-500 dark:text-slate-400">' + text + '</div>'; }
+function lcH(text) { return '<h2 class="text-sm font-semibold mb-3">' + text + '</h2>'; }
+function lcTabs(who, tabs, current) {
+  return '<div class="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800">' + tabs.map(t =>
+    '<button type="button" onclick="lcSetTab(\'' + who + '\',\'' + t[0] + '\')" class="shrink-0 px-3 py-2 text-sm font-medium border-b-2 -mb-px ' +
+    (t[0] === current ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200') + '">' + t[1] + '</button>').join('') + '</div>';
+}
+function lcSetTab(who, tab) {
+  if (who === 'student') { lcStudentTab = tab; renderLearning(true); } else { lcTeacherTab = tab; renderClassroom(true); }
+}
+function lcSet(k, v) {
+  if (k === 'fType') lcFilterType = v; else if (k === 'fSub') lcFilterSub = v;
+  else if (k === 'ledSub') lcLedgerSub = v; else if (k === 'ledClass') lcLedgerClass = v;
+  if (DB.auth && DB.auth.role === 'student') renderLearning(true); else renderClassroom(true);
+}
+function lcFieldFocused(root) {
+  const a = document.activeElement;
+  return a && root.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+}
+function lcTeacherClasses() {
+  const t = getMyTeacher(), ids = new Set();
+  if (t) { (t.schedule || []).forEach(e => (e.classIds || []).forEach(i => ids.add(i))); if (t.advisoryClassId) ids.add(t.advisoryClassId); }
+  const mine = DB.classes.filter(c => ids.has(c.id));
+  return mine.length ? mine : DB.classes;
+}
+function lcClassOptions(selected, classes) {
+  const groups = {};
+  classes.forEach(c => { (groups[c.name] = groups[c.name] || []).push(c); });
+  return Object.keys(groups).map(g => '<optgroup label="' + lcE(g) + '">' + groups[g].map(c =>
+    '<option value="' + c.id + '"' + (c.id === selected ? ' selected' : '') + '>' + lcE(classLabel(c.id)) + '</option>').join('') + '</optgroup>').join('');
+}
+
+/* ---------- STUDENT: MY LEARNING ---------- */
+function lcOnline() { return navigator.onLine && !!cloudDocRef; }
+function lcNeedOnline() {
+  if (lcOnline()) return true;
+  toast('This needs an internet connection. Connect and try again.', 'warning');
+  return false;
+}
+function lcOfflineNotice() {
+  return '<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center max-w-xl mx-auto">' +
+    '<i data-lucide="wifi-off" class="w-8 h-8 mx-auto text-slate-400 mb-3"></i>' +
+    '<h3 class="text-sm font-semibold">You are offline</h3>' +
+    '<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Lessons, quizzes, homework and grades need an internet connection. Attendance still works offline and will sync when you are back online.</p></div>';
+}
+function renderLearning(force) {
+  const root = document.getElementById('learning-root');
+  if (!root) return;
+  if (!lcOnline()) { root.innerHTML = lcOfflineNotice(); refreshIcons(); return; }
+  if (!force && lcFieldFocused(root)) return;
+  const stu = lcMe();
+  if (!stu) { root.innerHTML = lcEmpty('Log in as a student to see your lessons, quizzes and grades.'); return; }
+  const tabs = [['overview', 'Overview'], ['grades', 'Grades'], ['materials', 'Materials']];
+  const body = lcStudentTab === 'grades' ? lcStudentGrades(stu) : lcStudentTab === 'materials' ? lcStudentMaterials(stu) : lcStudentOverview(stu);
+  const banner = stu.classId ? '' :
+    '<div class="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 text-amber-900 dark:text-amber-200 p-4 text-sm flex flex-wrap items-center justify-between gap-3"><span>You have not chosen your class yet. Choose it in your Student ID card so you receive the lessons and quizzes for your section.</span><button type="button" class="' + lcBtn + '" onclick="goToView(\'studentid\')">Choose my class</button></div>';
+  root.innerHTML = '<div class="space-y-5">' + banner + lcTabs('student', tabs, lcStudentTab) + body + '</div>';
+  refreshIcons();
+}
+function lcStudentOverview(stu) {
+  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const posts = DB.posts.filter(p => lcVisible(p, stu)).sort(lcNewest);
+  const open = posts.filter(p => (p.type === 'homework' || p.type === 'quiz') && !lcMySub(p.id, stu.id)).sort((a, b) => (a.due || '9').localeCompare(b.due || '9'));
+  const avgs = subs.map(s => lcAvg(lcGrade(s.id, stu.id))).filter(x => x !== null);
+  const ga = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
+  const today0 = new Date(new Date().toDateString());
+  const overdue = open.filter(p => p.due && new Date(p.due + 'T00:00:00') < today0).length;
+  const learn = posts.filter(p => p.type === 'lesson' || p.type === 'reviewer');
+  const tone = ga === null ? 'text-slate-400' : ga >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+  const first = (stu.name || '').split(' ')[0] || 'student';
+  let h = '<div><p class="text-xl font-bold">Welcome back, ' + lcE(first) + '</p><p class="' + lcMuted + '">' + lcE(classLabel(stu.classId) || 'No class selected') + ' | ' + new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) + '</p></div>';
+  h += '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">' +
+    lcStat('General average', lcF(ga), lcStanding(ga), tone) +
+    lcStat('Subjects', subs.length, 'This school year') +
+    lcStat('To do', open.length, overdue ? overdue + ' overdue' : 'Homework and quizzes', overdue ? 'text-rose-600 dark:text-rose-400' : '') +
+    lcStat('Lessons and reviewers', learn.length, 'Available to you') + '</div>';
+  h += '<div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2 space-y-5">';
+  h += '<div>' + lcH('Your subjects') + (subs.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' + subs.map(s => {
+    const g = lcGrade(s.id, stu.id), a = lcAvg(g);
+    const pct = a === null ? 0 : Math.min(100, a);
+    return '<div class="' + lcCard + ' !p-4"><div class="flex justify-between gap-2"><p class="font-semibold text-sm">' + lcE(s.name) + '</p><p class="font-bold text-sm tabular-nums ' + (a === null ? 'text-slate-400' : a >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') + '">' + lcF(a) + '</p></div>' +
+      '<p class="' + lcMuted + ' mb-3">' + lcE(s.description || '') + '</p>' +
+      '<div class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden"><div class="h-full rounded-full ' + (a !== null && a < 75 ? 'bg-rose-500' : 'bg-indigo-500') + '" style="width:' + pct + '%"></div></div>' +
+      '<div class="flex gap-1.5 mt-3 flex-wrap">' + ['q1', 'q2', 'q3', 'q4'].map((k, i) => lcChip('Q' + (i + 1) + ': ' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-'))).join('') + '</div>' +
+      '<div class="flex justify-between items-center mt-3"><span class="' + lcMuted + '">' + posts.filter(p => p.subjectId === s.id).length + ' materials</span><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpenSubject(\'' + s.id + '\')">View</button></div></div>';
+  }).join('') + '</div>' : lcEmpty('No subjects yet. Your teacher will add them.')) + '</div>';
+  h += '<div>' + lcH('Upcoming work') + (open.length ? '<div class="' + lcCard + ' divide-y divide-slate-100 dark:divide-slate-800 !py-2">' + open.slice(0, 8).map(p =>
+    '<div class="flex items-center justify-between gap-3 py-3"><div class="min-w-0"><p class="text-sm font-semibold truncate">' + lcE(p.title) + '</p><p class="' + lcMuted + '">' + lcE(lcSubName(p.subjectId)) + ' | ' + LC_TYPES[p.type] + '</p></div><div class="flex items-center gap-2 shrink-0">' + lcDueBadge(p.due) + '<button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpen(\'' + p.id + '\')">Open</button></div></div>').join('') + '</div>' : lcEmpty('You are all caught up. No pending work.')) + '</div>';
+  h += '</div><div>' + lcH('Lessons and reviewers') + (learn.length ? '<div class="' + lcCard + ' divide-y divide-slate-100 dark:divide-slate-800 !py-2">' + learn.slice(0, 6).map(p =>
+    '<div class="flex items-center justify-between gap-3 py-3"><div class="min-w-0"><p class="text-sm font-semibold truncate">' + lcE(p.title) + '</p><p class="' + lcMuted + '">' + lcE(lcSubName(p.subjectId)) + '</p></div><div class="flex items-center gap-2 shrink-0">' + lcChip(LC_TYPES[p.type]) + '<button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpen(\'' + p.id + '\')">Open</button></div></div>').join('') + '</div>' : lcEmpty('No lessons or reviewers have been posted yet.')) + '</div></div>';
+  return h;
+}
+function lcStudentGrades(stu) {
+  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const avgs = [];
+  const rows = subs.map(s => {
+    const g = lcGrade(s.id, stu.id), a = lcAvg(g);
+    if (a !== null) avgs.push(a);
+    return '<tr><td class="' + lcTd + ' font-medium">' + lcE(s.name) + '</td>' + ['q1', 'q2', 'q3', 'q4'].map(k => '<td class="' + lcTd + ' tabular-nums">' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-') + '</td>').join('') +
+      '<td class="' + lcTd + ' font-semibold tabular-nums">' + lcF(a) + '</td><td class="' + lcTd + '">' + (a === null ? '' : a >= 75 ? lcChip('Passed', 'green') : lcChip('Below passing', 'red')) + '</td></tr>';
+  }).join('');
+  const ga = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
+  return lcH('Academic record') + '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Quarter 1</th><th class="' + lcTh + '">Quarter 2</th><th class="' + lcTh + '">Quarter 3</th><th class="' + lcTh + '">Quarter 4</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '">Remarks</th></tr>' +
+    (rows || '<tr><td class="' + lcTd + '" colspan="7">No subjects yet.</td></tr>') +
+    '<tr class="bg-slate-50 dark:bg-slate-800/50"><td class="' + lcTd + ' font-bold" colspan="5">General average</td><td class="' + lcTd + ' font-bold tabular-nums">' + lcF(ga) + '</td><td class="' + lcTd + ' font-bold">' + lcStanding(ga) + '</td></tr></table></div>' +
+    '<p class="' + lcMuted + '">Passing grade is 75. Grades are entered by your teacher.</p>';
+}
+function lcOpenSubject(id) { lcFilterSub = id; lcFilterType = 'all'; lcStudentTab = 'materials'; renderLearning(true); }
+function lcStudentMaterials(stu) {
+  const list = DB.posts.filter(p => lcVisible(p, stu) && (lcFilterType === 'all' || p.type === lcFilterType) && (lcFilterSub === 'all' || p.subjectId === lcFilterSub)).sort(lcNewest);
+  return lcH('Learning materials') + '<div class="grid grid-cols-2 gap-3 max-w-md"><div><label class="' + lcLbl + '">Type</label><select class="' + lcInp + '" onchange="lcSet(\'fType\',this.value)"><option value="all">All types</option>' +
+    Object.keys(LC_TYPES).map(k => '<option value="' + k + '"' + (lcFilterType === k ? ' selected' : '') + '>' + LC_TYPES[k] + '</option>').join('') + '</select></div>' +
+    '<div><label class="' + lcLbl + '">Subject</label><select class="' + lcInp + '" onchange="lcSet(\'fSub\',this.value)"><option value="all">All subjects</option>' +
+    DB.subjects.map(s => '<option value="' + s.id + '"' + (lcFilterSub === s.id ? ' selected' : '') + '>' + lcE(s.name) + '</option>').join('') + '</select></div></div>' +
+    (list.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Due</th><th class="' + lcTh + '">Status</th><th class="' + lcTh + '"></th></tr>' + list.map(p => {
+      const s = lcMySub(p.id, stu.id), gradable = p.type === 'homework' || p.type === 'quiz';
+      const status = !gradable ? 'Available' : s ? (s.score !== null && s.score !== undefined ? 'Scored ' + s.score + (s.total ? ' of ' + s.total : '') : 'Submitted') : 'Not submitted';
+      return '<tr><td class="' + lcTd + ' font-medium">' + lcE(p.title) + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[p.type]) + '</td><td class="' + lcTd + '">' + lcE(lcSubName(p.subjectId)) + '</td><td class="' + lcTd + '">' + (gradable ? lcFmtDate(p.due) : '-') + '</td><td class="' + lcTd + '">' + status + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpen(\'' + p.id + '\')">Open</button></td></tr>';
+    }).join('') + '</table></div>' : lcEmpty('No materials match the selected filters.'));
+}
+
+/* ---------- MATERIAL VIEWER (student) ---------- */
+function lcOpen(id) {
+  if (!lcNeedOnline()) return;
+  const p = DB.posts.find(x => x.id === id);
+  if (!p) return;
+  const stu = lcMe(), s = stu ? lcMySub(id, stu.id) : null, gradable = p.type === 'homework' || p.type === 'quiz';
+  const scored = s && s.score !== null && s.score !== undefined;
+  let b = '<p class="' + lcMuted + ' mb-3">' + LC_TYPES[p.type] + ' | ' + lcE(lcSubName(p.subjectId)) + (p.classId ? ' | ' + lcE(classLabel(p.classId)) : '') + (gradable ? ' | Due: ' + lcFmtDate(p.due) : '') + '</p>';
+  if (p.body) b += '<p class="text-sm whitespace-pre-wrap mb-3">' + lcE(p.body) + '</p>';
+  const link = lcSafeUrl(p.link);
+  if (link) b += '<a class="text-sm text-indigo-600 dark:text-indigo-400 underline break-all" target="_blank" rel="noopener" href="' + lcE(link) + '">Open resource</a>';
+  if (stu && p.type === 'homework') {
+    b += '<label class="' + lcLbl + ' mt-4">Your response</label><textarea id="lc-hw-text" rows="5" ' + (scored ? 'readonly' : '') + ' class="' + lcInp + '">' + lcE(s ? s.text : '') + '</textarea>' +
+      '<label class="' + lcLbl + ' mt-3">Link to your file (optional)</label><input id="lc-hw-link" ' + (scored ? 'readonly' : '') + ' class="' + lcInp + '" placeholder="https://" value="' + lcE(s ? s.link : '') + '">' +
+      (s ? '<p class="text-sm mt-3">Submitted ' + lcE(lcFmtTs(s.submittedAt)) + (scored ? '. Score: <b>' + lcE(s.score) + '</b>' : '') + (s.feedback ? '<br>Feedback: ' + lcE(s.feedback) : '') + '</p>' : '') +
+      (scored ? '' : '<button type="button" class="' + lcBtn + ' mt-4" onclick="lcSubmitHw(\'' + id + '\')">' + (s ? 'Update submission' : 'Submit homework') + '</button>');
+  }
+  if (stu && p.type === 'quiz') {
+    const qs = p.questions || [], tot = qs.reduce((a, q) => a + q.points, 0);
+    if (s) b += '<div class="' + lcCard + ' mt-4"><p class="font-semibold text-sm">Score: ' + lcE(s.score) + ' of ' + lcE(s.total) + '</p><p class="' + lcMuted + '">Submitted ' + lcE(lcFmtTs(s.submittedAt)) + '. Each quiz can be taken once.</p></div>';
+    else b += qs.map((q, i) => '<div class="border border-slate-200 dark:border-slate-700 rounded-lg p-3 mt-3"><p class="text-sm font-semibold">' + (i + 1) + '. ' + lcE(q.q) + ' (' + q.points + ' pt' + (q.points > 1 ? 's' : '') + ')</p>' +
+      q.opts.map((o, j) => '<label class="flex gap-2 items-start text-sm mt-2"><input type="radio" name="lcq' + i + '" value="' + j + '" style="margin-top:3px">' + lcE(o) + '</label>').join('') + '</div>').join('') +
+      '<p class="' + lcMuted + ' mt-3">Total points: ' + tot + '</p><button type="button" class="' + lcBtn + ' mt-3" onclick="lcSubmitQuiz(\'' + id + '\')">Submit quiz</button>';
+  }
+  document.getElementById('material-title').textContent = p.title;
+  document.getElementById('material-body').innerHTML = b;
+  openModal('modal-material');
+}
+function lcSubmitHw(postId) {
+  if (!lcNeedOnline()) return;
+  const stu = lcMe();
+  if (!stu) return;
+  const text = lcV('lc-hw-text').trim(), link = lcV('lc-hw-link').trim();
+  if (!text && !link) { toast('Add a response or a link.', 'warning'); return; }
+  if (link && !lcSafeUrl(link)) { toast('The link must start with http:// or https://', 'warning'); return; }
+  let s = lcMySub(postId, stu.id);
+  if (s) { s.text = text; s.link = link; s.submittedAt = new Date().toISOString(); }
+  else DB.submissions.push({ id: uid('smt'), postId, studentId: stu.id, text, link, score: null, total: null, feedback: '', submittedAt: new Date().toISOString() });
+  saveDB(); toast('Homework submitted.', 'success'); closeModal('modal-material'); renderLearning(true);
+}
+function lcSubmitQuiz(postId) {
+  if (!lcNeedOnline()) return;
+  const stu = lcMe(), p = DB.posts.find(x => x.id === postId);
+  if (!stu || !p || lcMySub(postId, stu.id)) return;
+  let score = 0, total = 0;
+  for (let i = 0; i < (p.questions || []).length; i++) {
+    const r = document.querySelector('input[name="lcq' + i + '"]:checked');
+    if (!r) { toast('Answer every question before submitting.', 'warning'); return; }
+    const q = p.questions[i]; total += q.points; if (+r.value === q.correct) score += q.points;
+  }
+  DB.submissions.push({ id: uid('smt'), postId, studentId: stu.id, text: '', link: '', score, total, feedback: '', submittedAt: new Date().toISOString() });
+  saveDB(); toast('Quiz submitted. Score: ' + score + ' of ' + total, 'success'); closeModal('modal-material'); renderLearning(true);
+}
+
+/* ---------- TEACHER: CLASSROOM ---------- */
+function renderClassroom(force) {
+  const root = document.getElementById('classroom-root');
+  if (!root) return;
+  if (!lcOnline()) { root.innerHTML = lcOfflineNotice(); refreshIcons(); return; }
+  if (!force && (lcTeacherTab === 'publish' || lcFieldFocused(root))) return;
+  if (!DB.auth || DB.auth.role !== 'teacher') { root.innerHTML = lcEmpty('Log in as a teacher to manage lessons, quizzes and grades.'); return; }
+  const tabs = [['overview', 'Overview'], ['subjects', 'Subjects'], ['publish', 'Publish'], ['materials', 'Materials'], ['submissions', 'Submissions'], ['grades', 'Grades']];
+  const fn = { overview: lcTOverview, subjects: lcTSubjects, publish: lcTPublish, materials: lcTMaterials, submissions: lcTSubmissions, grades: lcTGrades }[lcTeacherTab] || lcTOverview;
+  root.innerHTML = '<div class="space-y-5">' + lcTabs('teacher', tabs, lcTeacherTab) + fn() + '</div>';
+  refreshIcons();
+}
+function lcStudentOf(id) { return DB.students.find(s => s.id === id) || null; }
+function lcToScore() { return DB.submissions.filter(s => { const p = DB.posts.find(x => x.id === s.postId); return p && p.type === 'homework' && (s.score === null || s.score === undefined); }); }
+function lcTOverview() {
+  const toScore = lcToScore(), recent = DB.posts.slice().sort(lcNewest).slice(0, 6);
+  return '<div><p class="text-xl font-bold">Classroom</p><p class="' + lcMuted + '">Lessons, quizzes and grades for your classes.</p></div>' +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">' + lcStat('Students', DB.students.length, 'Registered') + lcStat('Subjects', DB.subjects.length, 'Created') +
+    lcStat('Published', DB.posts.length, 'Homework, quizzes, lessons') + lcStat('Awaiting score', toScore.length, 'Homework submissions', toScore.length ? 'text-amber-600 dark:text-amber-400' : '') + '</div>' +
+    '<div class="flex flex-wrap gap-2"><button type="button" class="' + lcBtn + '" onclick="lcSetTab(\'teacher\',\'publish\')">Publish material</button><button type="button" class="' + lcBtn2 + '" onclick="lcSetTab(\'teacher\',\'subjects\')">Add subject</button><button type="button" class="' + lcBtn2 + '" onclick="lcSetTab(\'teacher\',\'grades\')">Enter grades</button></div>' +
+    '<div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2">' + lcH('Homework to score') +
+    (toScore.length ? '<div class="' + lcCard + ' divide-y divide-slate-100 dark:divide-slate-800 !py-2">' + toScore.slice(0, 8).map(s => {
+      const p = DB.posts.find(x => x.id === s.postId) || {}, st = lcStudentOf(s.studentId);
+      return '<div class="flex items-center justify-between gap-3 py-3"><div class="min-w-0"><p class="text-sm font-semibold truncate">' + lcE(st ? st.name : 'Student') + '</p><p class="' + lcMuted + ' truncate">' + lcE(p.title || '') + ' | ' + lcE(lcFmtTs(s.submittedAt)) + '</p></div><button type="button" class="' + lcBtn2 + ' !py-1.5 shrink-0" onclick="lcSetTab(\'teacher\',\'submissions\')">Score</button></div>';
+    }).join('') + '</div>' : lcEmpty('No submissions are waiting for a score.')) + '</div>' +
+    '<div>' + lcH('Recently published') + (recent.length ? '<div class="' + lcCard + ' divide-y divide-slate-100 dark:divide-slate-800 !py-2">' + recent.map(p =>
+      '<div class="flex items-center justify-between gap-3 py-3"><div class="min-w-0"><p class="text-sm font-semibold truncate">' + lcE(p.title) + '</p><p class="' + lcMuted + ' truncate">' + lcE(lcSubName(p.subjectId)) + (p.classId ? ' | ' + lcE(classLabel(p.classId)) : '') + '</p></div>' + lcChip(LC_TYPES[p.type]) + '</div>').join('') + '</div>' : lcEmpty('Nothing published yet.')) + '</div></div>';
+}
+function lcTSubjects() {
+  return lcH('Subjects') + '<div class="' + lcCard + ' max-w-xl"><label class="' + lcLbl + '">Subject name</label><input id="lc-sn" class="' + lcInp + '" placeholder="General Mathematics"><label class="' + lcLbl + ' mt-3">Description (optional)</label><input id="lc-sd" class="' + lcInp + '" placeholder="Short description"><button type="button" class="' + lcBtn + ' mt-4" onclick="lcAddSubject()">Add subject</button></div>' +
+    (DB.subjects.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Description</th><th class="' + lcTh + '">Materials</th><th class="' + lcTh + '"></th></tr>' + DB.subjects.map(s =>
+      '<tr><td class="' + lcTd + ' font-medium">' + lcE(s.name) + '</td><td class="' + lcTd + '">' + lcE(s.description || '') + '</td><td class="' + lcTd + '">' + DB.posts.filter(p => p.subjectId === s.id).length + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcDelSubject(\'' + s.id + '\')">Delete</button></td></tr>').join('') + '</table></div>' : lcEmpty('No subjects yet. Add the first subject above.'));
+}
+function lcAddSubject() {
+  if (!lcNeedOnline()) return;
+  const name = lcV('lc-sn').trim();
+  if (!name) { toast('Enter a subject name.', 'warning'); return; }
+  if (DB.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) { toast('That subject already exists.', 'warning'); return; }
+  DB.subjects.push({ id: uid('sbj'), name, description: lcV('lc-sd').trim(), createdAt: new Date().toISOString() });
+  saveDB(); toast('Subject added.', 'success'); renderClassroom(true);
+}
+function lcDelSubject(id) {
+  if (!lcNeedOnline()) return;
+  askConfirm('Delete subject', 'This also deletes its materials, submissions and grades.', () => {
+    const postIds = DB.posts.filter(p => p.subjectId === id).map(p => p.id);
+    DB.subjects = DB.subjects.filter(s => s.id !== id);
+    DB.posts = DB.posts.filter(p => p.subjectId !== id);
+    DB.grades = DB.grades.filter(g => g.subjectId !== id);
+    DB.submissions = DB.submissions.filter(s => !postIds.includes(s.postId));
+    saveDB(); toast('Subject deleted.', 'success'); renderClassroom(true);
+  });
+}
+function lcQBlock() {
+  return '<div class="lc-qb border border-slate-200 dark:border-slate-700 rounded-lg p-3 mt-3 bg-slate-50 dark:bg-slate-800/40"><label class="' + lcLbl + '">Question</label><input class="lc-qt ' + lcInp + '">' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">' + ['A', 'B', 'C', 'D'].map(l => '<input class="lc-qo ' + lcInp + '" placeholder="Option ' + l + '">').join('') + '</div>' +
+    '<div class="grid grid-cols-2 gap-2 mt-2"><div><label class="' + lcLbl + '">Correct option</label><select class="lc-qc ' + lcInp + '"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div><div><label class="' + lcLbl + '">Points</label><input class="lc-qp ' + lcInp + '" type="number" min="1" value="1"></div></div>' +
+    '<button type="button" class="' + lcBtn2 + ' mt-2" onclick="this.closest(\'.lc-qb\').remove()">Remove question</button></div>';
+}
+function lcAddQuestion() { document.getElementById('lc-qs').insertAdjacentHTML('beforeend', lcQBlock()); }
+function lcTPublish() {
+  if (!DB.subjects.length) return lcEmpty('Create a subject first, then you can publish materials. <button type="button" class="' + lcBtn + ' ml-2" onclick="lcSetTab(\'teacher\',\'subjects\')">Add subject</button>');
+  return lcH('Publish material') + '<div class="' + lcCard + ' max-w-2xl"><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+    '<div><label class="' + lcLbl + '">Type</label><select id="lc-pt" class="' + lcInp + '" onchange="lcTypeChange()">' + Object.keys(LC_TYPES).map(k => '<option value="' + k + '">' + LC_TYPES[k] + '</option>').join('') + '</select></div>' +
+    '<div><label class="' + lcLbl + '">Subject</label><select id="lc-ps" class="' + lcInp + '">' + DB.subjects.map(s => '<option value="' + s.id + '">' + lcE(s.name) + '</option>').join('') + '</select></div></div>' +
+    '<label class="' + lcLbl + ' mt-3">Send to</label><select id="lc-ptarget" class="' + lcInp + '"><option value="">All classes</option>' + lcClassOptions(lcPubTarget, lcTeacherClasses()) + '</select>' +
+    '<label class="' + lcLbl + ' mt-3">Title</label><input id="lc-ptitle" class="' + lcInp + '">' +
+    '<div id="lc-dueW"><label class="' + lcLbl + ' mt-3">Due date</label><input id="lc-pdue" type="date" class="' + lcInp + '"></div>' +
+    '<label id="lc-bodyL" class="' + lcLbl + ' mt-3">Instructions</label><textarea id="lc-pbody" rows="5" class="' + lcInp + '"></textarea>' +
+    '<div id="lc-linkW"><label class="' + lcLbl + ' mt-3">Resource link (optional, for example a Google Drive share link)</label><input id="lc-plink" class="' + lcInp + '" placeholder="https://"></div>' +
+    '<div id="lc-quizW" class="hidden"><div id="lc-qs">' + lcQBlock() + '</div><button type="button" class="' + lcBtn2 + ' mt-3" onclick="lcAddQuestion()">Add question</button></div>' +
+    '<button type="button" class="' + lcBtn + ' mt-5" onclick="lcPublish()">Publish</button></div>';
+}
+function lcTypeChange() {
+  const t = lcV('lc-pt');
+  document.getElementById('lc-dueW').classList.toggle('hidden', !(t === 'homework' || t === 'quiz'));
+  document.getElementById('lc-quizW').classList.toggle('hidden', t !== 'quiz');
+  document.getElementById('lc-linkW').classList.toggle('hidden', t === 'quiz');
+  document.getElementById('lc-bodyL').textContent = t === 'homework' ? 'Instructions' : t === 'quiz' ? 'Quiz instructions' : t === 'reviewer' ? 'Summary or reviewer text' : 'Lesson notes';
+}
+function lcPublish() {
+  if (!lcNeedOnline()) return;
+  const type = lcV('lc-pt'), subjectId = lcV('lc-ps'), title = lcV('lc-ptitle').trim(), body = lcV('lc-pbody').trim();
+  if (!subjectId) { toast('Create a subject first.', 'warning'); return; }
+  if (!title) { toast('Enter a title.', 'warning'); return; }
+  const link = type === 'quiz' ? '' : lcV('lc-plink').trim();
+  if (link && !lcSafeUrl(link)) { toast('The link must start with http:// or https://', 'warning'); return; }
+  const post = { id: uid('pst'), type, subjectId, title, body, link, due: (type === 'homework' || type === 'quiz') ? lcV('lc-pdue') : '', classId: lcV('lc-ptarget'), authorId: DB.auth.userId, createdAt: new Date().toISOString() };
+  if (type === 'quiz') {
+    post.questions = Array.from(document.querySelectorAll('.lc-qb')).map(b => ({
+      q: b.querySelector('.lc-qt').value.trim(),
+      opts: Array.from(b.querySelectorAll('.lc-qo')).map(i => i.value.trim()),
+      correct: +b.querySelector('.lc-qc').value,
+      points: Math.max(1, +b.querySelector('.lc-qp').value || 1)
+    }));
+    if (!post.questions.length || post.questions.some(q => !q.q || q.opts.some(o => !o))) { toast('Complete every question and all four options.', 'warning'); return; }
+  }
+  DB.posts.push(post);
+  lcPubTarget = post.classId;
+  saveDB(); toast('Published.', 'success'); lcTeacherTab = 'materials'; renderClassroom(true);
+}
+function lcTMaterials() {
+  const list = DB.posts.slice().sort(lcNewest);
+  return lcH('Published materials') + (list.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">For</th><th class="' + lcTh + '">Due</th><th class="' + lcTh + '">Published</th><th class="' + lcTh + '"></th></tr>' + list.map(p =>
+    '<tr><td class="' + lcTd + ' font-medium">' + lcE(p.title) + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[p.type]) + '</td><td class="' + lcTd + '">' + lcE(lcSubName(p.subjectId)) + '</td><td class="' + lcTd + '">' + (p.classId ? lcE(classLabel(p.classId)) : 'All classes') + '</td><td class="' + lcTd + '">' + ((p.type === 'homework' || p.type === 'quiz') ? lcFmtDate(p.due) : '-') + '</td><td class="' + lcTd + '">' + lcE(lcFmtTs(p.createdAt)) + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcDelPost(\'' + p.id + '\')">Delete</button></td></tr>').join('') + '</table></div>' : lcEmpty('Nothing published yet.'));
+}
+function lcDelPost(id) {
+  if (!lcNeedOnline()) return;
+  askConfirm('Delete material', 'This also deletes the submissions for it.', () => {
+    DB.posts = DB.posts.filter(p => p.id !== id);
+    DB.submissions = DB.submissions.filter(s => s.postId !== id);
+    saveDB(); toast('Deleted.', 'success'); renderClassroom(true);
+  });
+}
+function lcTSubmissions() {
+  const list = DB.submissions.slice().sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
+  return lcH('Student submissions') + (list.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Student</th><th class="' + lcTh + '">Material</th><th class="' + lcTh + '">Submitted</th><th class="' + lcTh + '">Response</th><th class="' + lcTh + '">Score and feedback</th></tr>' + list.map(s => {
+    const p = DB.posts.find(x => x.id === s.postId) || {}, st = lcStudentOf(s.studentId), quiz = p.type === 'quiz', link = lcSafeUrl(s.link);
+    return '<tr><td class="' + lcTd + '"><p class="font-medium">' + lcE(st ? st.name : 'Student') + '</p><p class="' + lcMuted + '">' + lcE(st ? classLabel(st.classId) : '') + '</p></td><td class="' + lcTd + '">' + lcE(p.title || 'Removed') + '<p class="' + lcMuted + '">' + lcE(LC_TYPES[p.type] || '') + '</p></td><td class="' + lcTd + '">' + lcE(lcFmtTs(s.submittedAt)) + '</td>' +
+      '<td class="' + lcTd + '" style="max-width:260px">' + (quiz ? 'Auto-graded quiz' : '<div class="whitespace-pre-wrap">' + lcE(s.text) + '</div>' + (link ? '<a class="text-indigo-600 dark:text-indigo-400 underline break-all" target="_blank" rel="noopener" href="' + lcE(link) + '">' + lcE(link) + '</a>' : '')) + '</td>' +
+      '<td class="' + lcTd + '">' + (quiz ? 'Score ' + lcE(s.score) + ' of ' + lcE(s.total) :
+        '<div id="lc-g-' + s.id + '" class="space-y-1.5"><input data-s type="number" min="0" placeholder="Score" value="' + lcE(s.score == null ? '' : s.score) + '" class="' + lcInp + '" style="width:110px"><input data-f placeholder="Feedback" value="' + lcE(s.feedback || '') + '" class="' + lcInp + '"><button type="button" class="' + lcBtn + ' !py-1.5" onclick="lcGradeSub(\'' + s.id + '\')">Save</button></div>') + '</td></tr>';
+  }).join('') + '</table></div>' : lcEmpty('No submissions yet.'));
+}
+function lcGradeSub(id) {
+  if (!lcNeedOnline()) return;
+  const s = DB.submissions.find(x => x.id === id), w = document.getElementById('lc-g-' + id);
+  if (!s || !w) return;
+  const v = w.querySelector('[data-s]').value;
+  s.score = v === '' ? null : Number(v);
+  s.feedback = w.querySelector('[data-f]').value.trim();
+  saveDB(); toast('Score saved.', 'success');
+}
+function lcTGrades() {
+  const classes = lcTeacherClasses();
+  if (!DB.subjects.length) return lcH('Grade ledger') + lcEmpty('Create a subject first.');
+  if (!DB.subjects.some(s => s.id === lcLedgerSub)) lcLedgerSub = DB.subjects[0].id;
+  if (!classes.some(c => c.id === lcLedgerClass)) lcLedgerClass = (classes[0] || {}).id || '';
+  const studs = DB.students.filter(s => s.classId === lcLedgerClass).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return lcH('Grade ledger') + '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl"><div><label class="' + lcLbl + '">Subject</label><select class="' + lcInp + '" onchange="lcSet(\'ledSub\',this.value)">' + DB.subjects.map(s => '<option value="' + s.id + '"' + (s.id === lcLedgerSub ? ' selected' : '') + '>' + lcE(s.name) + '</option>').join('') + '</select></div>' +
+    '<div><label class="' + lcLbl + '">Class</label><select class="' + lcInp + '" onchange="lcSet(\'ledClass\',this.value)">' + lcClassOptions(lcLedgerClass, classes) + '</select></div></div>' +
+    (studs.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Student</th><th class="' + lcTh + '">Quarter 1</th><th class="' + lcTh + '">Quarter 2</th><th class="' + lcTh + '">Quarter 3</th><th class="' + lcTh + '">Quarter 4</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '"></th></tr>' + studs.map(u => {
+      const g = lcGrade(lcLedgerSub, u.id) || {};
+      return '<tr data-sid="' + u.id + '"><td class="' + lcTd + '"><p class="font-medium">' + lcE(u.name) + '</p><p class="' + lcMuted + '">' + lcE(u.email || u.studentId || '') + '</p></td>' +
+        ['q1', 'q2', 'q3', 'q4'].map(k => '<td class="' + lcTd + '"><input data-k="' + k + '" type="number" min="0" max="100" step="0.01" value="' + lcE(g[k] == null ? '' : g[k]) + '" class="' + lcInp + '" style="width:84px"></td>').join('') +
+        '<td class="' + lcTd + ' font-semibold tabular-nums">' + lcF(lcAvg(g)) + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn + ' !py-1.5" onclick="lcSaveGrade(this)">Save</button></td></tr>';
+    }).join('') + '</table></div>' : lcEmpty('No students in this class yet. Students appear here after they choose this class in their Student ID card.'));
+}
+function lcSaveGrade(btn) {
+  if (!lcNeedOnline()) return;
+  const tr = btn.closest('tr'), sid = tr.dataset.sid, row = { subjectId: lcLedgerSub, studentId: sid };
+  for (const i of tr.querySelectorAll('input')) {
+    const v = i.value.trim();
+    if (v !== '' && (isNaN(v) || v < 0 || v > 100)) { toast('Grades must be between 0 and 100.', 'warning'); return; }
+    row[i.dataset.k] = v === '' ? null : Number(v);
+  }
+  let g = lcGrade(lcLedgerSub, sid);
+  if (g) Object.assign(g, row); else DB.grades.push(Object.assign({ id: uid('grd') }, row));
+  saveDB(); toast('Grades saved.', 'success'); renderClassroom(true);
+}
+
+
+
 /* ==================== INIT ==================== */
 function init() {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
   tickClock();
   setInterval(tickClock, 30000);
