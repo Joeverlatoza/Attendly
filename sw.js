@@ -1,5 +1,5 @@
 /* Attendly service worker: lets the app open without internet after one online visit. */
-const CACHE = 'attendly-shell-v1';
+const CACHE = 'attendly-shell-v2';
 const CORE = ['./', 'index.html', 'privacy.html', 'data-deletion.html'];
 const CDN = [
   'https://cdn.tailwindcss.com',
@@ -13,7 +13,7 @@ const CDN = [
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    await Promise.all(CORE.map(u => c.add(u).catch(() => {})));
+    await Promise.all(CORE.map(u => fetch(new Request(u, { cache: 'reload' })).then(r => { if (r && r.ok) return c.put(u, r); }).catch(() => {})));
     await Promise.all(CDN.map(u => fetch(u, { mode: 'no-cors' }).then(r => c.put(u, r)).catch(() => {})));
     self.skipWaiting();
   })());
@@ -40,7 +40,8 @@ self.addEventListener('fetch', e => {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
       try {
-        const res = await fetch(req);
+        // Always check the server so a new version shows up right away (not after the browser's own cache expires).
+        const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
         if (res && res.ok) c.put(req, res.clone()).catch(() => {});
         return res;
       } catch (err) {
