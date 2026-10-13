@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('attendly_theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -98,6 +99,7 @@
       </div>
 
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+        <div class="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div class="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mb-4">
           <button data-login-role="teacher" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Teacher</button>
           <button data-login-role="student" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Student</button>
@@ -270,7 +272,7 @@
         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
           <i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span>
         </div>
-        <input type="checkbox" class="switch" id="theme-toggle">
+        <input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode">
       </div>
       <div class="flex items-center gap-2 px-2 text-[11px] text-slate-400 dark:text-slate-500">
         <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i><span>All data stored on this device</span>
@@ -531,6 +533,7 @@
 
       <!-- STUDENT ID CARD -->
       <section data-view="studentid" class="view-section p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-4">Your student details</h2>
@@ -639,6 +642,7 @@
       </section>
 
       <section data-view="settings" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+        <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h2 class="text-sm font-semibold mb-4">My profile</h2>
           <form id="t-profile-form" class="space-y-3">
@@ -1146,15 +1150,21 @@ function beep(freq, dur) {
 }
 
 /* ==================== THEME ==================== */
-function applyTheme() {
-  const dark = !!(DB && DB.settings && DB.settings.theme === 'dark');
-  document.documentElement.classList.toggle('dark', dark);
-  document.getElementById('theme-toggle').checked = dark;
+const THEME_KEY = 'attendly_theme';
+// The choice is saved on this device only, so one person's setting never changes another person's screen.
+function currentTheme() {
+  try { const t = localStorage.getItem(THEME_KEY); if (t === 'dark' || t === 'light') return t; } catch (e) {}
+  return (DB && DB.settings && DB.settings.theme === 'dark') ? 'dark' : 'light';
 }
-document.getElementById('theme-toggle').addEventListener('change', e => {
-  DB.settings.theme = e.target.checked ? 'dark' : 'light';
-  saveDB(); applyTheme();
-});
+function applyTheme() {
+  const dark = currentTheme() === 'dark';
+  document.documentElement.classList.toggle('dark', dark);
+  document.querySelectorAll('input[data-theme-switch]').forEach(i => { i.checked = dark; });
+}
+document.querySelectorAll('input[data-theme-switch]').forEach(i => i.addEventListener('change', e => {
+  try { localStorage.setItem(THEME_KEY, e.target.checked ? 'dark' : 'light'); } catch (err) {}
+  applyTheme();
+}));
 
 /* ==================== CLOCK ==================== */
 function tickClock() {
