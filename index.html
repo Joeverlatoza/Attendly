@@ -9,12 +9,33 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(localStorage.getItem('attendly_theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+<script>
+/* Phones in "Desktop site" mode lay the page out about 980px wide on a ~400px screen, so everything looks tiny and the PC layout appears.
+   Detect that and scale the page to the real screen so the phone layout is used. */
+(function () {
+  try {
+    var sw = screen.width, iw = window.innerWidth;
+    var touch = (navigator.maxTouchPoints || 0) > 0 || ('ontouchstart' in window) || (window.matchMedia && matchMedia('(pointer:coarse)').matches);
+    if (touch && sw <= 900 && iw > sw * 1.25) {
+      var k = iw / sw;
+      window.__fitK = k;
+      var d = document.documentElement;
+      d.style.zoom = k;
+      d.style.setProperty('--fit-k', k);
+      d.classList.add('fit-zoom');
+      window.addEventListener('orientationchange', function () { location.reload(); });
+    }
+  } catch (e) {}
+})();
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = {
-    darkMode: 'class',
-    theme: { extend: { fontFamily: { sans: ['Inter','system-ui','-apple-system','sans-serif'] } } }
-  };
+  (function () {
+    var k = window.__fitK || 1;
+    var theme = { extend: { fontFamily: { sans: ['Inter','system-ui','-apple-system','sans-serif'] } } };
+    if (k > 1) theme.screens = { sm: Math.round(640 * k) + 'px', md: Math.round(768 * k) + 'px', lg: Math.round(1024 * k) + 'px', xl: Math.round(1280 * k) + 'px', '2xl': Math.round(1536 * k) + 'px' };
+    tailwind.config = { darkMode: 'class', theme: theme };
+  })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js" onerror="var x=document.createElement('script');x.src='https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js';x.onload=function(){window.lucide&&lucide.createIcons()};document.head.appendChild(x)"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -22,6 +43,8 @@
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
 <style>
   :root { color-scheme: light dark; }
+  .fit-zoom #app, .fit-zoom .h-screen { height: calc(100vh / var(--fit-k)); }
+  .fit-zoom .max-h-\[90vh\] { max-height: calc(90vh / var(--fit-k)); }
   html, body { height: 100%; }
   body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -268,12 +291,6 @@
       </button>
     </nav>
     <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
-      <div class="flex items-center justify-between px-2">
-        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-          <i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span>
-        </div>
-        <input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode">
-      </div>
       <div class="flex items-center gap-2 px-2 text-[11px] text-slate-400 dark:text-slate-500">
         <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i><span>All data stored on this device</span>
       </div>
@@ -642,7 +659,7 @@
       </section>
 
       <section data-view="settings" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
-        <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h2 class="text-sm font-semibold mb-4">My profile</h2>
           <form id="t-profile-form" class="space-y-3">
