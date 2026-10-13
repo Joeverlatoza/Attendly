@@ -114,6 +114,18 @@
         </button>
         <div id="login-scan-reader" class="hidden rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-[220px] mx-auto mb-3"></div>
 
+        <div id="login-remembered" class="hidden mb-3 rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50/60 dark:bg-indigo-950/30 p-3">
+          <div class="flex items-center gap-3">
+            <div id="lr-avatar" class="w-9 h-9 rounded-full bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center shrink-0"></div>
+            <div class="min-w-0 flex-1">
+              <div id="lr-name" class="text-sm font-medium truncate"></div>
+              <div id="lr-email" class="text-xs text-slate-500 dark:text-slate-400 truncate"></div>
+            </div>
+            <button type="button" id="lr-continue" class="text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2 shrink-0">Continue</button>
+          </div>
+          <button type="button" id="lr-forget" class="mt-2 text-[11px] text-slate-500 dark:text-slate-400 hover:underline">Use a different account</button>
+        </div>
+
         <div class="space-y-2 mb-3">
           <button type="button" id="btn-google" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><svg class="w-4 h-4" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continue with Google</button>
           <button type="button" id="btn-facebook" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium bg-[#1877F2] hover:bg-[#166fe0] text-white rounded-lg px-3 py-2.5"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.400l-.5 3.500h-2.900v8.400A12 12 0 0 0 24 12z"/></svg>Continue with Facebook</button>
@@ -124,11 +136,11 @@
         <form id="login-form" class="space-y-3">
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="login-email" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="login-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
-            <input id="login-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="login-password" name="password" autocomplete="current-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
           </div>
           <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
             <i data-lucide="log-in" class="w-4 h-4"></i>Log in
@@ -169,7 +181,7 @@
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="signup-email" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="signup-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
           </div>
           <div>
             <label id="signup-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
@@ -178,11 +190,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
-              <input id="signup-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              <input id="signup-password" name="password" autocomplete="new-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
             </div>
             <div>
               <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Confirm</label>
-              <input id="signup-password-confirm" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+              <input id="signup-password-confirm" autocomplete="new-password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
             </div>
           </div>
           <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">
@@ -674,7 +686,7 @@
             <input id="t-sched-subject" required type="text" placeholder="Subject (e.g. Mathematics)" class="col-span-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
             <div id="t-sched-classes" class="col-span-2 space-y-2 rounded-lg border border-slate-200 dark:border-slate-800 p-3"></div>
             <select id="t-sched-day" class="col-span-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-              <option value="">Any day</option><option value="Mon">Monday</option><option value="Tue">Tuesday</option><option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option><option value="Sat">Saturday</option>
+              <option value="">Any day</option><option value="Mon">Monday</option><option value="Tue">Tuesday</option><option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option>
             </select>
             <div>
               <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Start</label>
@@ -1879,6 +1891,7 @@ function renderAuthGate() {
 function showApp() {
   hideAllAuthScreens();
   document.getElementById('app').style.display = '';
+  if (DB.auth && DB.auth.role === 'teacher') syncSubjectsOnce(getMyTeacher());
   applyRoleNav();
   goToView(defaultViewForRole(DB.auth.role));
   refreshIcons();
@@ -1887,6 +1900,7 @@ function logout() {
   askConfirm('Log out', 'You will need to sign in again to continue.', () => {
     DB.auth = null;
     saveDB();
+    try { if (sb) sb.auth.signOut().catch(() => {}); } catch (e) {}
     renderAuthGate();
     toast('Signed out.', 'success');
   });
@@ -1905,6 +1919,7 @@ function showLoginScreen() {
   document.getElementById('reset-form').reset();
   setLoginRole('teacher');
   setAuthMode('login');
+  applyRememberedLogin();
   refreshIcons();
 }
 function setLoginRole(role) {
@@ -1943,6 +1958,30 @@ function roleConflict(email) {
   toast('This email is registered as a ' + otherName + '. Please use the ' + otherName + ' login instead.', 'error');
   return true;
 }
+/* ---- remember the last account so nobody retypes it ---- */
+const LAST_LOGIN_KEY = 'attendly_last_login_v1';
+let loginMethod = 'password';
+function getRemembered() { try { return JSON.parse(localStorage.getItem(LAST_LOGIN_KEY) || 'null'); } catch (e) { return null; } }
+function rememberLogin(rec) { try { localStorage.setItem(LAST_LOGIN_KEY, JSON.stringify(rec)); } catch (e) {} }
+function forgetRemembered() { try { localStorage.removeItem(LAST_LOGIN_KEY); } catch (e) {} }
+function methodLabel(m) { return m === 'google' ? 'Google' : m === 'facebook' ? 'Facebook' : 'Email and password'; }
+function applyRememberedLogin() {
+  const box = document.getElementById('login-remembered');
+  const r = getRemembered();
+  if (!box) return;
+  if (!r || !r.email || (r.role !== 'teacher' && r.role !== 'student')) { box.classList.add('hidden'); return; }
+  setLoginRole(r.role);
+  document.getElementById('login-email').value = r.email;
+  const label = (r.name || r.email).trim();
+  document.getElementById('lr-avatar').textContent = (label[0] || '?').toUpperCase();
+  document.getElementById('lr-name').textContent = r.name || r.email;
+  document.getElementById('lr-email').textContent = r.email + ' | ' + methodLabel(r.method);
+  document.getElementById('lr-continue').textContent = r.method === 'password' ? 'Enter password' : 'Continue';
+  box.classList.remove('hidden');
+}
+function storeBrowserCredential(email, pw) {
+  try { if (window.PasswordCredential && navigator.credentials) navigator.credentials.store(new PasswordCredential({ id: email, password: pw, name: email })); } catch (e) {}
+}
 function finishLogin(email, name, idNumber) {
   if (roleConflict(email)) { if (sb) sb.auth.signOut(); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
@@ -1957,6 +1996,7 @@ function finishLogin(email, name, idNumber) {
   }
   if (!account.email) account.email = email;
   DB.auth = { role: loginRole, userId: account.id, name: account.name, loginAt: new Date().toISOString() };
+  rememberLogin({ email, role: loginRole, method: loginMethod, name: account.name });
   saveDB();
   toast('Welcome, ' + account.name + '.', 'success');
   showApp();
@@ -1978,15 +2018,30 @@ document.getElementById('login-form').addEventListener('submit', async e => {
       if (su.error) { toast(su.error.message, 'error'); return; }
     } else { toast(/confirm/i.test(r.error.message) ? 'Please confirm your email first.' : 'Incorrect email or password.', 'error'); return; }
   }
+  loginMethod = 'password';
+  storeBrowserCredential(email, pw);
   finishLogin(email);
 });
 
-async function socialSignIn(kind) {
+async function socialSignIn(kind, hint) {
   if (needSb()) return;
   localStorage.setItem('attendly_oauth_role', loginRole);
-  const r = await sb.auth.signInWithOAuth({ provider: kind, options: { redirectTo: location.origin + location.pathname, queryParams: kind === 'google' ? { prompt: 'select_account' } : {} } });
+  const q = kind === 'google' ? (hint ? { login_hint: hint } : { prompt: 'select_account' }) : {};
+  const r = await sb.auth.signInWithOAuth({ provider: kind, options: { redirectTo: location.origin + location.pathname, queryParams: q } });
   if (r.error) toast(r.error.message, 'error');
 }
+document.getElementById('lr-continue').addEventListener('click', () => {
+  const r = getRemembered();
+  if (!r) return;
+  if (r.method === 'google' || r.method === 'facebook') { setLoginRole(r.role); socialSignIn(r.method, r.email); }
+  else document.getElementById('login-password').focus();
+});
+document.getElementById('lr-forget').addEventListener('click', () => {
+  forgetRemembered();
+  document.getElementById('login-remembered').classList.add('hidden');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-email').focus();
+});
 document.getElementById('btn-google').addEventListener('click', () => socialSignIn('google'));
 document.getElementById('btn-facebook').addEventListener('click', () => socialSignIn('facebook'));
 async function handleOAuthReturn() {
@@ -1998,6 +2053,7 @@ async function handleOAuthReturn() {
   localStorage.removeItem('attendly_oauth_role');
   loginRole = role;
   const m = u.user_metadata || {};
+  loginMethod = (u.app_metadata && u.app_metadata.provider) || 'google';
   finishLogin(normEmail(u.email), m.full_name || m.name);
 }
 
@@ -2023,6 +2079,8 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   if (r.data.user && r.data.user.identities && !r.data.user.identities.length) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
   if (!r.data.session) { toast('Check your email to confirm your account, then log in.', 'success'); setAuthMode('login'); return; }
   if (byId) byId.name = name;
+  loginMethod = 'password';
+  storeBrowserCredential(email, pw);
   finishLogin(email, name, idNumber);
 });
 
@@ -2105,7 +2163,43 @@ function entryHasClass(e, classId) { return (e.classIds || []).includes(classId)
 function migrateSchedules() {
   DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
     if (!e.classIds) { e.classIds = e.classId ? [e.classId] : []; }
+    if (e.day === 'Sat' || e.day === 'Sun') e.day = '';
   }));
+}
+/* ---- subjects: the teacher profile and the Classroom share one list ---- */
+function subjKey(n) { return (n || '').trim().toLowerCase(); }
+function findPortalSubject(name) { return DB.subjects.find(x => subjKey(x.name) === subjKey(name)); }
+function ensurePortalSubject(name, teacherId) {
+  name = (name || '').trim();
+  if (!name) return null;
+  let sub = findPortalSubject(name);
+  if (!sub) { sub = { id: uid('sbj'), name, description: '', createdAt: new Date().toISOString(), ownerIds: [] }; DB.subjects.push(sub); }
+  if (teacherId) { sub.ownerIds = sub.ownerIds || []; if (!sub.ownerIds.includes(teacherId)) sub.ownerIds.push(teacherId); }
+  return sub;
+}
+function ensureProfileSubject(t, name) {
+  if (!t || !name) return false;
+  t.schedule = t.schedule || [];
+  if (t.schedule.some(e => subjKey(e.subject) === subjKey(name))) return false;
+  t.schedule.push({ id: uid('sch'), subject: name.trim(), classIds: [], day: '', start: '', end: '' });
+  return true;
+}
+function unlinkSubjectIfUnused(t, name) {
+  if ((t.schedule || []).some(e => subjKey(e.subject) === subjKey(name))) return;
+  const sub = findPortalSubject(name);
+  if (sub && sub.ownerIds) sub.ownerIds = sub.ownerIds.filter(id => id !== t.id);
+}
+// One-time catch-up for subjects that existed before the two lists were joined.
+function syncSubjectsOnce(t) {
+  if (!t || t.subjectsSynced || !navigator.onLine || !cloudDocRef) return;
+  (t.schedule || []).forEach(e => ensurePortalSubject(e.subject, t.id));
+  DB.subjects.forEach(sub => {
+    if ((sub.ownerIds || []).length) return;
+    const wrote = DB.posts.some(p => p.subjectId === sub.id && p.authorId === t.id);
+    if (wrote || DB.teachers.length === 1) { sub.ownerIds = [t.id]; ensureProfileSubject(t, sub.name); }
+  });
+  t.subjectsSynced = true;
+  saveDB();
 }
 function scheduledStartFor(classId) {
   const t = getMyTeacher();
@@ -2148,12 +2242,14 @@ function renderScheduleList() {
     const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' · ');
     return '<div class="flex items-center justify-between gap-3 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-2">' +
       '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(e.subject) + '</p>' +
-      '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(classesLabel(e.classIds)) + (when ? ' · ' + escapeHtml(when) : '') + '</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(classesLabel(e.classIds) || 'No section set') + (when ? ' · ' + escapeHtml(when) : '') + '</p>' +
       ((e.classIds || []).length > 1 ? '<span class="inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">Combined class</span>' : '') + '</div>' +
       '<button data-del-sched="' + e.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500 text-xs font-medium">Remove</button></div>';
   }).join('');
   document.querySelectorAll('[data-del-sched]').forEach(b => b.addEventListener('click', () => {
+    const gone = (t.schedule || []).find(x => x.id === b.dataset.delSched);
     t.schedule = (t.schedule || []).filter(x => x.id !== b.dataset.delSched);
+    if (gone) unlinkSubjectIfUnused(t, gone.subject);
     saveDB(); renderScheduleList();
   }));
 }
@@ -2188,6 +2284,7 @@ document.getElementById('t-sched-form').addEventListener('submit', e => {
   t.schedule = t.schedule || [];
   t.schedule.push({ id: uid('sch'), subject, classIds, day: document.getElementById('t-sched-day').value,
     start: document.getElementById('t-sched-start').value, end: document.getElementById('t-sched-end').value });
+  ensurePortalSubject(subject, t.id);
   if (!saveDB()) return;
   document.getElementById('t-sched-form').reset();
   renderScheduleList();
@@ -2196,7 +2293,7 @@ document.getElementById('t-sched-form').addEventListener('submit', e => {
 document.getElementById('t-sched-clear').addEventListener('click', () => {
   const t = getMyTeacher();
   if (!t || !(t.schedule || []).length) return;
-  askConfirm('Remove all subjects', 'This clears every subject in your schedule.', () => { t.schedule = []; saveDB(); renderScheduleList(); });
+  askConfirm('Remove all subjects', 'This clears every subject in your schedule.', () => { const names = (t.schedule || []).map(e => e.subject); t.schedule = []; names.forEach(n => unlinkSubjectIfUnused(t, n)); saveDB(); renderScheduleList(); });
 });
 document.getElementById('t-sched-template').addEventListener('click', () => {
   downloadBlob('Subject,Grade,Section,Day,Start,End\nMathematics,Grade 12,Beethoven,Mon,08:00,09:00\nEnglish,Grade 12,Beethoven/Mozart,Tue,09:00,10:00\n', 'attendly-schedule-template.csv', 'text/csv');
@@ -2223,7 +2320,7 @@ function normTime(v) {
 }
 function normDay(v) {
   const d = (v || '').trim().slice(0, 3).toLowerCase();
-  return DAY_NAMES.find(x => x.toLowerCase() === d && x !== 'Sun') || '';
+  return DAY_NAMES.find(x => x.toLowerCase() === d && x !== 'Sun' && x !== 'Sat') || '';
 }
 document.getElementById('t-sched-csv').addEventListener('change', e => {
   const file = e.target.files[0];
@@ -2251,6 +2348,7 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
       const subject = get('subject');
       if (!subject || !classIds.length || classIds.length !== secNames.length) { skipped++; return; }
       t.schedule.push({ id: uid('sch'), subject, classIds, day: normDay(get('day')), start: normTime(get('start')), end: normTime(get('end')) });
+      ensurePortalSubject(subject, t.id);
       added++;
     });
     if (!saveDB()) return;
@@ -2514,8 +2612,8 @@ function renderLearning(force) {
   if (!force && lcFieldFocused(root)) return;
   const stu = lcMe();
   if (!stu) { root.innerHTML = lcEmpty('Log in as a student to see your lessons, quizzes and grades.'); return; }
-  const tabs = [['overview', 'Overview'], ['grades', 'Grades'], ['materials', 'Materials']];
-  const body = lcStudentTab === 'grades' ? lcStudentGrades(stu) : lcStudentTab === 'materials' ? lcStudentMaterials(stu) : lcStudentOverview(stu);
+  const tabs = [['overview', 'Overview'], ['grades', 'Grades'], ['materials', 'Materials'], ['history', 'History']];
+  const body = lcStudentTab === 'grades' ? lcStudentGrades(stu) : lcStudentTab === 'materials' ? lcStudentMaterials(stu) : lcStudentTab === 'history' ? lcStudentHistory(stu) : lcStudentOverview(stu);
   const banner = stu.classId ? '' :
     '<div class="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 text-amber-900 dark:text-amber-200 p-4 text-sm flex flex-wrap items-center justify-between gap-3"><span>You have not chosen your class yet. Choose it in your Student ID card so you receive the lessons and quizzes for your section.</span><button type="button" class="' + lcBtn + '" onclick="goToView(\'studentid\')">Choose my class</button></div>';
   root.innerHTML = '<div class="space-y-5">' + banner + lcTabs('student', tabs, lcStudentTab) + body + '</div>';
@@ -2569,6 +2667,23 @@ function lcStudentGrades(stu) {
     '<tr class="bg-slate-50 dark:bg-slate-800/50"><td class="' + lcTd + ' font-bold" colspan="5">General average</td><td class="' + lcTd + ' font-bold tabular-nums">' + lcF(ga) + '</td><td class="' + lcTd + ' font-bold">' + lcStanding(ga) + '</td></tr></table></div>' +
     '<p class="' + lcMuted + '">Passing grade is 75. Grades are entered by your teacher.</p>';
 }
+function lcStudentHistory(stu) {
+  const items = DB.submissions.filter(x => x.studentId === stu.id).map(x => ({ s: x, p: DB.posts.find(y => y.id === x.postId) })).filter(x => x.p)
+    .sort((a, b) => (b.s.submittedAt || '').localeCompare(a.s.submittedAt || ''));
+  const quizzes = items.filter(x => x.p.type === 'quiz' && x.s.total);
+  const avg = quizzes.length ? quizzes.reduce((a, x) => a + x.s.score / x.s.total * 100, 0) / quizzes.length : null;
+  const tone = avg === null ? 'text-slate-400' : avg >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+  const result = x => {
+    const s = x.s;
+    if (x.p.type === 'quiz' && s.total) { const pct = Math.round(s.score / s.total * 100); return lcChip(s.score + ' / ' + s.total + ' (' + pct + '%)', pct >= 75 ? 'green' : 'red'); }
+    if (s.score !== null && s.score !== undefined) return lcChip('Score ' + s.score, 'green');
+    return lcChip('Awaiting score', 'amber');
+  };
+  return lcH('History') + '<div class="grid grid-cols-2 gap-3 max-w-md">' + lcStat('Quizzes taken', quizzes.length, 'Finished') + lcStat('Quiz average', avg === null ? '-' : Math.round(avg) + '%', 'Across all quizzes', tone) + '</div>' +
+    (items.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Finished</th><th class="' + lcTh + '">Result</th><th class="' + lcTh + '"></th></tr>' +
+      items.map(x => '<tr><td class="' + lcTd + ' font-medium">' + lcE(x.p.title) + (x.s.feedback ? '<br><span class="' + lcMuted + '">Feedback: ' + lcE(x.s.feedback) + '</span>' : '') + '</td><td class="' + lcTd + '">' + lcE(lcSubName(x.p.subjectId)) + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[x.p.type]) + '</td><td class="' + lcTd + '">' + lcE(lcFmtTs(x.s.submittedAt)) + '</td><td class="' + lcTd + '">' + result(x) + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpen(\'' + x.p.id + '\')">View</button></td></tr>').join('') + '</table></div>'
+      : lcEmpty('Nothing finished yet. Quizzes and homework you submit will show up here with your score.'));
+}
 function lcOpenSubject(id) { lcFilterSub = id; lcFilterType = 'all'; lcStudentTab = 'materials'; renderLearning(true); }
 function lcStudentMaterials(stu) {
   const list = DB.posts.filter(p => lcVisible(p, stu) && (lcFilterType === 'all' || p.type === lcFilterType) && (lcFilterSub === 'all' || p.subjectId === lcFilterSub)).sort(lcNewest);
@@ -2602,7 +2717,11 @@ function lcOpen(id) {
   }
   if (stu && p.type === 'quiz') {
     const qs = p.questions || [], tot = qs.reduce((a, q) => a + q.points, 0);
-    if (s) b += '<div class="' + lcCard + ' mt-4"><p class="font-semibold text-sm">Score: ' + lcE(s.score) + ' of ' + lcE(s.total) + '</p><p class="' + lcMuted + '">Submitted ' + lcE(lcFmtTs(s.submittedAt)) + '. Each quiz can be taken once.</p></div>';
+    if (s) {
+      const pct = s.total ? Math.round(s.score / s.total * 100) : 0;
+      b += '<div class="' + lcCard + ' mt-4"><p class="' + lcMuted + '">Your score</p><p class="text-2xl font-bold tabular-nums ' + (pct >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') + '">' + lcE(s.score) + ' / ' + lcE(s.total) + ' <span class="text-sm font-semibold">(' + pct + '%)</span></p><p class="' + lcMuted + '">Submitted ' + lcE(lcFmtTs(s.submittedAt)) + '. Each quiz can be taken once.</p></div>';
+      if (Array.isArray(s.answers)) b += '<div class="mt-3 space-y-2">' + qs.map((q, i) => { const a = s.answers[i], ok = a === q.correct; return '<div class="border border-slate-200 dark:border-slate-700 rounded-lg p-3"><p class="text-sm font-semibold">' + (i + 1) + '. ' + lcE(q.q) + '</p><p class="text-sm mt-1 ' + (ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') + '">Your answer: ' + lcE(q.opts[a] !== undefined ? q.opts[a] : 'No answer') + ' (' + (ok ? 'correct' : 'incorrect') + ')</p></div>'; }).join('') + '</div>';
+    }
     else b += qs.map((q, i) => '<div class="border border-slate-200 dark:border-slate-700 rounded-lg p-3 mt-3"><p class="text-sm font-semibold">' + (i + 1) + '. ' + lcE(q.q) + ' (' + q.points + ' pt' + (q.points > 1 ? 's' : '') + ')</p>' +
       q.opts.map((o, j) => '<label class="flex gap-2 items-start text-sm mt-2"><input type="radio" name="lcq' + i + '" value="' + j + '" style="margin-top:3px">' + lcE(o) + '</label>').join('') + '</div>').join('') +
       '<p class="' + lcMuted + ' mt-3">Total points: ' + tot + '</p><button type="button" class="' + lcBtn + ' mt-3" onclick="lcSubmitQuiz(\'' + id + '\')">Submit quiz</button>';
@@ -2628,13 +2747,14 @@ function lcSubmitQuiz(postId) {
   const stu = lcMe(), p = DB.posts.find(x => x.id === postId);
   if (!stu || !p || lcMySub(postId, stu.id)) return;
   let score = 0, total = 0;
+  const answers = [];
   for (let i = 0; i < (p.questions || []).length; i++) {
     const r = document.querySelector('input[name="lcq' + i + '"]:checked');
     if (!r) { toast('Answer every question before submitting.', 'warning'); return; }
-    const q = p.questions[i]; total += q.points; if (+r.value === q.correct) score += q.points;
+    const q = p.questions[i]; total += q.points; answers.push(+r.value); if (+r.value === q.correct) score += q.points;
   }
-  DB.submissions.push({ id: uid('smt'), postId, studentId: stu.id, text: '', link: '', score, total, feedback: '', submittedAt: new Date().toISOString() });
-  saveDB(); toast('Quiz submitted. Score: ' + score + ' of ' + total, 'success'); closeModal('modal-material'); renderLearning(true);
+  DB.submissions.push({ id: uid('smt'), postId, studentId: stu.id, text: '', link: '', score, total, answers, feedback: '', submittedAt: new Date().toISOString() });
+  saveDB(); toast('Quiz submitted. Score: ' + score + ' of ' + total, 'success'); renderLearning(true); lcOpen(postId);
 }
 
 /* ---------- TEACHER: CLASSROOM ---------- */
@@ -2674,9 +2794,16 @@ function lcAddSubject() {
   if (!lcNeedOnline()) return;
   const name = lcV('lc-sn').trim();
   if (!name) { toast('Enter a subject name.', 'warning'); return; }
-  if (DB.subjects.some(s => s.name.toLowerCase() === name.toLowerCase())) { toast('That subject already exists.', 'warning'); return; }
-  DB.subjects.push({ id: uid('sbj'), name, description: lcV('lc-sd').trim(), createdAt: new Date().toISOString() });
-  saveDB(); toast('Subject added.', 'success'); renderClassroom(true);
+  const t = getMyTeacher();
+  const existing = findPortalSubject(name);
+  if (existing && t && (existing.ownerIds || []).includes(t.id) && (t.schedule || []).some(e => subjKey(e.subject) === subjKey(name))) { toast('That subject is already in your list.', 'warning'); return; }
+  const sub = ensurePortalSubject(name, t ? t.id : null);
+  const d = lcV('lc-sd').trim();
+  if (d && !sub.description) sub.description = d;
+  const added = t ? ensureProfileSubject(t, sub.name) : false;
+  saveDB();
+  toast(existing ? 'Subject added to your profile.' : (added ? 'Subject added. It is also in your profile.' : 'Subject added.'), 'success');
+  renderClassroom(true);
 }
 function lcDelSubject(id) {
   if (!lcNeedOnline()) return;
