@@ -358,6 +358,7 @@
         </div>
 
         <div id="dash-content" class="space-y-6">
+          <div id="sched-card-t" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
               <p class="text-xs text-slate-500 dark:text-slate-400">Enrolled</p>
@@ -586,7 +587,9 @@
 
       <!-- STUDENT ID CARD -->
       <section data-view="studentid" class="view-section p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
+        <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-4">Your student details</h2>
@@ -1538,6 +1541,7 @@ function renderDashboard() {
   autoFollowPeriod(false);
   autoCreateSessions();
   syncPeriodSelects();
+  renderScheduleCard();
   const hasClasses = DB.classes.length > 0;
   document.getElementById('dash-empty').classList.toggle('hidden', hasClasses);
   document.getElementById('dash-content').classList.toggle('hidden', !hasClasses);
@@ -1546,6 +1550,102 @@ function renderDashboard() {
   renderDashboardStats();
   refreshIcons();
 }
+
+let schedViewDay = null;
+const SCHOOL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const DAY_FULL = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday' };
+// Everything scheduled for me, as plain rows. Teacher: my subjects. Student: my section's subjects.
+function scheduleEntries() {
+  const role = DB.auth && DB.auth.role;
+  if (role === 'teacher') {
+    const t = getMyTeacher(); if (!t) return null;
+    return (t.schedule || []).map(e => {
+      const cls = (e.classIds || []).filter(id => DB.classes.some(c => c.id === id));
+      return cls.length ? { e, sub: cls.map(classLabel).join(' + '), pick: e.id + '|' + cls[0] } : null;
+    }).filter(Boolean);
+  }
+  if (role === 'student') {
+    const st = DB.students.find(s => s.id === DB.auth.userId);
+    const cls = st ? DB.classes.find(c => c.id === st.classId) : null;
+    if (!cls) return null;
+    const out = [];
+    DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
+      if (!entryHasClass(e, cls.id)) return;
+      const others = (e.classIds || []).filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
+      out.push({ e, sub: t.name + (others.length ? ' · with ' + others.join(', ') : ''), pick: '' });
+    }));
+    return out;
+  }
+  return null;
+}
+function scheduleNext(items) {
+  const d = new Date(), nowMin = d.getHours() * 60 + d.getMinutes();
+  for (let off = 0; off < 8; off++) {
+    const day = DAY_NAMES[(d.getDay() + off) % 7];
+    if (!SCHOOL_DAYS.includes(day)) continue;
+    const list = items.filter(it => (it.e.day === day || !it.e.day) && minOf(it.e.start) !== null).sort((a, b) => minOf(a.e.start) - minOf(b.e.start));
+    if (off === 0) {
+      const now = list.find(it => periodStatus(it.e, day, nowMin) === 'now');
+      if (now) return { kind: 'now', it: now, off };
+      const later = list.find(it => minOf(it.e.start) > nowMin);
+      if (later) return { kind: 'later', it: later, off };
+    } else if (list.length) return { kind: 'later', it: list[0], off, day };
+  }
+  return null;
+}
+function renderScheduleCard() {
+  const role = DB.auth && DB.auth.role;
+  const el = document.getElementById(role === 'teacher' ? 'sched-card-t' : role === 'student' ? 'sched-card-s' : '');
+  if (!el) return;
+  const d = new Date(), todayName = DAY_NAMES[d.getDay()], nowMin = d.getHours() * 60 + d.getMinutes();
+  const items = scheduleEntries();
+  const isT = role === 'teacher';
+  if (items === null) {
+    el.innerHTML = '<h2 class="text-sm font-semibold mb-1">Today\'s schedule</h2><p class="text-xs text-slate-500 dark:text-slate-400">' + (isT ? 'Your profile could not be loaded.' : 'Choose your class below and save to see your schedule.') + '</p>';
+    return;
+  }
+  const view = schedViewDay || (SCHOOL_DAYS.includes(todayName) ? todayName : 'Mon');
+  const isToday = view === todayName;
+  const rows = items.filter(it => it.e.day === view || !it.e.day).map(it => ({ it, st: isToday ? periodStatus(it.e, view, nowMin) : 'other', s: minOf(it.e.start) }))
+    .sort((a, b) => (a.s === null ? 9999 : a.s) - (b.s === null ? 9999 : b.s));
+  const firstLater = isToday ? rows.find(r => r.st === 'later') : null;
+  const next = scheduleNext(items);
+  let banner;
+  if (!items.length) banner = isT ? 'No subjects yet. Add them in My Profile and they will show here.' : 'No teacher has added your section yet.';
+  else if (!next) banner = 'No timed classes scheduled yet.';
+  else {
+    const e = next.it.e, who = next.it.sub, tm = fmt12(e.start) + (e.end ? ' – ' + fmt12(e.end) : '');
+    if (next.kind === 'now') banner = '<b>Now:</b> ' + escapeHtml(e.subject) + ' · ' + escapeHtml(who) + ' · until ' + fmt12(e.end || '') ;
+    else if (next.off === 0) banner = '<b>Next:</b> ' + escapeHtml(e.subject) + ' · ' + escapeHtml(who) + ' · ' + tm + ' <span class="opacity-75">(in ' + fmtDur(minOf(e.start) - nowMin) + ')</span>';
+    else banner = '<b>' + (SCHOOL_DAYS.includes(todayName) ? 'No more classes today.' : 'No classes today.') + '</b> Next: ' + (next.off === 1 ? 'tomorrow' : DAY_FULL[next.day]) + ' · ' + escapeHtml(e.subject) + ' · ' + tm;
+  }
+  const chips = SCHOOL_DAYS.map(dn => '<button type="button" data-sched-day="' + dn + '" class="text-xs font-medium px-2.5 py-1 rounded-full border ' +
+    (dn === view ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300') + '">' + dn + (dn === todayName ? ' •' : '') + '</button>').join('');
+  const pill = (st, isNext) => st === 'now' ? '<span class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">NOW</span>'
+    : isNext ? '<span class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300">NEXT</span>'
+    : st === 'done' ? '<span class="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">Done</span>' : '';
+  const list = rows.length ? rows.map(r => {
+    const e = r.it.e, isNext = firstLater === r;
+    const tm = r.s === null ? 'Anytime' : fmt12(e.start) + (e.end ? '<br><span class="text-slate-400">' + fmt12(e.end) + '</span>' : '');
+    const tag = isT && r.it.pick ? 'button' : 'div';
+    return '<' + tag + (tag === 'button' ? ' type="button" data-sched-pick="' + r.it.pick + '"' : '') + ' class="w-full text-left flex items-center gap-3 rounded-lg border px-3 py-2.5 ' +
+      (r.st === 'now' ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20' : isNext ? 'border-indigo-300 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20' : 'border-slate-200 dark:border-slate-800') +
+      (r.st === 'done' ? ' opacity-60' : '') + '"><span class="w-16 shrink-0 text-xs font-medium tabular-nums leading-tight">' + tm + '</span><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' +
+      escapeHtml(e.subject) + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(r.it.sub) + '</span></span>' + pill(r.st, isNext) + '</' + tag + '>';
+  }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 py-3 text-center">No classes on ' + DAY_FULL[view] + '.</p>';
+  el.innerHTML = '<div class="flex items-start justify-between gap-2 mb-3"><div><h2 class="text-sm font-semibold">' + (isToday ? 'Today\'s schedule' : DAY_FULL[view] + '\'s schedule') + '</h2>' +
+    '<p class="text-xs text-slate-500 dark:text-slate-400">' + DAY_FULL[todayName] + ', ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + '</p></div></div>' +
+    '<div class="rounded-lg bg-indigo-600 text-white text-sm px-3 py-2.5 mb-3">' + banner + '</div>' +
+    '<div class="flex flex-wrap gap-1.5 mb-3">' + chips + '</div><div class="space-y-2">' + list + '</div>' +
+    (isT && rows.some(r => r.it.pick) ? '<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-3">Tap a class to open its code and attendance.</p>' : '');
+}
+['sched-card-t', 'sched-card-s'].forEach(id => document.getElementById(id).addEventListener('click', ev => {
+  const dayBtn = ev.target.closest('[data-sched-day]');
+  if (dayBtn) { schedViewDay = dayBtn.dataset.schedDay; renderScheduleCard(); return; }
+  const pick = ev.target.closest('[data-sched-pick]');
+  if (pick && getMyTeacher()) { setPeriodFromValue(pick.dataset.schedPick); periodManual = true; renderDashboard(); }
+}));
+setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && (a.dataset.view === 'studentid' || a.dataset.view === 'dashboard')) renderScheduleCard(); }, 30000);
 
 const startedEarly = new Set();
 function fmt12(t) { const m = minOf(t); if (m === null) return ''; const h = Math.floor(m / 60); return ((h + 11) % 12 + 1) + ':' + String(m % 60).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); }
@@ -2108,6 +2208,7 @@ function renderStudentIdView() {
     showIdCardEmpty();
   }
   renderMyTeachers();
+  renderScheduleCard();
   refreshIcons();
 }
 function showIdCardEmpty() {
