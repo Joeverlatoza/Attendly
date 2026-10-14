@@ -596,6 +596,29 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         <div id="vouch-card" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="my-subjects-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">My subjects</h2>
+          <p id="ms-sub" class="text-xs text-slate-500 dark:text-slate-400"></p>
+          <div class="mt-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-3">
+            <p class="text-xs font-medium mb-2">Upload your timetable (Excel or picture)</p>
+            <input id="ms-file" type="file" accept=".xlsx,.xls,.csv,.txt,image/*,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">Excel is read automatically: either a list (Subject, Teacher, Day, Start, End) or a timetable grid like your class schedule. If the file has both sections side by side, yours is picked by your section name. A picture is saved on this device so you can look at it, but it cannot be read automatically, so add the subjects below or upload the Excel file.</p>
+            <button id="ms-template" type="button" class="mt-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download Excel template</button>
+          </div>
+          <div id="ms-pic" class="hidden mt-3"></div>
+          <form id="ms-form" class="grid grid-cols-2 gap-2 mt-3">
+            <input id="ms-subject" required placeholder="Subject, like Physical Science" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="ms-teacher" placeholder="Teacher (optional)" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <select id="ms-day" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select>
+            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">Start</label><input id="ms-start" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">End</label><input id="ms-end" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+            <button type="submit" class="col-span-2 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-3 py-2">Add subject</button>
+          </form>
+          <div id="ms-list" class="mt-4 space-y-1.5"></div>
+          <button id="ms-clear" type="button" class="hidden mt-3 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all my subjects for this term</button>
+          <div id="tt-full" class="fixed inset-0 z-[70] bg-black/90 overflow-auto p-3" style="display:none"><img id="tt-full-img" class="max-w-none w-[900px] mx-auto bg-white rounded" alt="My timetable"><p class="text-center text-xs text-white/70 mt-3">Tap anywhere to close</p></div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-4">Your student details</h2>
@@ -781,6 +804,18 @@
           <h2 class="text-sm font-semibold mb-1">Cloud sync</h2>
           <p id="cloud-status-settings" class="text-xs text-slate-500 dark:text-slate-400 mb-3">—</p>
           <button id="cloud-reconfigure" type="button" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Change cloud connection</button>
+        </div>
+
+        <div class="staff-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold mb-1">School term</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">The school has 3 terms. Students see their subjects for the current term.</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Current term</label>
+              <select id="set-term" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3">Term 3</option></select></div>
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">School year</label>
+              <input id="set-year" type="text" placeholder="2025-2026" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+          </div>
+          <button id="set-save-term" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save term</button>
         </div>
 
         <div class="admin-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
@@ -1000,6 +1035,9 @@ function dbNoAuth() { const c = Object.assign({}, DB); delete c.auth; return c; 
 
 function normalizeDB() {
   if (!DB.settings) DB.settings = defaultDB().settings;
+  if (![1, 2, 3].includes(Number(DB.settings.currentTerm))) DB.settings.currentTerm = 2;
+  if (!DB.settings.schoolYear) DB.settings.schoolYear = '2025-2026';
+  DB.settings.currentTerm = Number(DB.settings.currentTerm);
   if (!DB.teachers) DB.teachers = [];
   if (!DB.students) DB.students = [];
   if (!DB.classes) DB.classes = [];
@@ -1013,8 +1051,17 @@ function normalizeDB() {
   DB.settings.schoolName = 'San Juan Baño High School';
   ensureFixedClasses();
   migrateSchedules();
+  migrateGradesToTerms();
 }
 
+// The school uses three terms. Older records used quarters: carry Q1-Q3 over to Term 1-3.
+function migrateGradesToTerms() {
+  (DB.grades || []).forEach(g => {
+    if (g.t1 === undefined && g.t2 === undefined && g.t3 === undefined && (g.q1 !== undefined || g.q2 !== undefined || g.q3 !== undefined)) {
+      g.t1 = g.q1 === undefined ? null : g.q1; g.t2 = g.q2 === undefined ? null : g.q2; g.t3 = g.q3 === undefined ? null : g.q3;
+    }
+  });
+}
 function loadDB() {
   try {
     const raw = localStorage.getItem(DB_KEY);
@@ -1145,7 +1192,7 @@ function imageFileToDataUrl(file, maxSize, cb) {
       const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
       const c = document.createElement('canvas');
       c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height); cx.drawImage(img, 0, 0, c.width, c.height);
       cb(c.toDataURL('image/jpeg', 0.8));
     };
     img.src = ev.target.result;
@@ -1576,13 +1623,17 @@ function scheduleEntries() {
   if (role === 'student') {
     const st = DB.students.find(s => s.id === DB.auth.userId);
     const cls = st ? DB.classes.find(c => c.id === st.classId) : null;
-    if (!cls) return null;
+    if (!cls && !mySubjectsNow().length) return null;
     const out = [];
-    DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
+    if (cls) DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
       if (!entryHasClass(e, cls.id)) return;
       const others = (e.classIds || []).filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
       out.push({ e, sub: t.name + (others.length ? ' · with ' + others.join(', ') : ''), pick: '' });
     }));
+    mySubjectsNow().forEach(s => {
+      const dup = out.some(o => (o.e.subject || '').toLowerCase() === s.subject.toLowerCase() && o.e.day === s.day && o.e.start === s.start);
+      if (!dup) out.push({ e: { id: s.id, subject: s.subject, day: s.day, start: s.start, end: s.end, classIds: [] }, sub: s.teacher || 'Added by you', pick: '' });
+    });
     return out;
   }
   return null;
@@ -2175,6 +2226,186 @@ document.getElementById('vouch-card').addEventListener('click', ev => {
 });
 setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && a.dataset.view === 'studentid') renderVouchCard(); }, 30000);
 
+
+/* ==================== STUDENT: MY SUBJECTS (Excel / picture / by hand) ==================== */
+function meStudent() { return DB.auth && DB.auth.role === 'student' ? DB.students.find(s => s.id === DB.auth.userId) || null : null; }
+function mySubjectsNow() { const st = meStudent(); return st ? (st.subjects || []).filter(x => (x.term || DB.settings.currentTerm) === DB.settings.currentTerm) : []; }
+function dayTokens(v) {
+  const map = { mon: 'Mon', monday: 'Mon', tue: 'Tue', tues: 'Tue', tuesday: 'Tue', wed: 'Wed', wednesday: 'Wed', thu: 'Thu', thur: 'Thu', thurs: 'Thu', thursday: 'Thu', fri: 'Fri', friday: 'Fri' };
+  const out = [];
+  String(v || '').toLowerCase().split(/[^a-z]+/).filter(Boolean).forEach(tok => {
+    if (map[tok]) { out.push(map[tok]); return; }
+    if (/^[mtwhf]+$/.test(tok)) tok.replace(/th|m|t|w|f/g, c => { out.push({ m: 'Mon', t: 'Tue', w: 'Wed', th: 'Thu', f: 'Fri' }[c]); return c; });
+  });
+  return Array.from(new Set(out));
+}
+function normSchoolTime(v) {
+  const s = String(v == null ? '' : v).trim(), t0 = normTime(s);
+  if (!t0) return '';
+  let h = Number(t0.slice(0, 2));
+  if (h >= 1 && h < 7 && !/am|pm/i.test(s) && !/^0?\.\d+$/.test(s)) h += 12;
+  return String(h).padStart(2, '0') + t0.slice(2);
+}
+function splitSubjectTeacher(raw) {
+  const flat = String(raw || '').replace(/\s+/g, ' ').trim();
+  if (!flat) return null;
+  if (/^(break|lunch|recess|snack)\b/i.test(flat)) return null;
+  const m = /^(.*\S)\s+((?:[A-Za-z]\.\s*)+[A-Za-zñÑ'’\-]{2,})$/.exec(flat);
+  if (m) return { subject: m[1], teacher: m[2] };
+  const lines = String(raw).split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  if (lines.length > 1) return { subject: lines[0], teacher: lines.slice(1).join(' ') };
+  return { subject: flat, teacher: '' };
+}
+function timesFromCells(cells) {
+  const out = [];
+  cells.forEach(c => {
+    const s = String(c == null ? '' : c).trim(); if (!s) return;
+    if (/^0?\.\d+$/.test(s)) { out.push(normTime(s)); return; }
+    const re = /(\d{1,2})\s*[:.]\s*(\d{2})\s*(am|pm)?/gi; let m;
+    while ((m = re.exec(s))) out.push(normSchoolTime(m[1] + ':' + m[2] + (m[3] || '')));
+  });
+  return out.filter(Boolean);
+}
+// Reads a list (Subject, Teacher, Day, Start, End) or a timetable grid (times down the side, days across).
+function parseStudentSchedule(rows, myClass) {
+  rows = rows.map(r => Array.from(r || [], x => (x == null ? '' : String(x))));
+  const res = { items: [], note: '' };
+  const hi = rows.findIndex(r => r.some(c => /^subject/i.test(c.trim())));
+  if (hi >= 0) {
+    const h = rows[hi].map(c => c.trim().toLowerCase()), col = k => h.findIndex(x => x.startsWith(k));
+    const ci = { subject: col('subject'), teacher: col('teacher'), day: col('day'), start: col('start'), end: col('end'), time: col('time') };
+    rows.slice(hi + 1).forEach(r => {
+      const get = i => (i >= 0 ? (r[i] || '').trim() : '');
+      const subject = get(ci.subject); if (!subject) return;
+      let start = normSchoolTime(get(ci.start)), end = normSchoolTime(get(ci.end));
+      if ((!start || !end) && ci.time >= 0) { const tm = timesFromCells([get(ci.time)]); start = start || tm[0] || ''; end = end || tm[1] || ''; }
+      const days = dayTokens(get(ci.day));
+      if (!days.length || !start) { res.skipped = (res.skipped || 0) + 1; return; }
+      days.forEach(d => res.items.push({ subject, teacher: get(ci.teacher), day: d, start, end: end || '' }));
+    });
+    return res;
+  }
+  const labels = new Set(['m', 't', 'w', 'th', 'f', 'mon', 'tue', 'tues', 'wed', 'thu', 'thur', 'thurs', 'fri', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+  let gi = -1, heads = [];
+  for (let i = 0; i < Math.min(rows.length, 40) && gi < 0; i++) {
+    const hs = [];
+    rows[i].forEach((c, ci) => { const k = c.trim().toLowerCase().replace(/\./g, ''); if (labels.has(k)) hs.push({ c: ci, day: dayTokens(k)[0] }); });
+    if (hs.length >= 3) { gi = i; heads = hs; }
+  }
+  if (gi < 0) return res;
+  const groups = []; let cur = null;
+  heads.forEach(hd => { if (!cur || cur.days.has(hd.day)) { cur = { cols: [], days: new Set() }; groups.push(cur); } cur.cols.push(hd); cur.days.add(hd.day); });
+  const sec = ((myClass && myClass.section) || '').toLowerCase();
+  let pick = groups[0], matched = false;
+  if (groups.length > 1 && sec) {
+    groups.forEach(g => {
+      if (matched) return;
+      const lo = g.cols[0].c, hiC = g.cols[g.cols.length - 1].c;
+      for (let r = Math.max(0, gi - 6); r < gi; r++) for (let c = lo; c <= hiC; c++) if ((rows[r][c] || '').toLowerCase().includes(sec)) { pick = g; matched = true; return; }
+    });
+  }
+  if (groups.length > 1) res.note = matched ? 'Used the ' + myClass.section + ' timetable.' : 'The file has ' + groups.length + ' timetables and none mentions your section, so the first one was used.';
+  const timeCols = groups[0].cols[0].c;
+  rows.slice(gi + 1).forEach(r => {
+    const tm = timesFromCells(r.slice(0, timeCols));
+    if (!tm.length) return;
+    const start = tm[0]; let end = tm[1] || '';
+    if (!end) { const m = minOf(start) + 60; end = String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+    pick.cols.forEach(hd => {
+      const x = splitSubjectTeacher(r[hd.c]); if (!x || !x.subject) return;
+      res.items.push({ subject: x.subject, teacher: x.teacher, day: hd.day, start, end });
+    });
+  });
+  return res;
+}
+function ttKey(id) { return 'attendly_tt_' + id; }
+function ttGet(id) { try { return localStorage.getItem(ttKey(id)); } catch (e) { return null; } }
+function renderMySubjects() {
+  const st = meStudent(), card = document.getElementById('my-subjects-card');
+  if (!card) return;
+  card.classList.toggle('hidden', !st);
+  if (!st) return;
+  document.getElementById('ms-sub').textContent = 'Term ' + DB.settings.currentTerm + ' · SY ' + DB.settings.schoolYear + (st.classId ? ' · ' + classLabel(st.classId) : '');
+  const list = mySubjectsNow().slice().sort((a, b) => (SCHOOL_DAYS.indexOf(a.day) - SCHOOL_DAYS.indexOf(b.day)) || ((minOf(a.start) || 0) - (minOf(b.start) || 0)));
+  document.getElementById('ms-list').innerHTML = list.length ? list.map(s => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><span class="w-9 shrink-0 text-xs font-semibold text-slate-500">' + escapeHtml(s.day) + '</span><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(s.subject) + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate">' + fmt12(s.start) + (s.end ? ' – ' + fmt12(s.end) : '') + (s.teacher ? ' · ' + escapeHtml(s.teacher) : '') + '</span></span><button type="button" data-ms-del="' + s.id + '" class="text-xs font-medium text-rose-600 dark:text-rose-400">Remove</button></div>').join('')
+    : '<p class="text-xs text-slate-500 dark:text-slate-400">No subjects added for this term yet.</p>';
+  document.getElementById('ms-clear').classList.toggle('hidden', !list.length);
+  const pic = ttGet(st.id), pe = document.getElementById('ms-pic');
+  pe.classList.toggle('hidden', !pic);
+  pe.innerHTML = pic ? '<p class="text-xs font-medium mb-1.5">My timetable picture <span class="font-normal text-slate-400">(saved on this device)</span></p><img id="ms-pic-img" src="' + pic + '" class="w-full max-h-48 object-cover object-top rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer" alt="My timetable"><button type="button" data-ms-picdel="1" class="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">Remove picture</button>' : '';
+}
+function msAdd(items, replace) {
+  const st = meStudent(); if (!st) return 0;
+  const term = DB.settings.currentTerm;
+  const rows = items.slice(0, 120).map(x => ({ id: uid('ms'), subject: x.subject, teacher: x.teacher || '', day: x.day, start: x.start, end: x.end || '', term }));
+  st.subjects = (replace ? (st.subjects || []).filter(s => (s.term || term) !== term) : (st.subjects || [])).concat(rows);
+  saveDB(); renderMySubjects(); renderScheduleCard();
+  return rows.length;
+}
+document.getElementById('ms-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!lcNeedOnline()) return;
+  const subject = document.getElementById('ms-subject').value.trim(), start = document.getElementById('ms-start').value, end = document.getElementById('ms-end').value;
+  if (!subject || !start || !end) return;
+  if (minOf(end) <= minOf(start)) { toast('The end time must be after the start time.', 'warning'); return; }
+  msAdd([{ subject, teacher: document.getElementById('ms-teacher').value.trim(), day: document.getElementById('ms-day').value, start, end }], false);
+  document.getElementById('ms-subject').value = ''; document.getElementById('ms-teacher').value = '';
+  toast('Subject added.', 'success');
+});
+document.getElementById('my-subjects-card').addEventListener('click', ev => {
+  const st = meStudent(); if (!st) return;
+  const del = ev.target.closest('[data-ms-del]');
+  if (del) { if (!lcNeedOnline()) return; st.subjects = (st.subjects || []).filter(s => s.id !== del.dataset.msDel); saveDB(); renderMySubjects(); renderScheduleCard(); return; }
+  if (ev.target.closest('[data-ms-picdel]')) { try { localStorage.removeItem(ttKey(st.id)); } catch (e) {} renderMySubjects(); return; }
+  if (ev.target.id === 'ms-pic-img') { document.getElementById('tt-full-img').src = ttGet(st.id); document.getElementById('tt-full').style.display = 'block'; return; }
+  if (ev.target.closest('#tt-full')) { document.getElementById('tt-full').style.display = 'none'; return; }
+  if (ev.target.id === 'ms-template') {
+    downloadXlsx([['Subject', 'Teacher', 'Day', 'Start', 'End'], ['Physical Science', 'C. Causo', 'Mon', '03:00', '04:00'], ['Entrepreneurship', 'S. Sangcap', 'Tue', '02:00', '03:00'], ['Hope 4', 'Z. Mungcal', 'Mon/Fri', '08:00', '09:00']], 'my-subjects-template.xlsx', 'My subjects', [26, 20, 12, 10, 10]);
+    return;
+  }
+  if (ev.target.id === 'ms-clear') {
+    askConfirm('Remove my subjects', 'This removes every subject you added for Term ' + DB.settings.currentTerm + '.', () => { if (!lcNeedOnline()) return; st.subjects = (st.subjects || []).filter(s => (s.term || DB.settings.currentTerm) !== DB.settings.currentTerm); saveDB(); renderMySubjects(); renderScheduleCard(); });
+  }
+});
+document.getElementById('ms-file').addEventListener('change', e => {
+  const input = e.target, file = input.files[0], st = meStudent();
+  if (!file || !st) return;
+  const name = file.name || '';
+  const isImg = /^image\//.test(file.type) || /\.(png|jpe?g|webp|gif|bmp|heic)$/i.test(name);
+  if (isImg) {
+    imageFileToDataUrl(file, 1600, url => {
+      input.value = '';
+      if (!url) { toast('That picture could not be read. Try a PNG or JPG.', 'error'); return; }
+      try { localStorage.setItem(ttKey(st.id), url); } catch (err) { toast('Could not save the picture: device storage is full.', 'error'); return; }
+      renderMySubjects();
+      toast('Picture saved on this device. It cannot be read automatically, so add the subjects below or upload the Excel file.', 'success');
+    });
+    return;
+  }
+  if (/\.xls$/i.test(name)) { toast('Please save the file as .xlsx (Excel Workbook) and try again.', 'warning'); input.value = ''; return; }
+  if (!lcNeedOnline()) { input.value = ''; return; }
+  const finish = rows => {
+    input.value = '';
+    const r = parseStudentSchedule(rows, DB.classes.find(c => c.id === st.classId));
+    if (!r.items.length) { toast('No subjects were found. Use the template, or a timetable with days (M, T, W, TH, F) across the top.', 'warning'); return; }
+    const go = () => { const n = msAdd(r.items, true); toast(n + ' subject' + (n === 1 ? '' : 's') + ' added for Term ' + DB.settings.currentTerm + '.' + (r.note ? ' ' + r.note : '') + (r.skipped ? ' ' + r.skipped + ' row(s) skipped.' : ''), 'success'); };
+    if (mySubjectsNow().length) askConfirm('Replace my subjects', 'This replaces your ' + mySubjectsNow().length + ' subjects for Term ' + DB.settings.currentTerm + ' with ' + r.items.length + ' from the file.', go); else go();
+  };
+  const reader = new FileReader();
+  if (/\.xlsx$/i.test(name)) {
+    reader.onload = ev => readXlsx(ev.target.result).then(finish).catch(() => { input.value = ''; toast('That Excel file could not be read. Try the template.', 'error'); });
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = ev => {
+      const lines = String(ev.target.result).replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+      if (!lines.length) { input.value = ''; toast('That file is empty.', 'warning'); return; }
+      const d = [',', '\t', ';'].sort((a, b) => lines[0].split(b).length - lines[0].split(a).length)[0];
+      finish(lines.map(l => splitCsvLine(l, d)));
+    };
+    reader.readAsText(file);
+  }
+});
+
 /* ==================== ROSTER MANAGER ==================== */
 let rosterSelectedClassId = null;
 
@@ -2364,6 +2595,7 @@ function renderStudentIdView() {
   renderMyTeachers();
   renderScheduleCard();
   renderVouchCard();
+  renderMySubjects();
   refreshIcons();
 }
 function showIdCardEmpty() {
@@ -2431,10 +2663,18 @@ function renderSettings() {
   const isTeacher = !!(DB.auth && DB.auth.role === 'teacher');
   const cloudStatusEl = document.getElementById('cloud-status-settings');
   if (cloudStatusEl) cloudStatusEl.textContent = cloudDocRef ? 'Connected — data syncs automatically across devices.' : 'Not connected — data is saved only on this device.';
+  document.getElementById('set-term').value = String(DB.settings.currentTerm);
+  document.getElementById('set-year').value = DB.settings.schoolYear || '';
+  document.querySelectorAll('.staff-setting').forEach(el => el.classList.toggle('hidden', !(isAdmin || isTeacher)));
   document.querySelectorAll('.admin-only-setting').forEach(el => el.classList.toggle('hidden', !isAdmin));
   document.querySelectorAll('.teacher-only-setting').forEach(el => el.classList.toggle('hidden', !isTeacher));
   if (isTeacher) renderTeacherProfile();
 }
+document.getElementById('set-save-term').addEventListener('click', () => {
+  DB.settings.currentTerm = Number(document.getElementById('set-term').value) || 2;
+  DB.settings.schoolYear = document.getElementById('set-year').value.trim() || '2025-2026';
+  saveDB(); toast('Term saved. Now Term ' + DB.settings.currentTerm + ', SY ' + DB.settings.schoolYear + '.', 'success');
+});
 document.getElementById('set-save-general').addEventListener('click', () => {
   DB.settings.sessionStartTime = document.getElementById('set-start-time').value || '08:00';
   DB.settings.lateThresholdMinutes = Math.max(0, Number(document.getElementById('set-late-threshold').value) || 0);
@@ -3186,7 +3426,7 @@ function lcMySub(postId, studentId) { return DB.submissions.find(s => s.postId =
 function lcNewest(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); }
 function lcAvg(g) {
   if (!g) return null;
-  const v = ['q1', 'q2', 'q3', 'q4'].map(k => g[k]).filter(x => x !== null && x !== undefined && x !== '' && !isNaN(x)).map(Number);
+  const v = ['t1', 't2', 't3'].map(k => g[k]).filter(x => x !== null && x !== undefined && x !== '' && !isNaN(x)).map(Number);
   return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
 }
 function lcStanding(a) {
@@ -3287,7 +3527,7 @@ function lcStudentOverview(stu) {
   let h = '<div><p class="text-xl font-bold">Welcome back, ' + lcE(first) + '</p><p class="' + lcMuted + '">' + lcE(classLabel(stu.classId) || 'No class selected') + ' | ' + new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) + '</p></div>';
   h += '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">' +
     lcStat('General average', lcF(ga), lcStanding(ga), tone) +
-    lcStat('Subjects', subs.length, 'This school year') +
+    lcStat('Subjects', subs.length, 'Term ' + DB.settings.currentTerm + ' · SY ' + DB.settings.schoolYear) +
     lcStat('To do', open.length, overdue ? overdue + ' overdue' : 'Homework and quizzes', overdue ? 'text-rose-600 dark:text-rose-400' : '') +
     lcStat('Lessons and reviewers', learn.length, 'Available to you') + '</div>';
   h += '<div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2 space-y-5">';
@@ -3297,7 +3537,7 @@ function lcStudentOverview(stu) {
     return '<div class="' + lcCard + ' !p-4"><div class="flex justify-between gap-2"><p class="font-semibold text-sm">' + lcE(s.name) + '</p><p class="font-bold text-sm tabular-nums ' + (a === null ? 'text-slate-400' : a >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') + '">' + lcF(a) + '</p></div>' +
       '<p class="' + lcMuted + ' mb-3">' + lcE(s.description || '') + '</p>' +
       '<div class="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden"><div class="h-full rounded-full ' + (a !== null && a < 75 ? 'bg-rose-500' : 'bg-indigo-500') + '" style="width:' + pct + '%"></div></div>' +
-      '<div class="flex gap-1.5 mt-3 flex-wrap">' + ['q1', 'q2', 'q3', 'q4'].map((k, i) => lcChip('Q' + (i + 1) + ': ' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-'))).join('') + '</div>' +
+      '<div class="flex gap-1.5 mt-3 flex-wrap">' + ['t1', 't2', 't3'].map((k, i) => lcChip('T' + (i + 1) + ': ' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-'))).join('') + '</div>' +
       '<div class="flex justify-between items-center mt-3"><span class="' + lcMuted + '">' + posts.filter(p => p.subjectId === s.id).length + ' materials</span><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpenSubject(\'' + s.id + '\')">View</button></div></div>';
   }).join('') + '</div>' : lcEmpty('No subjects yet. Your teacher will add them.')) + '</div>';
   h += '<div>' + lcH('Upcoming work') + (open.length ? '<div class="' + lcCard + ' divide-y divide-slate-100 dark:divide-slate-800 !py-2">' + open.slice(0, 8).map(p =>
@@ -3312,14 +3552,14 @@ function lcStudentGrades(stu) {
   const rows = subs.map(s => {
     const g = lcGrade(s.id, stu.id), a = lcAvg(g);
     if (a !== null) avgs.push(a);
-    return '<tr><td class="' + lcTd + ' font-medium">' + lcE(s.name) + '</td>' + ['q1', 'q2', 'q3', 'q4'].map(k => '<td class="' + lcTd + ' tabular-nums">' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-') + '</td>').join('') +
+    return '<tr><td class="' + lcTd + ' font-medium">' + lcE(s.name) + '</td>' + ['t1', 't2', 't3'].map(k => '<td class="' + lcTd + ' tabular-nums">' + (g && g[k] !== null && g[k] !== undefined && g[k] !== '' ? g[k] : '-') + '</td>').join('') +
       '<td class="' + lcTd + ' font-semibold tabular-nums">' + lcF(a) + '</td><td class="' + lcTd + '">' + (a === null ? '' : a >= 75 ? lcChip('Passed', 'green') : lcChip('Below passing', 'red')) + '</td></tr>';
   }).join('');
   const ga = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
-  return lcH('Academic record') + '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Quarter 1</th><th class="' + lcTh + '">Quarter 2</th><th class="' + lcTh + '">Quarter 3</th><th class="' + lcTh + '">Quarter 4</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '">Remarks</th></tr>' +
-    (rows || '<tr><td class="' + lcTd + '" colspan="7">No subjects yet.</td></tr>') +
-    '<tr class="bg-slate-50 dark:bg-slate-800/50"><td class="' + lcTd + ' font-bold" colspan="5">General average</td><td class="' + lcTd + ' font-bold tabular-nums">' + lcF(ga) + '</td><td class="' + lcTd + ' font-bold">' + lcStanding(ga) + '</td></tr></table></div>' +
-    '<p class="' + lcMuted + '">Passing grade is 75. Grades are entered by your teacher.</p>';
+  return lcH('Academic record') + '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Term 1</th><th class="' + lcTh + '">Term 2</th><th class="' + lcTh + '">Term 3</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '">Remarks</th></tr>' +
+    (rows || '<tr><td class="' + lcTd + '" colspan="6">No subjects yet.</td></tr>') +
+    '<tr class="bg-slate-50 dark:bg-slate-800/50"><td class="' + lcTd + ' font-bold" colspan="4">General average</td><td class="' + lcTd + ' font-bold tabular-nums">' + lcF(ga) + '</td><td class="' + lcTd + ' font-bold">' + lcStanding(ga) + '</td></tr></table></div>' +
+    '<p class="' + lcMuted + '">Passing grade is 75. The school has 3 terms, and the average is taken from the terms your teacher has graded so far. Grades are entered by your teacher.</p>';
 }
 function lcStudentHistory(stu) {
   const items = DB.submissions.filter(x => x.studentId === stu.id).map(x => ({ s: x, p: DB.posts.find(y => y.id === x.postId) })).filter(x => x.p)
@@ -3558,10 +3798,10 @@ function lcTGrades() {
   const studs = DB.students.filter(s => s.classId === lcLedgerClass).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   return lcH('Grade ledger') + '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl"><div><label class="' + lcLbl + '">Subject</label><select class="' + lcInp + '" onchange="lcSet(\'ledSub\',this.value)">' + DB.subjects.map(s => '<option value="' + s.id + '"' + (s.id === lcLedgerSub ? ' selected' : '') + '>' + lcE(s.name) + '</option>').join('') + '</select></div>' +
     '<div><label class="' + lcLbl + '">Class</label><select class="' + lcInp + '" onchange="lcSet(\'ledClass\',this.value)">' + lcClassOptions(lcLedgerClass, classes) + '</select></div></div>' +
-    (studs.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Student</th><th class="' + lcTh + '">Quarter 1</th><th class="' + lcTh + '">Quarter 2</th><th class="' + lcTh + '">Quarter 3</th><th class="' + lcTh + '">Quarter 4</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '"></th></tr>' + studs.map(u => {
+    (studs.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Student</th><th class="' + lcTh + '">Term 1</th><th class="' + lcTh + '">Term 2</th><th class="' + lcTh + '">Term 3</th><th class="' + lcTh + '">Average</th><th class="' + lcTh + '"></th></tr>' + studs.map(u => {
       const g = lcGrade(lcLedgerSub, u.id) || {};
       return '<tr data-sid="' + u.id + '"><td class="' + lcTd + '"><p class="font-medium">' + lcE(u.name) + '</p><p class="' + lcMuted + '">' + lcE(u.email || u.studentId || '') + '</p></td>' +
-        ['q1', 'q2', 'q3', 'q4'].map(k => '<td class="' + lcTd + '"><input data-k="' + k + '" type="number" min="0" max="100" step="0.01" value="' + lcE(g[k] == null ? '' : g[k]) + '" class="' + lcInp + '" style="width:84px"></td>').join('') +
+        ['t1', 't2', 't3'].map(k => '<td class="' + lcTd + '"><input data-k="' + k + '" type="number" min="0" max="100" step="0.01" value="' + lcE(g[k] == null ? '' : g[k]) + '" class="' + lcInp + '" style="width:84px"></td>').join('') +
         '<td class="' + lcTd + ' font-semibold tabular-nums">' + lcF(lcAvg(g)) + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn + ' !py-1.5" onclick="lcSaveGrade(this)">Save</button></td></tr>';
     }).join('') + '</table></div>' : lcEmpty('No students in this class yet. Students appear here after they choose this class in their Student ID card.'));
 }
