@@ -284,10 +284,19 @@
         <i data-lucide="graduation-cap" class="w-4 h-4"></i><span>Classroom</span>
       </button>
       <button data-view="learning" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-        <i data-lucide="book-open" class="w-4 h-4"></i><span>My Learning</span>
+        <i data-lucide="book-open" class="w-4 h-4"></i><span>LMS</span>
+      </button>
+      <button data-view="attendance" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="scan-line" class="w-4 h-4"></i><span>Attendance</span>
+      </button>
+      <button data-view="subjects" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="calendar-days" class="w-4 h-4"></i><span>Subjects</span>
+      </button>
+      <button data-view="teachers" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="contact" class="w-4 h-4"></i><span>Teachers</span>
       </button>
       <button data-view="studentid" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-        <i data-lucide="id-card" class="w-4 h-4"></i><span>Student ID Card</span>
+        <i data-lucide="user" class="w-4 h-4"></i><span>Profile</span>
       </button>
       <button data-view="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="settings" class="w-4 h-4"></i><span>Settings</span>
@@ -594,31 +603,6 @@
       <section data-view="studentid" class="view-section p-4 md:p-6 max-w-5xl mx-auto space-y-6">
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
-        <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
-        <div id="vouch-card" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
-        <div id="my-subjects-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-semibold">My subjects</h2>
-          <p id="ms-sub" class="text-xs text-slate-500 dark:text-slate-400"></p>
-          <div class="mt-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-3">
-            <p class="text-xs font-medium mb-2">Upload your timetable (Excel or picture)</p>
-            <input id="ms-file" type="file" accept=".xlsx,.xls,.csv,.txt,image/*,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">Excel is read automatically: either a list (Subject, Teacher, Day, Start, End) or a timetable grid like your class schedule. If the file has both sections side by side, yours is picked by your section name. A picture is saved on this device so you can look at it, but it cannot be read automatically, so add the subjects below or upload the Excel file.</p>
-            <button id="ms-template" type="button" class="mt-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download Excel template</button>
-          </div>
-          <div id="ms-pic" class="hidden mt-3"></div>
-          <form id="ms-form" class="grid grid-cols-2 gap-2 mt-3">
-            <input id="ms-subject" required placeholder="Subject, like Physical Science" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-            <input id="ms-teacher" placeholder="Teacher (optional)" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-            <select id="ms-day" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select>
-            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">Start</label><input id="ms-start" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
-            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">End</label><input id="ms-end" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
-            <button type="submit" class="col-span-2 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-3 py-2">Add subject</button>
-          </form>
-          <div id="ms-list" class="mt-4 space-y-1.5"></div>
-          <button id="ms-clear" type="button" class="hidden mt-3 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all my subjects for this term</button>
-          <div id="tt-full" class="fixed inset-0 z-[70] bg-black/90 overflow-auto p-3" style="display:none"><img id="tt-full-img" class="max-w-none w-[900px] mx-auto bg-white rounded" alt="My timetable"><p class="text-center text-xs text-white/70 mt-3">Tap anywhere to close</p></div>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-4">Your student details</h2>
@@ -655,19 +639,6 @@
             </form>
             <button id="sid-backup" type="button" class="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download a backup of my data</button>
 
-            <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
-              <h3 class="text-sm font-semibold mb-3">Check in with a session code</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Scan the QR code your teacher is showing to mark yourself present for today.</p>
-              <div id="checkin-reader" class="hidden rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-xs mx-auto"></div>
-              <div class="flex gap-2 justify-center mt-3">
-                <button id="checkin-start" class="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-4 py-2">
-                  <i data-lucide="camera" class="w-4 h-4"></i>Scan teacher's code
-                </button>
-                <button id="checkin-stop" class="hidden inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <i data-lucide="square" class="w-4 h-4"></i>Stop
-                </button>
-              </div>
-            </div>
           </div>
 
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center">
@@ -706,18 +677,69 @@
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-semibold mb-1">My teachers</h2>
-          <p id="my-teachers-sub" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
-          <div id="my-teachers-list" class="space-y-2"></div>
-          <div id="other-teachers-wrap" class="hidden mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <h3 id="other-teachers-title" class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2"></h3>
-            <div id="other-teachers-list" class="space-y-2"></div>
-          </div>
-        </div>
       </section>
 
-      <!-- SETTINGS -->
+
+      <!-- STUDENT: ATTENDANCE -->
+      <section data-view="attendance" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <h3 class="text-sm font-semibold mb-3">Check in with a session code</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Scan the QR code your teacher is showing to mark yourself present for today.</p>
+              <div id="checkin-reader" class="hidden rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-xs mx-auto"></div>
+              <div class="flex gap-2 justify-center mt-3">
+                <button id="checkin-start" class="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-4 py-2">
+                  <i data-lucide="camera" class="w-4 h-4"></i>Scan teacher's code
+                </button>
+                <button id="checkin-stop" class="hidden inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <i data-lucide="square" class="w-4 h-4"></i>Stop
+                </button>
+              </div>
+            </div>
+
+        <div id="vouch-card" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="my-att-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+      </section>
+
+      <!-- STUDENT: SUBJECTS -->
+      <section data-view="subjects" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+        <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="subjects-all-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="my-subjects-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">My subjects</h2>
+          <p id="ms-sub" class="text-xs text-slate-500 dark:text-slate-400"></p>
+          <div class="mt-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-3">
+            <p class="text-xs font-medium mb-2">Upload your timetable (Excel or picture)</p>
+            <input id="ms-file" type="file" accept=".xlsx,.xls,.csv,.txt,image/*,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">Excel is read automatically: either a list (Subject, Teacher, Day, Start, End) or a timetable grid like your class schedule. If the file has both sections side by side, yours is picked by your section name. A picture is saved on this device so you can look at it, but it cannot be read automatically, so add the subjects below or upload the Excel file.</p>
+            <button id="ms-template" type="button" class="mt-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download Excel template</button>
+          </div>
+          <div id="ms-pic" class="hidden mt-3"></div>
+          <form id="ms-form" class="grid grid-cols-2 gap-2 mt-3">
+            <input id="ms-subject" required placeholder="Subject, like Physical Science" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="ms-teacher" placeholder="Teacher (optional)" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <select id="ms-day" class="col-span-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select>
+            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">Start</label><input id="ms-start" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+            <div><label class="text-[11px] text-slate-500 dark:text-slate-400">End</label><input id="ms-end" type="time" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+            <button type="submit" class="col-span-2 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white hover:opacity-90 rounded-lg px-3 py-2">Add subject</button>
+          </form>
+          <div id="ms-list" class="mt-4 space-y-1.5"></div>
+          <button id="ms-clear" type="button" class="hidden mt-3 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all my subjects for this term</button>
+          <div id="tt-full" class="fixed inset-0 z-[70] bg-black/90 overflow-auto p-3" style="display:none"><img id="tt-full-img" class="max-w-none w-[900px] mx-auto bg-white rounded" alt="My timetable"><p class="text-center text-xs text-white/70 mt-3">Tap anywhere to close</p></div>
+        </div>
+
+      </section>
+
+      <!-- STUDENT: TEACHERS -->
+      <section data-view="teachers" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">Teachers</h2>
+          <p id="tch-sub" class="text-xs text-slate-500 dark:text-slate-400 mb-3"></p>
+          <input id="tch-search" type="search" placeholder="Search by name, subject or grade" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+        </div>
+        <div id="tch-list" class="space-y-3"></div>
+      </section>
+
+      <!-- LMS -->
       <section data-view="learning" class="view-section p-4 md:p-6 max-w-6xl mx-auto">
         <div id="learning-root"></div>
       </section>
@@ -790,9 +812,9 @@
             </button>
           </form>
           <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Upload your schedule (Excel file)</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Upload your schedule (Excel file, or the school class program)</p>
             <input id="t-sched-csv" type="file" accept=".xlsx,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" class="w-full text-sm">
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Columns: Subject, Grade, Section, Day, Start, End. For a combined class write both sections in one cell, like Beethoven/Mozart. Every row becomes a subject automatically.</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Columns: Subject, Grade, Section, Day, Start, End. For a combined class write both sections in one cell, like Beethoven/Mozart. Every row becomes a subject automatically. You can also upload the school's General Class Program as it is: Attendly finds your name in it (your profile name must match, like Z. Mungcal), and fills in your grades, sections, days and times for each term.</p>
             <div class="flex gap-4 mt-2">
               <button id="t-sched-template" type="button" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download Excel template</button>
               <button id="t-sched-clear" type="button" class="text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all subjects</button>
@@ -889,10 +911,19 @@
       <i data-lucide="graduation-cap" class="w-5 h-5"></i>Classroom
     </button>
     <button data-view="learning" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
-      <i data-lucide="book-open" class="w-5 h-5"></i>Learning
+      <i data-lucide="book-open" class="w-5 h-5"></i>LMS
+    </button>
+    <button data-view="attendance" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="scan-line" class="w-5 h-5"></i>Attendance
+    </button>
+    <button data-view="subjects" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="calendar-days" class="w-5 h-5"></i>Subjects
+    </button>
+    <button data-view="teachers" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="contact" class="w-5 h-5"></i>Teachers
     </button>
     <button data-view="studentid" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
-      <i data-lucide="id-card" class="w-5 h-5"></i>ID Card
+      <i data-lucide="user" class="w-5 h-5"></i>Profile
     </button>
     <button data-view="settings" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="settings" class="w-5 h-5"></i>Settings
@@ -1281,7 +1312,7 @@ async function xlsxInflate(u8) {
   const out = new Blob([u8]).stream().pipeThrough(ds);
   return new Uint8Array(await new Response(out).arrayBuffer());
 }
-async function readXlsx(buf) {
+async function readXlsxBook(buf) {
   const u8 = new Uint8Array(buf), dv = new DataView(buf), dec = new TextDecoder();
   let eocd = -1;
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65600); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
@@ -1300,38 +1331,43 @@ async function readXlsx(buf) {
   };
   const parse = s => new DOMParser().parseFromString(s, 'application/xml');
   const wb = parse(await text('xl/workbook.xml') || '');
-  let sheetPath = 'xl/worksheets/sheet1.xml';
+  const relMap = {};
   const rels = await text('xl/_rels/workbook.xml.rels');
-  const first = wb.getElementsByTagName('sheet')[0];
-  if (rels && first) {
-    const rid = first.getAttribute('r:id') || first.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
-    Array.from(parse(rels).getElementsByTagName('Relationship')).forEach(r => {
-      if (r.getAttribute('Id') === rid) { const tg = r.getAttribute('Target'); sheetPath = tg.charAt(0) === '/' ? tg.slice(1) : 'xl/' + tg; }
-    });
-  }
+  if (rels) Array.from(parse(rels).getElementsByTagName('Relationship')).forEach(r => { const tg = r.getAttribute('Target'); relMap[r.getAttribute('Id')] = tg.charAt(0) === '/' ? tg.slice(1) : 'xl/' + tg; });
+  const sheetList = Array.from(wb.getElementsByTagName('sheet')).map((s, i) => ({
+    name: s.getAttribute('name') || 'Sheet' + (i + 1),
+    path: relMap[s.getAttribute('r:id') || s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id')] || 'xl/worksheets/sheet' + (i + 1) + '.xml'
+  }));
+  if (!sheetList.length) sheetList.push({ name: 'Sheet1', path: 'xl/worksheets/sheet1.xml' });
   const shared = [];
   const sst = await text('xl/sharedStrings.xml');
   if (sst) Array.from(parse(sst).getElementsByTagName('si')).forEach(si => shared.push(Array.from(si.getElementsByTagName('t')).map(t => t.textContent).join('')));
-  const sheetXml = await text(sheetPath);
-  if (!sheetXml) throw new Error('no sheet');
-  const rows = [];
-  Array.from(parse(sheetXml).getElementsByTagName('row')).forEach(row => {
-    const r = [];
-    Array.from(row.getElementsByTagName('c')).forEach(c => {
-      const m = /^([A-Z]+)/.exec(c.getAttribute('r') || ''); if (!m) return;
-      let ci = 0; for (const ch of m[1]) ci = ci * 26 + ch.charCodeAt(0) - 64; ci--;
-      const t = c.getAttribute('t'), v = c.getElementsByTagName('v')[0];
-      let val = '';
-      if (t === 's' && v) val = shared[Number(v.textContent)] || '';
-      else if (t === 'inlineStr') val = Array.from(c.getElementsByTagName('t')).map(x => x.textContent).join('');
-      else if (v) val = v.textContent;
-      r[ci] = String(val).trim();
+  const out = [];
+  for (const sh of sheetList) {
+    const sheetXml = await text(sh.path);
+    if (!sheetXml) continue;
+    const rows = [];
+    Array.from(parse(sheetXml).getElementsByTagName('row')).forEach(row => {
+      const r = [];
+      Array.from(row.getElementsByTagName('c')).forEach(c => {
+        const m = /^([A-Z]+)/.exec(c.getAttribute('r') || ''); if (!m) return;
+        let ci = 0; for (const ch of m[1]) ci = ci * 26 + ch.charCodeAt(0) - 64; ci--;
+        if (ci > 150) return;
+        const t = c.getAttribute('t'), v = c.getElementsByTagName('v')[0];
+        let val = '';
+        if (t === 's' && v) val = shared[Number(v.textContent)] || '';
+        else if (t === 'inlineStr') val = Array.from(c.getElementsByTagName('t')).map(x => x.textContent).join('');
+        else if (v) val = v.textContent;
+        r[ci] = String(val).trim();
+      });
+      for (let i = 0; i < r.length; i++) if (r[i] == null) r[i] = '';
+      rows.push(r);
     });
-    for (let i = 0; i < r.length; i++) if (r[i] == null) r[i] = '';
-    rows.push(r);
-  });
-  return rows.filter(r => r.some(x => x !== ''));
+    out.push({ name: sh.name, rows: rows.filter(r => r.some(x => x !== '')) });
+  }
+  return out;
 }
+async function readXlsx(buf) { const b = await readXlsxBook(buf); return b.length ? b[0].rows : []; }
 function refreshIcons() { if (window.lucide) lucide.createIcons(); }
 
 /* ==================== TOASTS ==================== */
@@ -1392,13 +1428,13 @@ function tickClock() {
 /* ==================== NAVIGATION ==================== */
 const PAGE_TITLES = {
   admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
-  studentid: 'Student ID Card', classroom: 'Classroom', learning: 'My Learning', settings: 'Settings'
+  studentid: 'Profile', classroom: 'Classroom', learning: 'LMS', attendance: 'Attendance', subjects: 'Subjects', teachers: 'Teachers', settings: 'Settings'
 };
-const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
+const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
 function defaultViewForRole(role) {
   if (role === 'admin') return 'admin';
   if (role === 'teacher') return 'dashboard';
-  return 'studentid';
+  return 'attendance';
 }
 function goToView(view) {
   const role = DB.auth ? DB.auth.role : null;
@@ -1423,11 +1459,14 @@ function goToView(view) {
   });
   document.getElementById('page-title').textContent = (view === 'settings' && role === 'teacher') ? 'My Profile' : (PAGE_TITLES[view] || 'Attendly');
   if (view !== 'scanner') stopScanner();
-  if (view !== 'studentid') stopCheckinScanner();
+  if (view !== 'attendance') stopCheckinScanner();
   if (view === 'dashboard') renderDashboard();
   if (view === 'scanner') renderScannerView();
   if (view === 'roster') renderRoster();
   if (view === 'studentid') renderStudentIdView();
+  if (view === 'attendance') renderAttendanceView();
+  if (view === 'subjects') renderSubjectsView();
+  if (view === 'teachers') renderTeachersView();
   if (view === 'classroom') renderClassroom();
   if (view === 'learning') renderLearning();
   if (view === 'settings') renderSettings();
@@ -1524,7 +1563,7 @@ function myPeriods() {
   const t = getMyTeacher(), out = [];
   if (!t) return out;
   const d = new Date(), today = DAY_NAMES[d.getDay()], nowMin = d.getHours() * 60 + d.getMinutes();
-  (t.schedule || []).forEach(e => (e.classIds || []).forEach(cid => {
+  (t.schedule || []).filter(termOk).forEach(e => (e.classIds || []).forEach(cid => {
     if (DB.classes.some(c => c.id === cid)) out.push({ e, classId: cid, value: e.id + '|' + cid, status: periodStatus(e, today, nowMin), start: minOf(e.start) });
   }));
   return out;
@@ -1615,7 +1654,7 @@ function scheduleEntries() {
   const role = DB.auth && DB.auth.role;
   if (role === 'teacher') {
     const t = getMyTeacher(); if (!t) return null;
-    return (t.schedule || []).map(e => {
+    return (t.schedule || []).filter(termOk).map(e => {
       const cls = (e.classIds || []).filter(id => DB.classes.some(c => c.id === id));
       return cls.length ? { e, sub: cls.map(classLabel).join(' + '), pick: e.id + '|' + cls[0] } : null;
     }).filter(Boolean);
@@ -1626,7 +1665,7 @@ function scheduleEntries() {
     if (!cls && !mySubjectsNow().length) return null;
     const out = [];
     if (cls) DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
-      if (!entryHasClass(e, cls.id)) return;
+      if (!termOk(e) || !entryHasClass(e, cls.id)) return;
       const others = (e.classIds || []).filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
       out.push({ e, sub: t.name + (others.length ? ' · with ' + others.join(', ') : ''), pick: '' });
     }));
@@ -1705,7 +1744,7 @@ function renderScheduleCard() {
   const pick = ev.target.closest('[data-sched-pick]');
   if (pick && getMyTeacher()) { setPeriodFromValue(pick.dataset.schedPick); periodManual = true; renderDashboard(); }
 }));
-setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && (a.dataset.view === 'studentid' || a.dataset.view === 'dashboard')) renderScheduleCard(); }, 30000);
+setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && (a.dataset.view === 'subjects' || a.dataset.view === 'dashboard')) renderScheduleCard(); }, 30000);
 
 const startedEarly = new Set();
 function fmt12(t) { const m = minOf(t); if (m === null) return ''; const h = Math.floor(m / 60); return ((h + 11) % 12 + 1) + ':' + String(m % 60).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); }
@@ -2224,12 +2263,13 @@ document.getElementById('vouch-card').addEventListener('click', ev => {
     toast('Sent to your teacher to confirm.', 'success');
   });
 });
-setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && a.dataset.view === 'studentid') renderVouchCard(); }, 30000);
+setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && a.dataset.view === 'attendance') { renderVouchCard(); renderMyAttendance(); }; }, 30000);
 
 
 /* ==================== STUDENT: MY SUBJECTS (Excel / picture / by hand) ==================== */
 function meStudent() { return DB.auth && DB.auth.role === 'student' ? DB.students.find(s => s.id === DB.auth.userId) || null : null; }
-function mySubjectsNow() { const st = meStudent(); return st ? (st.subjects || []).filter(x => (x.term || DB.settings.currentTerm) === DB.settings.currentTerm) : []; }
+function termOk(e) { return !e.term || e.term === 'all' || Number(e.term) === DB.settings.currentTerm; }
+function mySubjectsNow() { const st = meStudent(); return st ? (st.subjects || []).filter(x => x.term === 'all' || (x.term === undefined ? DB.settings.currentTerm : x.term) === DB.settings.currentTerm) : []; }
 function dayTokens(v) {
   const map = { mon: 'Mon', monday: 'Mon', tue: 'Tue', tues: 'Tue', tuesday: 'Tue', wed: 'Wed', wednesday: 'Wed', thu: 'Thu', thur: 'Thu', thurs: 'Thu', thursday: 'Thu', fri: 'Fri', friday: 'Fri' };
   const out = [];
@@ -2250,28 +2290,29 @@ function splitSubjectTeacher(raw) {
   const flat = String(raw || '').replace(/\s+/g, ' ').trim();
   if (!flat) return null;
   if (/^(break|lunch|recess|snack)\b/i.test(flat)) return null;
-  const m = /^(.*\S)\s+((?:[A-Za-z]\.\s*)+[A-Za-zñÑ'’\-]{2,})$/.exec(flat);
+  const m = /^(.*\S)\s+((?:[A-Za-z]\.\s*)+[A-Za-zñÑ'’\-]{2,}(?:\s+[A-Za-zñÑ'’\-.]+)*)$/.exec(flat);
   if (m) return { subject: m[1], teacher: m[2] };
   const lines = String(raw).split(/\r?\n/).map(x => x.trim()).filter(Boolean);
   if (lines.length > 1) return { subject: lines[0], teacher: lines.slice(1).join(' ') };
   return { subject: flat, teacher: '' };
 }
-function timesFromCells(cells) {
+function timesFromCells(cells, raw) {
   const out = [];
   cells.forEach(c => {
     const s = String(c == null ? '' : c).trim(); if (!s) return;
     if (/^0?\.\d+$/.test(s)) { out.push(normTime(s)); return; }
     const re = /(\d{1,2})\s*[:.]\s*(\d{2})\s*(am|pm)?/gi; let m;
-    while ((m = re.exec(s))) out.push(normSchoolTime(m[1] + ':' + m[2] + (m[3] || '')));
+    while ((m = re.exec(s))) out.push(raw ? normTime(m[1] + ':' + m[2] + (m[3] || '')) : normSchoolTime(m[1] + ':' + m[2] + (m[3] || '')));
   });
   return out.filter(Boolean);
 }
 // Reads a list (Subject, Teacher, Day, Start, End) or a timetable grid (times down the side, days across).
 function parseStudentSchedule(rows, myClass) {
   rows = rows.map(r => Array.from(r || [], x => (x == null ? '' : String(x))));
-  const res = { items: [], note: '' };
+  const res = { items: [], note: '', flat: false };
   const hi = rows.findIndex(r => r.some(c => /^subject/i.test(c.trim())));
   if (hi >= 0) {
+    res.flat = true;
     const h = rows[hi].map(c => c.trim().toLowerCase()), col = k => h.findIndex(x => x.startsWith(k));
     const ci = { subject: col('subject'), teacher: col('teacher'), day: col('day'), start: col('start'), end: col('end'), time: col('time') };
     rows.slice(hi + 1).forEach(r => {
@@ -2285,37 +2326,133 @@ function parseStudentSchedule(rows, myClass) {
     });
     return res;
   }
-  const labels = new Set(['m', 't', 'w', 'th', 'f', 'mon', 'tue', 'tues', 'wed', 'thu', 'thur', 'thurs', 'fri', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+  const g = findGrid(rows);
+  if (!g) return res;
+  const sec = ((myClass && myClass.section) || '').toLowerCase();
+  let pick = g.groups[0], matched = false;
+  if (g.groups.length > 1 && sec) {
+    const idx = g.groups.findIndex(x => (x.name || '').toLowerCase() === sec);
+    const idx2 = idx >= 0 ? idx : g.groups.findIndex(x => (x.name || '').toLowerCase().includes(sec));
+    if (idx2 >= 0) { pick = g.groups[idx2]; matched = true; }
+  }
+  if (g.groups.length > 1) res.note = matched ? 'Used the ' + myClass.section + ' timetable.' : 'The file has ' + g.groups.length + ' timetables and none is named ' + ((myClass && myClass.section) || 'your section') + ', so the first one was used.';
+  gridSlots(rows, g).forEach(s => {
+    if (s.grp !== pick) return;
+    const x = splitSubjectTeacher(rows[s.row][pick.cols[s.k].c]); if (!x || !x.subject) return;
+    res.items.push({ subject: x.subject, teacher: x.teacher, day: pick.cols[s.k].day, start: s.start, end: s.end });
+  });
+  return res;
+}
+const GRID_LABELS = new Set(['m', 't', 'w', 'th', 'f', 'mon', 'tue', 'tues', 'wed', 'thu', 'thur', 'thurs', 'fri', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+// Finds the day header row of a class-program grid and the side-by-side section blocks under it.
+function findGrid(rows) {
   let gi = -1, heads = [];
   for (let i = 0; i < Math.min(rows.length, 40) && gi < 0; i++) {
     const hs = [];
-    rows[i].forEach((c, ci) => { const k = c.trim().toLowerCase().replace(/\./g, ''); if (labels.has(k)) hs.push({ c: ci, day: dayTokens(k)[0] }); });
+    rows[i].forEach((c, ci) => { const k = String(c).trim().toLowerCase().replace(/\./g, ''); if (GRID_LABELS.has(k)) hs.push({ c: ci, day: dayTokens(k)[0] }); });
     if (hs.length >= 3) { gi = i; heads = hs; }
   }
-  if (gi < 0) return res;
+  if (gi < 0) return null;
   const groups = []; let cur = null;
-  heads.forEach(hd => { if (!cur || cur.days.has(hd.day)) { cur = { cols: [], days: new Set() }; groups.push(cur); } cur.cols.push(hd); cur.days.add(hd.day); });
-  const sec = ((myClass && myClass.section) || '').toLowerCase();
-  let pick = groups[0], matched = false;
-  if (groups.length > 1 && sec) {
+  heads.forEach(hd => { if (!cur || cur.days.has(hd.day)) { cur = { cols: [], days: new Set(), name: '', adviser: '' }; groups.push(cur); } cur.cols.push(hd); cur.days.add(hd.day); });
+  // section names and advisers sit in the rows above the day header
+  for (let r = Math.max(0, gi - 6); r < gi; r++) {
+    const label = rows[r].map(c => String(c).trim().toLowerCase());
+    const isSec = label.includes('section'), isAdv = label.includes('adviser') || label.includes('advisor');
+    if (!isSec && !isAdv) continue;
     groups.forEach(g => {
-      if (matched) return;
-      const lo = g.cols[0].c, hiC = g.cols[g.cols.length - 1].c;
-      for (let r = Math.max(0, gi - 6); r < gi; r++) for (let c = lo; c <= hiC; c++) if ((rows[r][c] || '').toLowerCase().includes(sec)) { pick = g; matched = true; return; }
+      const lo = g.cols[0].c, hi = g.cols[g.cols.length - 1].c;
+      for (let c = lo; c <= hi; c++) { const v = String(rows[r][c] || '').trim(); if (v) { if (isSec) g.name = SECTION_ALIAS[v.toLowerCase()] || v; else g.adviser = v; break; } }
     });
   }
-  if (groups.length > 1) res.note = matched ? 'Used the ' + myClass.section + ' timetable.' : 'The file has ' + groups.length + ' timetables and none mentions your section, so the first one was used.';
-  const timeCols = groups[0].cols[0].c;
-  rows.slice(gi + 1).forEach(r => {
-    const tm = timesFromCells(r.slice(0, timeCols));
+  return { gi, groups, timeCols: groups[0].cols[0].c };
+}
+// The school program names the Grade 11 strands by their section names.
+const SECTION_ALIAS = { shakespeare: 'Acad', austen: 'TechPro' };
+// Class programs write 1:00 PM as 01:00. Times that jump back after 12:00 are afternoon times.
+function gridSlots(rows, g) {
+  const out = []; let offset = 0, prev = null;
+  rows.slice(g.gi + 1).forEach((r, idx) => {
+    const tm = timesFromCells(r.slice(0, g.timeCols), true);
     if (!tm.length) return;
-    const start = tm[0]; let end = tm[1] || '';
-    if (!end) { const m = minOf(start) + 60; end = String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
-    pick.cols.forEach(hd => {
-      const x = splitSubjectTeacher(r[hd.c]); if (!x || !x.subject) return;
-      res.items.push({ subject: x.subject, teacher: x.teacher, day: hd.day, start, end });
+    let s = minOf(tm[0]); if (s === null) return;
+    if (prev !== null && s + offset < prev && offset === 0) offset = 720;
+    s += offset; prev = s;
+    let e = tm[1] ? minOf(tm[1]) : null;
+    e = e === null ? s + 60 : e + offset;
+    if (e <= s) e += 720;
+    const fmt = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+    g.groups.forEach(grp => grp.cols.forEach((hd, k) => { if (String(rows[g.gi + 1 + idx][hd.c] || '').trim()) out.push({ row: g.gi + 1 + idx, k, grp, start: fmt(s), end: fmt(e) }); }));
+  });
+  return out;
+}
+
+const WORDNUM = { seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+function sheetMeta(sh) {
+  let grade = null, term = null, sy = '';
+  const m = /grade\s*(\d+)/i.exec(sh.name || ''); if (m) grade = Number(m[1]);
+  sh.rows.slice(0, 22).forEach(r => r.forEach(c => {
+    const s = String(c); let m2;
+    if (grade === null && (m2 = /grade\s+(seven|eight|nine|ten|eleven|twelve)\b/i.exec(s))) grade = WORDNUM[m2[1].toLowerCase()];
+    if (term === null && (m2 = /\b([123])\s*(?:st|nd|rd)\s+term\b/i.exec(s))) term = Number(m2[1]);
+    if (!sy && (m2 = /school year\s*(\d{4}\s*-\s*\d{4})/i.exec(s))) sy = m2[1].replace(/\s/g, '');
+  }));
+  return { grade, term, sy };
+}
+// A student uploads the whole school program: pick the sheet(s) for their grade, and their section's block.
+function parseStudentWorkbook(sheets, cls) {
+  const gradeNum = cls ? (parseInt((cls.name || '').replace(/\D/g, ''), 10) || null) : null;
+  const metas = sheets.map(sh => ({ sh, meta: sheetMeta(sh) }));
+  let cand = gradeNum ? metas.filter(x => x.meta.grade === gradeNum) : [];
+  if (!cand.length && sheets.length === 1) cand = metas;
+  const res = { items: [], notes: [], terms: new Set(), skipped: 0 };
+  if (!cand.length) { res.notes.push(gradeNum ? 'There is no sheet for Grade ' + gradeNum + ' in this file.' : 'Choose your class in Profile first, so the right sheet can be picked.'); return res; }
+  cand.forEach(x => {
+    const r = parseStudentSchedule(x.sh.rows, cls);
+    const term = x.meta.term || (r.flat ? DB.settings.currentTerm : 'all');
+    r.items.forEach(i => { i.term = term; res.items.push(i); });
+    if (r.note && !res.notes.includes(r.note)) res.notes.push(r.note);
+    res.terms.add(term); res.skipped += r.skipped || 0;
+    if (x.meta.sy && x.meta.sy !== DB.settings.schoolYear && !res.sy) { res.sy = x.meta.sy; }
+  });
+  return res;
+}
+function nameKey(s) { return String(s || '').toUpperCase().replace(/[^A-ZÑ\s\-]/g, ' ').replace(/\s+/g, ' ').trim(); }
+// "M. STA ROMANA" (initial + surname, as written in the program) against the profile name
+function teacherMatches(cellTeacher, fullName) {
+  const m = /^((?:[A-Za-z]\.\s*)+)(.+)$/.exec(String(cellTeacher || '').trim());
+  if (!m) return false;
+  const initial = m[1].trim()[0].toUpperCase(), sur = nameKey(m[2]), full = nameKey(fullName);
+  if (!sur || !full) return false;
+  return full[0] === initial && (full === sur || full.endsWith(' ' + sur) || full.endsWith('-' + sur));
+}
+function adviserMatches(adviser, fullName) {
+  const a = nameKey(adviser).split(' '), b = nameKey(fullName).split(' ');
+  return a[0] && b[0] && a[0][0] === b[0][0] && a[a.length - 1] === b[b.length - 1];
+}
+// A teacher uploads the whole school program: find every period that carries their name.
+function programForTeacher(sheets, tch) {
+  const res = { isProgram: false, entries: [], adviserClass: null, skipped: new Set() };
+  sheets.forEach(sh => {
+    const g = findGrid(sh.rows), meta = sheetMeta(sh);
+    if (!g || !meta.grade) return;
+    res.isProgram = true;
+    const classFor = grp => (grp.name ? DB.classes.find(c => c.name === 'Grade ' + meta.grade && (c.section || '').toLowerCase() === grp.name.toLowerCase()) : null);
+    g.groups.forEach(grp => {
+      const c = classFor(grp);
+      if (!c) { if (grp.name) res.skipped.add('Grade ' + meta.grade + ' ' + grp.name); return; }
+      if (!res.adviserClass && grp.adviser && adviserMatches(grp.adviser, tch.name)) res.adviserClass = c.id;
+    });
+    gridSlots(sh.rows, g).forEach(s => {
+      const c = classFor(s.grp); if (!c) return;
+      const x = splitSubjectTeacher(sh.rows[s.row][s.grp.cols[s.k].c]);
+      if (!x || !x.teacher || !teacherMatches(x.teacher, tch.name)) return;
+      res.entries.push({ subject: x.subject, classId: c.id, day: s.grp.cols[s.k].day, start: s.start, end: s.end, term: meta.term || 'all' });
     });
   });
+  const merged = {};
+  res.entries.forEach(e => { const k = [e.subject, e.day, e.start, e.end, e.term].join('|'); (merged[k] = merged[k] || Object.assign({}, e, { classIds: [] })).classIds.push(e.classId); });
+  res.entries = Object.keys(merged).map(k => { const e = merged[k]; delete e.classId; e.classIds = Array.from(new Set(e.classIds)); return e; });
   return res;
 }
 function ttKey(id) { return 'attendly_tt_' + id; }
@@ -2336,9 +2473,14 @@ function renderMySubjects() {
 }
 function msAdd(items, replace) {
   const st = meStudent(); if (!st) return 0;
-  const term = DB.settings.currentTerm;
-  const rows = items.slice(0, 120).map(x => ({ id: uid('ms'), subject: x.subject, teacher: x.teacher || '', day: x.day, start: x.start, end: x.end || '', term }));
-  st.subjects = (replace ? (st.subjects || []).filter(s => (s.term || term) !== term) : (st.subjects || [])).concat(rows);
+  const cur = DB.settings.currentTerm;
+  const rows = items.slice(0, 400).map(x => ({ id: uid('ms'), subject: x.subject, teacher: x.teacher || '', day: x.day, start: x.start, end: x.end || '', term: x.term === undefined ? cur : x.term }));
+  let keep = st.subjects || [];
+  if (replace) {
+    const set = new Set(rows.map(r => r.term));
+    keep = keep.filter(s => { const tm = s.term === undefined ? cur : s.term; return set.has('all') ? false : !(set.has(tm) || tm === 'all'); });
+  }
+  st.subjects = keep.concat(rows);
   saveDB(); renderMySubjects(); renderScheduleCard();
   return rows.length;
 }
@@ -2384,23 +2526,26 @@ document.getElementById('ms-file').addEventListener('change', e => {
   }
   if (/\.xls$/i.test(name)) { toast('Please save the file as .xlsx (Excel Workbook) and try again.', 'warning'); input.value = ''; return; }
   if (!lcNeedOnline()) { input.value = ''; return; }
-  const finish = rows => {
+  const finish = sheets => {
     input.value = '';
-    const r = parseStudentSchedule(rows, DB.classes.find(c => c.id === st.classId));
-    if (!r.items.length) { toast('No subjects were found. Use the template, or a timetable with days (M, T, W, TH, F) across the top.', 'warning'); return; }
-    const go = () => { const n = msAdd(r.items, true); toast(n + ' subject' + (n === 1 ? '' : 's') + ' added for Term ' + DB.settings.currentTerm + '.' + (r.note ? ' ' + r.note : '') + (r.skipped ? ' ' + r.skipped + ' row(s) skipped.' : ''), 'success'); };
-    if (mySubjectsNow().length) askConfirm('Replace my subjects', 'This replaces your ' + mySubjectsNow().length + ' subjects for Term ' + DB.settings.currentTerm + ' with ' + r.items.length + ' from the file.', go); else go();
+    const r = parseStudentWorkbook(sheets, DB.classes.find(c => c.id === st.classId));
+    if (!r.items.length) { toast(r.notes[0] || 'No subjects were found. Use the template, or a timetable with days (M, T, W, TH, F) across the top.', 'warning'); return; }
+    const termNums = Array.from(r.terms).filter(x => x !== 'all').sort();
+    const note = [r.notes.join(' '), termNums.length > 1 ? 'Terms ' + termNums.join(', ') + ' were all added, and the app shows the current one.' : '', r.sy ? 'This file is for SY ' + r.sy + '.' : '', r.skipped ? r.skipped + ' row(s) skipped.' : ''].filter(Boolean).join(' ');
+    const go = () => { const n = msAdd(r.items, true); toast(n + ' subject period' + (n === 1 ? '' : 's') + ' added. ' + note, 'success'); };
+    const had = (st.subjects || []).length;
+    if (had) askConfirm('Replace my subjects', 'This replaces your ' + had + ' saved subject periods with ' + r.items.length + ' from the file.', go); else go();
   };
   const reader = new FileReader();
   if (/\.xlsx$/i.test(name)) {
-    reader.onload = ev => readXlsx(ev.target.result).then(finish).catch(() => { input.value = ''; toast('That Excel file could not be read. Try the template.', 'error'); });
+    reader.onload = ev => readXlsxBook(ev.target.result).then(finish).catch(() => { input.value = ''; toast('That Excel file could not be read. Try the template.', 'error'); });
     reader.readAsArrayBuffer(file);
   } else {
     reader.onload = ev => {
       const lines = String(ev.target.result).replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
       if (!lines.length) { input.value = ''; toast('That file is empty.', 'warning'); return; }
       const d = [',', '\t', ';'].sort((a, b) => lines[0].split(b).length - lines[0].split(a).length)[0];
-      finish(lines.map(l => splitCsvLine(l, d)));
+      finish([{ name: 'file', rows: lines.map(l => splitCsvLine(l, d)) }]);
     };
     reader.readAsText(file);
   }
@@ -2592,10 +2737,6 @@ function renderStudentIdView() {
   } else {
     showIdCardEmpty();
   }
-  renderMyTeachers();
-  renderScheduleCard();
-  renderVouchCard();
-  renderMySubjects();
   refreshIcons();
 }
 function showIdCardEmpty() {
@@ -3087,8 +3228,9 @@ function scheduledStartFor(classId) {
   const t = getMyTeacher();
   if (!t || !t.schedule) return null;
   const today = DAY_NAMES[new Date().getDay()];
-  const e = t.schedule.find(x => entryHasClass(x, classId) && x.start && x.day === today) ||
-            t.schedule.find(x => entryHasClass(x, classId) && x.start && !x.day);
+  const sch = t.schedule.filter(termOk);
+  const e = sch.find(x => entryHasClass(x, classId) && x.start && x.day === today) ||
+            sch.find(x => entryHasClass(x, classId) && x.start && !x.day);
   return e ? e.start : null;
 }
 function renderSchedClassChips() {
@@ -3121,7 +3263,7 @@ function renderScheduleList() {
   const list = t.schedule || [];
   document.getElementById('t-sched-empty').classList.toggle('hidden', list.length > 0);
   document.getElementById('t-sched-list').innerHTML = list.map(e => {
-    const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' · ');
+    const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : '', e.term && e.term !== 'all' ? 'Term ' + e.term : ''].filter(Boolean).join(' · ');
     return '<div class="flex items-center justify-between gap-3 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-2">' +
       '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(e.subject) + '</p>' +
       '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(classesLabel(e.classIds) || 'No section set') + (when ? ' · ' + escapeHtml(when) : '') + '</p>' +
@@ -3240,7 +3382,20 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
   };
   const reader = new FileReader();
   if (isX) {
-    reader.onload = ev => readXlsx(ev.target.result).then(apply).catch(() => { toast('That Excel file could not be read. Use the template.', 'error'); input.value = ''; });
+    reader.onload = ev => readXlsxBook(ev.target.result).then(sheets => {
+      const pr = programForTeacher(sheets, t);
+      if (!pr.isProgram) { apply(sheets.length ? sheets[0].rows : []); return; }
+      input.value = '';
+      if (!pr.entries.length) { toast('This looks like the school class program, but "' + t.name + '" was not found in it. Your profile name must match the program, like Z. MUNGCAL for Zsa Mungcal.', 'warning'); return; }
+      t.schedule = (t.schedule || []).filter(e => e.src !== 'program').concat(pr.entries.map(e => Object.assign({ id: uid('sch'), src: 'program' }, e)));
+      new Set(pr.entries.map(e => e.subject)).forEach(s => ensurePortalSubject(s, t.id));
+      let advNote = '';
+      if (pr.adviserClass && !t.advisoryClassId) { t.advisoryClassId = pr.adviserClass; advNote = ' Advisory set to ' + classLabel(pr.adviserClass) + '.'; }
+      if (!saveDB()) return;
+      renderScheduleList(); renderTeacherProfile();
+      const subjects = new Set(pr.entries.map(e => e.subject)).size;
+      toast('Found ' + pr.entries.length + ' class periods for you (' + subjects + ' subjects).' + advNote + (pr.skipped.size ? ' Sections not in the app were skipped: ' + Array.from(pr.skipped).join(', ') + '.' : ''), 'success');
+    }).catch(() => { toast('That Excel file could not be read. Use the template.', 'error'); input.value = ''; });
     reader.readAsArrayBuffer(file);
   } else {
     reader.onload = ev => {
@@ -3254,46 +3409,75 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
 });
 
 /* ==================== STUDENT: MY TEACHERS ==================== */
-function teacherRowHtml(t, lines, isAdviser) {
-  return '<div class="flex items-start gap-3 border border-slate-100 dark:border-slate-800 rounded-lg p-3">' +
-    '<img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-10 h-10 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0">' +
-    '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(t.name) +
-    (isAdviser ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">Adviser</span>' : '') + '</p>' +
-    lines.map(l => '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(l) + '</p>').join('') + '</div></div>';
-}
-function renderMyTeachers() {
-  const st = DB.auth ? DB.students.find(s => s.id === DB.auth.userId) : null;
-  const sub = document.getElementById('my-teachers-sub');
-  const list = document.getElementById('my-teachers-list');
-  const otherWrap = document.getElementById('other-teachers-wrap');
-  otherWrap.classList.add('hidden');
-  const cls = st ? DB.classes.find(c => c.id === st.classId) : null;
-  if (!cls) { sub.textContent = 'Choose your class above and save to see your teachers.'; list.innerHTML = ''; return; }
-  sub.textContent = cls.name + ' — ' + cls.section;
-  const mine = [];
-  DB.teachers.forEach(t => {
-    const entries = (t.schedule || []).filter(e => entryHasClass(e, cls.id));
-    const adviser = t.advisoryClassId === cls.id;
-    if (entries.length || adviser) {
-      mine.push(teacherRowHtml(t, entries.map(e => {
-        const when = [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' ');
-        const others = e.classIds.filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
-        return e.subject + (when ? ' · ' + when : '') + (others.length ? ' · Combined with ' + others.join(', ') : '');
-      }), adviser));
+
+/* ==================== STUDENT MENUS: ATTENDANCE, SUBJECTS, TEACHERS ==================== */
+function renderAttendanceView() { renderVouchCard(); renderMyAttendance(); refreshIcons(); }
+function renderSubjectsView() { renderScheduleCard(); renderSubjectsAll(); renderMySubjects(); refreshIcons(); }
+function renderMyAttendance() {
+  const el = document.getElementById('my-att-card'), st = meStudent();
+  if (!el) return;
+  if (!st || !st.classId) { el.innerHTML = '<h2 class="text-sm font-semibold mb-1">My attendance</h2><p class="text-xs text-slate-500 dark:text-slate-400">Choose your class in Profile to see your attendance.</p>'; return; }
+  const today = todayStr(), nowMin = minutesNow(), dn = DAY_NAMES[new Date().getDay()];
+  const rows = DB.sessions.filter(s => s.classId === st.classId).map(s => {
+    const l = activeLog(s.id, st.id);
+    let status = l ? l.status : null;
+    if (!status) {
+      const sl = s.slotId ? findSlot(s.slotId) : null;
+      const past = s.date < today || (s.date === today && sl && periodStatus(sl.entry, dn, nowMin) === 'done');
+      status = past ? 'absent' : null;
     }
-  });
-  list.innerHTML = mine.length ? mine.join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 py-2">No teachers have added this section yet.</p>';
-  const others = [];
-  DB.teachers.forEach(t => {
-    const entries = (t.schedule || []).filter(e => !entryHasClass(e, cls.id) && e.classIds.some(id => (DB.classes.find(c => c.id === id) || {}).name === cls.name));
-    if (entries.length) others.push(teacherRowHtml(t, entries.map(e => e.subject + ' · ' + e.classIds.map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean).join(' + ')), false));
-  });
-  if (others.length) {
-    document.getElementById('other-teachers-title').textContent = 'Also teaching ' + cls.name;
-    document.getElementById('other-teachers-list').innerHTML = others.join('');
-    otherWrap.classList.remove('hidden');
-  }
+    return status ? { s, l, status } : null;
+  }).filter(Boolean).sort((a, b) => (b.s.date + (b.s.startTime || '')).localeCompare(a.s.date + (a.s.startTime || '')));
+  const n = k => rows.filter(r => r.status === k).length;
+  const box = (label, v, cls) => '<div class="rounded-lg border border-slate-200 dark:border-slate-800 p-3 text-center"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + label + '</p><p class="text-xl font-semibold tabular-nums ' + cls + '">' + v + '</p></div>';
+  el.innerHTML = '<h2 class="text-sm font-semibold mb-3">My attendance</h2><div class="grid grid-cols-4 gap-2 mb-4">' +
+    box('Present', n('present'), 'text-emerald-600 dark:text-emerald-400') + box('Late', n('late'), 'text-amber-600 dark:text-amber-400') + box('Cutting', n('cutting'), 'text-rose-600 dark:text-rose-400') + box('Absent', n('absent'), 'text-slate-500') + '</div>' +
+    (rows.length ? '<div class="space-y-1.5">' + rows.slice(0, 20).map(r => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(r.s.subject || 'Whole class') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(r.s.date) + (r.l ? ' · ' + formatTime(r.l.timestamp) : '') + (r.l && r.l.vouchedBy ? ' · vouched by ' + escapeHtml(studentName(r.l.vouchedBy)) : '') + '</span></span>' + statusBadge(r.status) + '</div>').join('') + '</div>'
+      : '<p class="text-xs text-slate-500 dark:text-slate-400">No attendance has been recorded for your class yet.</p>');
+  refreshIcons();
 }
+function renderSubjectsAll() {
+  const el = document.getElementById('subjects-all-card');
+  if (!el) return;
+  const items = scheduleEntries();
+  if (items === null || !items.length) { el.innerHTML = '<h2 class="text-sm font-semibold mb-1">All my subjects</h2><p class="text-xs text-slate-500 dark:text-slate-400">' + (items === null ? 'Choose your class in Profile, or add your subjects below.' : 'No subjects yet. Upload your timetable or add them below.') + '</p>'; return; }
+  const groups = {};
+  items.forEach(it => { const k = (it.e.subject || '').toLowerCase(); (groups[k] = groups[k] || { name: it.e.subject, who: new Set(), times: [] }); groups[k].who.add(it.sub); groups[k].times.push(it.e); });
+  const list = Object.keys(groups).sort().map(k => {
+    const g = groups[k];
+    const times = g.times.slice().sort((a, b) => (SCHOOL_DAYS.indexOf(a.day) - SCHOOL_DAYS.indexOf(b.day)) || ((minOf(a.start) || 0) - (minOf(b.start) || 0)));
+    const byTime = {}; times.forEach(e => { const tk = (e.start || '') + '-' + (e.end || ''); (byTime[tk] = byTime[tk] || { e, days: [] }).days.push(e.day || 'Daily'); });
+    return '<div class="border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2.5"><p class="text-sm font-medium">' + escapeHtml(g.name) + '</p><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(Array.from(g.who).join(' · ')) + '</p><p class="text-xs mt-1 text-slate-600 dark:text-slate-300">' +
+      Object.keys(byTime).map(tk => byTime[tk].days.join(', ') + (byTime[tk].e.start ? ' ' + fmt12(byTime[tk].e.start) + (byTime[tk].e.end ? '–' + fmt12(byTime[tk].e.end) : '') : '')).join(' · ') + '</p></div>';
+  });
+  el.innerHTML = '<h2 class="text-sm font-semibold mb-1">All my subjects</h2><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">' + list.length + ' subject' + (list.length === 1 ? '' : 's') + ' this term, from your teachers and what you added.</p><div class="space-y-2">' + list.join('') + '</div>';
+}
+function teacherGradeLines(t) {
+  const map = {};
+  (t.schedule || []).filter(termOk).forEach(e => (e.classIds || []).forEach(id => { const c = DB.classes.find(x => x.id === id); if (c) (map[c.name] = map[c.name] || new Set()).add(c.section); }));
+  return Object.keys(map).sort((a, b) => parseInt(a.replace(/\D/g, '')) - parseInt(b.replace(/\D/g, ''))).map(g => g + ' — ' + Array.from(map[g]).join(', '));
+}
+function renderTeachersView() {
+  const list = document.getElementById('tch-list'), st = meStudent();
+  if (!list) return;
+  document.getElementById('tch-sub').textContent = DB.teachers.length + ' teacher' + (DB.teachers.length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '');
+  const q = (document.getElementById('tch-search').value || '').trim().toLowerCase();
+  const mine = t => !!(st && st.classId && ((t.schedule || []).some(e => termOk(e) && entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
+  const rows = DB.teachers.map(t => ({ t, lines: teacherGradeLines(t), subjects: Array.from(new Set((t.schedule || []).filter(termOk).map(e => e.subject).filter(Boolean))), mine: mine(t) }))
+    .filter(r => !q || (r.t.name + ' ' + r.subjects.join(' ') + ' ' + r.lines.join(' ') + ' ' + (r.t.advisoryClassId ? classLabel(r.t.advisoryClassId) : '')).toLowerCase().includes(q))
+    .sort((a, b) => (b.mine - a.mine) || (a.t.name || '').localeCompare(b.t.name || ''));
+  list.innerHTML = rows.length ? rows.map(r => {
+    const t = r.t, adv = t.advisoryClassId ? classLabel(t.advisoryClassId) : '';
+    return '<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-start gap-3">' +
+      '<img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-12 h-12 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" alt="">' +
+      '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + escapeHtml(t.name) + (r.mine ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 align-middle">Your teacher</span>' : '') + '</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400">' + [t.teacherId ? 'ID ' + escapeHtml(t.teacherId) : '', t.email ? escapeHtml(t.email) : ''].filter(Boolean).join(' · ') + '</p></div></div>' +
+      '<dl class="mt-3 space-y-1.5 text-xs"><div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Advisory</dt><dd class="text-slate-700 dark:text-slate-200">' + (adv ? escapeHtml(adv) : 'None') + '</dd></div>' +
+      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Teaches</dt><dd class="text-slate-700 dark:text-slate-200">' + (r.lines.length ? r.lines.map(escapeHtml).join('<br>') : 'No grade or section added yet') + '</dd></div>' +
+      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Subjects</dt><dd class="flex flex-wrap gap-1">' + (r.subjects.length ? r.subjects.map(s => '<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + escapeHtml(s) + '</span>').join('') : '<span class="text-slate-700 dark:text-slate-200">None yet</span>') + '</dd></div></dl></div>';
+  }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">' + (q ? 'No teacher matches your search.' : 'No teachers have registered yet.') + '</p>';
+}
+document.getElementById('tch-search').addEventListener('input', renderTeachersView);
 
 /* ==================== RESTORE (MERGE) FROM BACKUP ==================== */
 function mergeBackup(parsed) {
