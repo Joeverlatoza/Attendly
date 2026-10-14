@@ -814,7 +814,7 @@
           <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Upload your schedule (Excel file, or the school class program)</p>
             <input id="t-sched-csv" type="file" accept=".xlsx,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" class="w-full text-sm">
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Columns: Subject, Grade, Section, Day, Start, End. For a combined class write both sections in one cell, like Beethoven/Mozart. Every row becomes a subject automatically. You can also upload the school's General Class Program as it is: Attendly finds your name in it (your profile name must match, like Z. Mungcal), and fills in your grades, sections, days and times for each term.</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Columns: Subject, Grade, Section, Day, Start, End. For a combined class write both sections in one cell, like Beethoven/Mozart. Every row becomes a subject automatically. You can also upload the school's Teachers' Schedule (Individual Teacher's Program) or General Class Program as it is: Attendly finds your name in it (your profile name must match the file, like Zsa Mungcal), and fills in your grades, sections, days and times for each term.</p>
             <div class="flex gap-4 mt-2">
               <button id="t-sched-template" type="button" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Download Excel template</button>
               <button id="t-sched-clear" type="button" class="text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Remove all subjects</button>
@@ -2455,6 +2455,113 @@ function programForTeacher(sheets, tch) {
   res.entries = Object.keys(merged).map(k => { const e = merged[k]; delete e.classId; e.classIds = Array.from(new Set(e.classIds)); return e; });
   return res;
 }
+
+// ---- "Individual Teacher's Program" workbooks: one program per teacher, stacked down the sheet ----
+const TP_SECTION_ALIAS = { shakespeare: 'acad', austen: 'techpro', humss: 'acad' };
+function editDist(a, b) {
+  const d = []; for (let i = 0; i <= a.length; i++) { d[i] = [i]; } for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function tpClassesFor(grade, sec) {
+  const gname = 'Grade ' + grade;
+  if (!sec) return DB.classes.filter(c => c.name === gname);
+  let n = sec.toLowerCase().replace(/[^a-zñ]/g, ''); n = TP_SECTION_ALIAS[n] || n;
+  const norm = c => (c.section || '').toLowerCase().replace(/[^a-zñ]/g, '');
+  let c = DB.classes.find(x => x.name === gname && norm(x) === n);
+  if (!c) c = DB.classes.find(x => x.name === gname && n.length > 3 && editDist(norm(x), n) <= 1);
+  if (!c) { const any = DB.classes.filter(x => norm(x) === n); if (any.length === 1) c = any[0]; }
+  return c ? [c] : null;
+}
+// "10- ATHENA - ENGLISH", "7 LOVE - VALUES ED.", "Grade 12-PR 2", "11-AUSTEN-GEN. SCI.   (9:30-10:30)"
+function tpParseCell(raw) {
+  let t = String(raw || '').replace(/\s+/g, ' ').trim(); if (!t) return null;
+  let times = null;
+  const pm = /\(\s*(\d{1,2}[:.]\d{2})\s*-\s*(\d{1,2}[:.]\d{2})\s*\)\s*$/.exec(t);
+  if (pm) { times = [pm[1], pm[2]]; t = t.slice(0, pm.index).trim(); }
+  const m = /^(?:GRADE\s*)?(\d{1,2})\s*[-\s]\s*(.+)$/i.exec(t); if (!m) return null;
+  const grade = +m[1]; if (grade < 7 || grade > 12) return null;
+  const parts = m[2].split(/\s*-\s*/).map(x => x.trim()).filter(Boolean);
+  let sec = '', subject = parts.join(' - ');
+  if (parts.length >= 2 && /^[A-Za-zñÑ]+$/.test(parts[0])) { sec = parts[0]; subject = parts.slice(1).join(' - '); }
+  subject = subject.replace(/\s+/g, ' ').trim();
+  if (!subject) return null;
+  return { grade, sec, subject, times };
+}
+function tpNameMatches(blockName, profileName) {
+  const b = nameKey(blockName).split(/[\s\-]+/).filter(Boolean), p = nameKey(profileName).split(/[\s\-]+/).filter(Boolean);
+  if (!b.length || !p.length) return false;
+  let strong = 0;
+  for (const t of p) {
+    if (t.length === 1) { if (!b.some(x => x[0] === t)) return false; }
+    else if (b.includes(t)) strong++; else return false;
+  }
+  return strong >= 1 && (strong >= 2 || p.length === 1 || p.some(t => t.length === 1));
+}
+function tpBlocks(sheets) {
+  const out = [];
+  sheets.forEach(sh => {
+    const rows = sh.rows;
+    rows.forEach((r, i) => {
+      if (String(r[0] == null ? '' : r[0]).trim().toLowerCase() !== 'name:') return;
+      let term = null;
+      for (let j = i - 1; j >= Math.max(0, i - 4) && !term; j--) {
+        for (const c of (rows[j] || [])) { const m = /\bterm\s*([123])\b/i.exec(String(c == null ? '' : c)); if (m) { term = +m[1]; break; } }
+      }
+      let hi = -1;
+      for (let k = i + 1; k < Math.min(rows.length, i + 8); k++) if (String(rows[k][0] == null ? '' : rows[k][0]).trim().toLowerCase() === 'time') { hi = k; break; }
+      if (hi < 0) return;
+      const days = {};
+      (rows[hi] || []).forEach((c, ci) => { const d = String(c == null ? '' : c).trim().slice(0, 3).toLowerCase(); const hit = SCHOOL_DAYS.find(x => x.toLowerCase() === d); if (hit && ci > 0) days[ci] = hit; });
+      let end = hi + 1; while (end < rows.length && !/^total/i.test(String(rows[end][0] == null ? '' : rows[end][0]).trim()) && String(rows[end][0] == null ? '' : rows[end][0]).trim().toLowerCase() !== 'name:') end++;
+      out.push({ name: String(r[1] == null ? '' : r[1]).trim(), advisory: String((rows[i + 1] || [])[1] == null ? '' : rows[i + 1][1]).trim(), term, rows, hi, end, days });
+    });
+  });
+  return out;
+}
+function programFromIndividual(sheets, tch) {
+  const blocks = tpBlocks(sheets);
+  const res = { isProgram: blocks.length > 0, kind: 'individual', entries: [], adviserClass: null, skipped: new Set(), ambiguous: [], filled: [], terms: [] };
+  if (!blocks.length) return res;
+  const mine = blocks.filter(b => tpNameMatches(b.name, tch.name));
+  const who = Array.from(new Set(mine.map(b => nameKey(b.name))));
+  if (who.length > 1) { res.ambiguous = who; return res; }
+  const byTerm = {};
+  mine.forEach(b => {
+    const key = b.term || 'all', list = byTerm[key] = byTerm[key] || [];
+    if (!res.adviserClass && b.advisory && !/^n\/?a$/i.test(b.advisory)) { const pc = tpParseCell(b.advisory + ' - X'); if (pc) { const cs = tpClassesFor(pc.grade, pc.sec); if (cs && cs.length === 1) res.adviserClass = cs[0].id; } }
+    let offset = 0, prev = null;
+    for (let r = b.hi + 1; r < b.end; r++) {
+      const row = b.rows[r];
+      const tm = String(row[0] == null ? '' : row[0]).match(/(\d{1,2})\s*[:.]\s*(\d{2})/g); if (!tm || tm.length < 1) continue;
+      const mm = x => { const q = /(\d{1,2})\s*[:.]\s*(\d{2})/.exec(x); return +q[1] * 60 + +q[2]; };
+      let s = mm(tm[0]); if (prev !== null && s + offset < prev && offset === 0) offset = 720;
+      s += offset; prev = s;
+      let e = tm[1] ? mm(tm[1]) + offset : s + 60; if (e <= s) e += 720;
+      Object.keys(b.days).forEach(ci => {
+        const pc = tpParseCell(row[ci]); if (!pc) return;
+        let st = s, en = e;
+        if (pc.times) { let a = mm(pc.times[0]), z = mm(pc.times[1]); if (a < 300) { a += 720; } if (z <= a) z += 720; st = a; en = z; }
+        const cs = tpClassesFor(pc.grade, pc.sec);
+        if (!cs || !cs.length) { res.skipped.add('Grade ' + pc.grade + (pc.sec ? ' ' + pc.sec : '')); return; }
+        const hm = x => String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0');
+        list.push({ subject: pc.subject, classIds: cs.map(c => c.id), day: b.days[ci], start: hm(st), end: hm(en), term: key });
+      });
+    }
+  });
+  if (!byTerm.all) {
+    [2, 3].forEach(t => { if (!byTerm[t]) { const src = t === 3 && byTerm[2] ? 2 : (byTerm[1] ? 1 : null); if (src) { byTerm[t] = byTerm[src].map(e => Object.assign({}, e, { term: t })); res.filled.push(t); } } });
+  }
+  const merged = {};
+  Object.keys(byTerm).forEach(k => byTerm[k].forEach(e => {
+    const key = [e.subject, e.day, e.start, e.end, e.term].join('|');
+    if (!merged[key]) merged[key] = Object.assign({}, e, { classIds: [] });
+    e.classIds.forEach(id => { if (!merged[key].classIds.includes(id)) merged[key].classIds.push(id); });
+  }));
+  res.entries = Object.keys(merged).map(k => merged[k]);
+  res.terms = Array.from(new Set(res.entries.map(e => e.term)));
+  return res;
+}
 function ttKey(id) { return 'attendly_tt_' + id; }
 function ttGet(id) { try { return localStorage.getItem(ttKey(id)); } catch (e) { return null; } }
 function renderMySubjects() {
@@ -2879,7 +2986,7 @@ function fileToDataUrl(file, cb) {
   reader.readAsDataURL(file);
 }
 // SHA-256 hash of the fixed Admin passcode. The plain passcode is never stored or shown in the source.
-const ADMIN_PASSWORD_HASH = '6dadc5f51023c1e98b8ce958b08102f60a05e03093c42748de708ea9665d8348';
+const ADMIN_PASSWORD_HASH = 'f5d883f78c5311a9098a6729d9f04e815c80fa3b1f7cdd67a99b229dcce77941';
 
 /* ==================== AUTH: ROLE NAV & SCREEN SWITCHING ==================== */
 function applyRoleNav() {
@@ -3383,10 +3490,12 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
   const reader = new FileReader();
   if (isX) {
     reader.onload = ev => readXlsxBook(ev.target.result).then(sheets => {
-      const pr = programForTeacher(sheets, t);
+      let pr = programFromIndividual(sheets, t);
+      if (!pr.isProgram) pr = programForTeacher(sheets, t);
       if (!pr.isProgram) { apply(sheets.length ? sheets[0].rows : []); return; }
       input.value = '';
-      if (!pr.entries.length) { toast('This looks like the school class program, but "' + t.name + '" was not found in it. Your profile name must match the program, like Z. MUNGCAL for Zsa Mungcal.', 'warning'); return; }
+      if (pr.ambiguous && pr.ambiguous.length) { toast('More than one teacher matches "' + t.name + '" (' + pr.ambiguous.join(', ').toLowerCase() + '). Write your full name in your profile and upload again.', 'warning'); return; }
+      if (!pr.entries.length) { toast('This looks like a school program file, but "' + t.name + '" was not found in it. Your profile name must match the name in the file, like Zsa Mungcal.', 'warning'); return; }
       t.schedule = (t.schedule || []).filter(e => e.src !== 'program').concat(pr.entries.map(e => Object.assign({ id: uid('sch'), src: 'program' }, e)));
       new Set(pr.entries.map(e => e.subject)).forEach(s => ensurePortalSubject(s, t.id));
       let advNote = '';
@@ -3394,7 +3503,7 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
       if (!saveDB()) return;
       renderScheduleList(); renderTeacherProfile();
       const subjects = new Set(pr.entries.map(e => e.subject)).size;
-      toast('Found ' + pr.entries.length + ' class periods for you (' + subjects + ' subjects).' + advNote + (pr.skipped.size ? ' Sections not in the app were skipped: ' + Array.from(pr.skipped).join(', ') + '.' : ''), 'success');
+      toast('Found ' + pr.entries.length + ' class periods for you (' + subjects + ' subjects).' + advNote + (pr.filled && pr.filled.length ? ' The file has no separate schedule for Term ' + pr.filled.join(' and ') + ', so the earlier term was copied.' : '') + (pr.skipped.size ? ' Sections not in the app were skipped: ' + Array.from(pr.skipped).join(', ') + '.' : ''), 'success');
     }).catch(() => { toast('That Excel file could not be read. Use the template.', 'error'); input.value = ''; });
     reader.readAsArrayBuffer(file);
   } else {
