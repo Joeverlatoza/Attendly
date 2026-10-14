@@ -359,7 +359,7 @@
 
         <div id="dash-content" class="space-y-6">
           <div id="sched-card-t" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
               <p class="text-xs text-slate-500 dark:text-slate-400">Enrolled</p>
               <p id="stat-enrolled" class="text-2xl font-semibold tabular-nums mt-1">0</p>
@@ -371,6 +371,10 @@
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
               <p class="text-xs text-slate-500 dark:text-slate-400">Late</p>
               <p id="stat-late" class="text-2xl font-semibold tabular-nums mt-1 text-amber-600 dark:text-amber-400">0</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Cutting</p>
+              <p id="stat-cutting" class="text-2xl font-semibold tabular-nums mt-1 text-rose-600 dark:text-rose-400">0</p>
             </div>
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
               <p class="text-xs text-slate-500 dark:text-slate-400">Attendance rate</p>
@@ -450,6 +454,7 @@
               </div>
             </div>
           </div>
+          <div id="attend-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         </div>
       </section>
 
@@ -590,6 +595,7 @@
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="vouch-card" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-4">Your student details</h2>
@@ -1428,6 +1434,8 @@ function logAttendance(session, student, status, method) {
 function statusBadge(status) {
   if (status === 'present') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full"><i data-lucide="check-circle" class="w-3 h-3"></i>Present</span>';
   if (status === 'late') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i>Late</span>';
+  if (status === 'cutting') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full"><i data-lucide="log-out" class="w-3 h-3"></i>Cutting</span>';
+  if (status === 'pending') return '<span class="inline-flex items-center gap-1 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 px-2 py-0.5 rounded-full"><i data-lucide="hourglass" class="w-3 h-3"></i>Waiting</span>';
   return '<span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full"><i data-lucide="minus-circle" class="w-3 h-3"></i>Absent</span>';
 }
 
@@ -1548,6 +1556,7 @@ function renderDashboard() {
   if (!hasClasses || !curPeriod.classId) { refreshIcons(); return; }
   renderSessionCard();
   renderDashboardStats();
+  renderAttendCard();
   refreshIcons();
 }
 
@@ -1754,14 +1763,16 @@ function renderDashboardStats() {
   if (!classId) return;
   const session = findSession(classId, curPeriod.slotId);
   const roster = DB.students.filter(s => s.classId === classId);
-  const logs = session ? DB.logs.filter(l => l.sessionId === session.id) : [];
+  const logs = session ? DB.logs.filter(l => l.sessionId === session.id && l.status !== 'rejected') : [];
   const present = logs.filter(l => l.status === 'present').length;
   const late = logs.filter(l => l.status === 'late').length;
+  const cutting = logs.filter(l => l.status === 'cutting').length;
   const enrolled = roster.length;
   const rate = enrolled ? Math.round(((present + late) / enrolled) * 100) : 0;
   document.getElementById('stat-enrolled').textContent = enrolled;
   document.getElementById('stat-present').textContent = present;
   document.getElementById('stat-late').textContent = late;
+  document.getElementById('stat-cutting').textContent = cutting;
   document.getElementById('stat-rate').textContent = rate + '%';
 
   const sorted = logs.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -1771,7 +1782,7 @@ function renderDashboardStats() {
   body.innerHTML = sorted.map(l => {
     const st = DB.students.find(s => s.id === l.studentId);
     return '<tr><td class="py-2.5">' + escapeHtml(st ? st.name : 'Unknown') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(st ? st.studentId : '—') +
-      '</td><td class="py-2.5 tabular-nums text-slate-500 dark:text-slate-400">' + formatTime(l.timestamp) + '</td><td class="py-2.5">' + statusBadge(l.status) + '</td></tr>';
+      '</td><td class="py-2.5 tabular-nums text-slate-500 dark:text-slate-400">' + formatTime(l.timestamp) + '</td><td class="py-2.5">' + statusBadge(l.status) + (l.vouchedBy ? '<span class="block text-[10px] text-slate-400 mt-0.5">vouched by ' + escapeHtml((DB.students.find(s => s.id === l.vouchedBy) || {}).name || 'a classmate') + '</span>' : '') + '</td></tr>';
   }).join('');
   refreshIcons();
 }
@@ -1808,14 +1819,14 @@ function exportClassCSV(classId, slotId) {
   const cls = DB.classes.find(c => c.id === classId);
   const session = getOrCreateSession(classId, slotId);
   const roster = DB.students.filter(s => s.classId === classId);
-  const rows = [['Full Name', 'Student ID', 'Section', 'Subject', 'Status', 'Time']];
+  const rows = [['Full Name', 'Student ID', 'Section', 'Subject', 'Status', 'Time', 'Marked by']];
   roster.forEach(s => {
-    const log = DB.logs.find(l => l.sessionId === session.id && l.studentId === s.id);
-    const st = log ? log.status : 'absent';
-    rows.push([s.name, s.studentId, s.section || '', session.subject || '', st.charAt(0).toUpperCase() + st.slice(1), log ? formatTime(log.timestamp) : '']);
+    const log = activeLog(session.id, s.id);
+    const st = log ? (log.status === 'pending' ? 'unconfirmed' : log.status) : 'absent';
+    rows.push([s.name, s.studentId, s.section || '', session.subject || '', st.charAt(0).toUpperCase() + st.slice(1), log ? formatTime(log.timestamp) : '', log ? markedByText(log) : '']);
   });
   const tag = (session.subject ? session.subject.replace(/[^a-z0-9]+/gi, '-') + '-' : '') + (cls ? cls.name.replace(/[^a-z0-9]+/gi, '-') : 'class');
-  downloadXlsx(rows, 'attendance-' + tag + '-' + session.date + '.xlsx', session.date, [28, 16, 16, 20, 12, 12]);
+  downloadXlsx(rows, 'attendance-' + tag + '-' + session.date + '.xlsx', session.date, [28, 16, 16, 20, 13, 12, 26]);
   toast('Attendance exported to Excel.', 'success');
 }
 
@@ -1947,7 +1958,8 @@ function handleTeacherScan(decodedText) {
     toast(student.name + ' is not enrolled in the selected class.', 'error'); beep(220, 200); return;
   }
   const session = getOrCreateSession(student.classId, curPeriod.slotId);
-  const already = DB.logs.find(l => l.sessionId === session.id && l.studentId === student.id);
+  let already = activeLog(session.id, student.id);
+  if (already && already.status === 'pending') { DB.logs = DB.logs.filter(l => l !== already); already = null; }
   if (already) { toast(student.name + ' is already checked in today.', 'warning'); beep(440, 150); return; }
   const status = computeStatus(session);
   logAttendance(session, student, status, 'scan');
@@ -2012,7 +2024,8 @@ function handleStudentScan(decodedText) {
   const sameCombined = student.classId !== classId && slot && (slot.entry.classIds || []).includes(student.classId);
   if (student.classId !== classId && !sameCombined) { toast('Your saved profile is not enrolled in this class.', 'error'); beep(220, 200); return; }
   const target = sameCombined ? getOrCreateSession(student.classId, session.slotId) : session;
-  const already = DB.logs.find(l => l.sessionId === target.id && l.studentId === student.id);
+  let already = activeLog(target.id, student.id);
+  if (already && already.status === 'pending') { DB.logs = DB.logs.filter(l => l !== already); already = null; }
   if (already) { toast('You are already checked in for this class.', 'warning'); beep(440, 150); return; }
   const status = computeStatus(target);
   logAttendance(target, student, status, 'self');
@@ -2020,6 +2033,147 @@ function handleStudentScan(decodedText) {
   toast('Checked in' + (target.subject ? ' for ' + target.subject : '') + ' — marked ' + status + '.', 'success');
   if (curPeriod.classId === student.classId) renderDashboardStats();
 }
+
+
+/* ==================== HAND MARKING, CUTTING, CLASSMATE VOUCHING ==================== */
+const MAX_VOUCHES_PER_PERIOD = 3, MAX_REJECTED_VOUCHES = 2;
+function activeLog(sessionId, studentId) { return DB.logs.find(l => l.sessionId === sessionId && l.studentId === studentId && l.status !== 'rejected') || null; }
+function studentName(id) { const s = DB.students.find(x => x.id === id); return s ? s.name : 'a classmate'; }
+function markedByText(l) {
+  if (l.method === 'vouch' || l.vouchedBy) return 'Vouched by ' + studentName(l.vouchedBy) + (l.confirmedBy ? ' (teacher confirmed)' : ' (not confirmed)');
+  return { scan: 'Teacher scan', self: 'Self check-in', teacher: 'Teacher' }[l.method] || '';
+}
+function rejectedVouchCount(studentId) { return DB.logs.filter(l => l.vouchedBy === studentId && l.status === 'rejected').length; }
+function minutesNow() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+// A student who was in an earlier class today but is missing from this one after the late window.
+function possibleCutting(session) {
+  if (!session) return [];
+  const start = minOf(session.startTime);
+  if (start === null || minutesNow() < start + (Number(DB.settings.lateThresholdMinutes) || 0)) return [];
+  return DB.students.filter(s => s.classId === session.classId && !activeLog(session.id, s.id)).filter(s =>
+    DB.logs.some(l => {
+      if (l.studentId !== s.id || l.date !== session.date || l.sessionId === session.id || !(l.status === 'present' || l.status === 'late')) return false;
+      const other = DB.sessions.find(x => x.id === l.sessionId);
+      const o = other ? minOf(other.startTime) : null;
+      return o !== null && o < start;
+    }));
+}
+function setAttendance(studentId, status) {
+  if (!getMyTeacher() || !curPeriod.classId) return;
+  const student = DB.students.find(s => s.id === studentId); if (!student) return;
+  const session = getOrCreateSession(curPeriod.classId, curPeriod.slotId);
+  const cur = activeLog(session.id, studentId);
+  if (status === 'absent') { if (cur) DB.logs = DB.logs.filter(l => l !== cur); }
+  else if (cur) { cur.status = status; cur.method = 'teacher'; cur.timestamp = new Date().toISOString(); delete cur.proposed; delete cur.vouchedBy; delete cur.confirmedBy; }
+  else logAttendance(session, student, status, 'teacher');
+  saveDB(); renderAttendCard(); renderDashboardStats();
+}
+let lastPendingCount = 0;
+function renderAttendCard() {
+  const el = document.getElementById('attend-card');
+  if (!el || !getMyTeacher() || !curPeriod.classId) return;
+  const session = findSession(curPeriod.classId, curPeriod.slotId);
+  const roster = DB.students.filter(s => s.classId === curPeriod.classId).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  const pending = session ? DB.logs.filter(l => l.sessionId === session.id && l.status === 'pending') : [];
+  const cut = possibleCutting(session);
+  if (pending.length > lastPendingCount) toast(pending.length + ' classmate check-in' + (pending.length === 1 ? ' is' : 's are') + ' waiting for your confirmation.', 'warning');
+  lastPendingCount = pending.length;
+  const noPhone = roster.filter(s => s.noPhone).length;
+  let h = '<div class="mb-3"><h2 class="text-sm font-semibold">Class list</h2><p class="text-xs text-slate-500 dark:text-slate-400">Mark students by hand, record cutting, and confirm classmate check-ins. ' + (noPhone ? noPhone + ' without a phone.' : '') + '</p></div>';
+  if (pending.length) {
+    h += '<div class="rounded-lg border border-sky-200 dark:border-sky-900 bg-sky-50/60 dark:bg-sky-950/20 p-3 mb-3"><p class="text-xs font-semibold text-sky-800 dark:text-sky-300 mb-2">Waiting for your confirmation (' + pending.length + ')</p>' +
+      pending.map(l => '<div class="flex items-center gap-2 py-1.5"><p class="flex-1 min-w-0 text-sm"><b>' + escapeHtml(studentName(l.studentId)) + '</b> <span class="text-slate-500 dark:text-slate-400">vouched by ' + escapeHtml(studentName(l.vouchedBy)) + (rejectedVouchCount(l.vouchedBy) ? ' · ' + rejectedVouchCount(l.vouchedBy) + ' rejected before' : '') + '</span></p>' +
+        '<button type="button" data-vouch="ok|' + l.id + '" class="text-xs font-medium bg-emerald-600 text-white rounded-md px-2.5 py-1.5">Here</button>' +
+        '<button type="button" data-vouch="no|' + l.id + '" class="text-xs font-medium border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-md px-2.5 py-1.5">Not here</button></div>').join('') + '</div>';
+  }
+  if (cut.length) {
+    h += '<div class="rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/20 p-3 mb-3"><p class="text-xs font-semibold text-rose-800 dark:text-rose-300">Possible cutting (' + cut.length + ')</p>' +
+      '<p class="text-xs text-slate-600 dark:text-slate-300 mt-1">In an earlier class today but not in this one: ' + escapeHtml(cut.map(s => s.name).join(', ')) + '</p>' +
+      '<button type="button" data-cut-all="1" class="mt-2 text-xs font-medium bg-rose-600 text-white rounded-md px-3 py-1.5">Mark all as cutting</button></div>';
+  }
+  const btn = (s, st, label, on, cls) => '<button type="button" data-mark="' + s.id + '|' + st + '" class="text-[11px] font-medium rounded-md px-2 py-1 border ' + (on ? cls : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400') + '">' + label + '</button>';
+  h += roster.length ? '<div class="divide-y divide-slate-100 dark:divide-slate-800">' + roster.map(s => {
+    const l = session ? activeLog(session.id, s.id) : null, cur = l ? l.status : 'absent', rej = rejectedVouchCount(s.id);
+    return '<div class="py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5"><div class="min-w-0 flex-1 basis-40"><p class="text-sm font-medium truncate">' + escapeHtml(s.name) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(s.studentId || '') +
+      (l && l.vouchedBy ? ' · vouched by ' + escapeHtml(studentName(l.vouchedBy)) : '') + (rej ? ' · <span class="text-amber-600 dark:text-amber-400">' + rej + ' rejected vouch' + (rej === 1 ? '' : 'es') + '</span>' : '') + '</p></div>' +
+      statusBadge(cur) +
+      '<div class="flex items-center gap-1">' + btn(s, 'present', 'Present', cur === 'present', 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400') +
+      btn(s, 'late', 'Late', cur === 'late', 'border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400') +
+      btn(s, 'cutting', 'Cutting', cur === 'cutting', 'border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400') +
+      btn(s, 'absent', 'Absent', cur === 'absent' || cur === 'pending', 'border-slate-400 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200') +
+      '<button type="button" data-noph="' + s.id + '" title="Student has no phone: classmates may vouch for them" class="text-[11px] font-medium rounded-md px-2 py-1 border ' + (s.noPhone ? 'border-sky-400 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300' : 'border-slate-200 dark:border-slate-700 text-slate-400') + '">No phone</button></div></div>';
+  }).join('') + '</div>' : '<p class="text-sm text-slate-500 dark:text-slate-400 py-3 text-center">No students are enrolled in this section yet.</p>';
+  el.innerHTML = h;
+  refreshIcons();
+}
+document.getElementById('attend-card').addEventListener('click', ev => {
+  const m = ev.target.closest('[data-mark]'); if (m) { const a = m.dataset.mark.split('|'); setAttendance(a[0], a[1]); return; }
+  const n = ev.target.closest('[data-noph]');
+  if (n) { const s = DB.students.find(x => x.id === n.dataset.noph); if (s) { s.noPhone = !s.noPhone; saveDB(); renderAttendCard(); } return; }
+  const v = ev.target.closest('[data-vouch]');
+  if (v) {
+    const a = v.dataset.vouch.split('|'), l = DB.logs.find(x => x.id === a[1]); if (!l) return;
+    if (a[0] === 'ok') { l.status = l.proposed || 'present'; l.confirmedBy = DB.auth.userId; toast(studentName(l.studentId) + ' confirmed ' + l.status + '.', 'success'); }
+    else { l.status = 'rejected'; toast('Marked not here. ' + studentName(l.vouchedBy) + ' now has a rejected vouch on record.', 'warning'); }
+    saveDB(); renderAttendCard(); renderDashboardStats(); return;
+  }
+  if (ev.target.closest('[data-cut-all]')) {
+    const session = findSession(curPeriod.classId, curPeriod.slotId), list = possibleCutting(session);
+    list.forEach(s => logAttendance(session, s, 'cutting', 'teacher'));
+    toast(list.length + ' student' + (list.length === 1 ? '' : 's') + ' marked cutting.', 'success');
+    renderAttendCard(); renderDashboardStats();
+  }
+});
+
+// Student side: vouch for a classmate who has no phone
+function vouchContext(st) {
+  const today = DAY_NAMES[new Date().getDay()], nowMin = minutesNow();
+  const live = DB.sessions.filter(s => s.classId === st.classId && s.date === todayStr() && (!s.slotId || (() => { const sl = findSlot(s.slotId); return sl && periodStatus(sl.entry, today, nowMin) === 'now'; })()));
+  const session = live.sort((a, b) => (minOf(b.startTime) || 0) - (minOf(a.startTime) || 0))[0] || null;
+  return { session, mine: session ? activeLog(session.id, st.id) : null };
+}
+function renderVouchCard() {
+  const el = document.getElementById('vouch-card');
+  if (!el) return;
+  const st = DB.auth && DB.auth.role === 'student' ? DB.students.find(s => s.id === DB.auth.userId) : null;
+  el.classList.add('hidden');
+  if (!st || !st.classId) return;
+  const classmates = DB.students.filter(s => s.classId === st.classId && s.id !== st.id && s.noPhone);
+  const ctx = vouchContext(st);
+  if (!classmates.length || !ctx.session) return;
+  el.classList.remove('hidden');
+  const used = DB.logs.filter(l => l.sessionId === ctx.session.id && l.vouchedBy === st.id && l.status !== 'rejected').length;
+  const banned = rejectedVouchCount(st.id) >= MAX_REJECTED_VOUCHES;
+  const ok = ctx.mine && (ctx.mine.status === 'present' || ctx.mine.status === 'late') && !ctx.mine.vouchedBy;
+  let note = '';
+  if (banned) note = 'Vouching is turned off for you because your teacher rejected ' + rejectedVouchCount(st.id) + ' of your vouches.';
+  else if (!ok) note = 'Check in yourself first. After that you can vouch for classmates who have no phone.';
+  else if (used >= MAX_VOUCHES_PER_PERIOD) note = 'You used all ' + MAX_VOUCHES_PER_PERIOD + ' vouches for this class.';
+  const can = !note;
+  el.innerHTML = '<h2 class="text-sm font-semibold mb-1">Classmates without a phone</h2><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">' + escapeHtml(ctx.session.subject || 'This class') + ' is on now. Only vouch for someone you can see in the room. Your name is saved next to it and your teacher confirms every vouch. You can vouch for ' + MAX_VOUCHES_PER_PERIOD + ' classmates per class (' + used + ' used).</p>' +
+    (note ? '<p class="text-xs rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-3 py-2 mb-3">' + escapeHtml(note) + '</p>' : '') +
+    '<div class="space-y-2">' + classmates.map(c => {
+      const l = activeLog(ctx.session.id, c.id);
+      const right = l ? (l.status === 'pending' ? '<span class="text-[11px] text-sky-600 dark:text-sky-300">Waiting for teacher</span>' : statusBadge(l.status))
+        : '<button type="button" data-vouch-for="' + c.id + '" ' + (can ? '' : 'disabled ') + 'class="text-xs font-medium rounded-md px-3 py-1.5 border border-slate-300 dark:border-slate-700 ' + (can ? 'hover:bg-slate-100 dark:hover:bg-slate-800' : 'opacity-40') + '">Vouch present</button>';
+      return '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><p class="flex-1 min-w-0 text-sm font-medium truncate">' + escapeHtml(c.name) + '</p>' + right + '</div>';
+    }).join('') + '</div>';
+}
+document.getElementById('vouch-card').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-vouch-for]'); if (!b || b.disabled) return;
+  const st = DB.students.find(s => s.id === DB.auth.userId), target = DB.students.find(s => s.id === b.dataset.vouchFor);
+  if (!st || !target) return;
+  askConfirm('Vouch for ' + target.name, 'I can see ' + target.name + ' in the room right now. My name is saved with this and my teacher will check it. If it is false, it is reported against me.', () => {
+    const ctx = vouchContext(st);
+    if (!ctx.session || !ctx.mine || activeLog(ctx.session.id, target.id) || rejectedVouchCount(st.id) >= MAX_REJECTED_VOUCHES) { renderVouchCard(); return; }
+    if (DB.logs.filter(l => l.sessionId === ctx.session.id && l.vouchedBy === st.id && l.status !== 'rejected').length >= MAX_VOUCHES_PER_PERIOD) { renderVouchCard(); return; }
+    DB.logs.push({ id: uid('log'), sessionId: ctx.session.id, classId: ctx.session.classId, slotId: ctx.session.slotId || '', subject: ctx.session.subject || '', studentId: target.id, role: 'student', date: ctx.session.date,
+      timestamp: new Date().toISOString(), status: 'pending', proposed: computeStatus(ctx.session), method: 'vouch', vouchedBy: st.id });
+    saveDB(); renderVouchCard();
+    toast('Sent to your teacher to confirm.', 'success');
+  });
+});
+setInterval(() => { const a = document.querySelector('.view-section.active'); if (a && a.dataset.view === 'studentid') renderVouchCard(); }, 30000);
 
 /* ==================== ROSTER MANAGER ==================== */
 let rosterSelectedClassId = null;
@@ -2209,6 +2363,7 @@ function renderStudentIdView() {
   }
   renderMyTeachers();
   renderScheduleCard();
+  renderVouchCard();
   refreshIcons();
 }
 function showIdCardEmpty() {
