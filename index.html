@@ -379,23 +379,52 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
             <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-              <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center justify-between gap-2 mb-3">
                 <h2 class="text-sm font-semibold">Today's session code</h2>
-                <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>Live
-                </span>
+                <span id="session-status" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"></span>
               </div>
-              <div class="flex flex-col items-center gap-3">
-                <div id="session-qr" class="p-3 bg-white rounded-lg border border-slate-200"></div>
-                <p id="session-meta" class="text-xs text-slate-500 dark:text-slate-400 text-center"></p>
-                <div class="flex items-center gap-2 w-full">
-                  <label class="text-xs text-slate-500 dark:text-slate-400 shrink-0">Start time</label>
-                  <input type="time" id="session-start-time" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-2 py-1.5">
+              <div class="mb-4">
+                <p id="session-title" class="text-lg font-semibold leading-tight truncate"></p>
+                <p id="session-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+                <div id="session-progress-wrap" class="hidden mt-3">
+                  <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div id="session-progress" class="h-full rounded-full bg-emerald-500 transition-all" style="width:0%"></div></div>
                 </div>
+                <p id="session-countdown" class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2"></p>
+              </div>
+              <div id="session-upcoming" class="hidden border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 text-center">
+                <i data-lucide="alarm-clock" class="w-7 h-7 mx-auto text-indigo-500 mb-2"></i>
+                <p class="text-sm font-medium">Code is created automatically</p>
+                <p id="session-upcoming-text" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+                <button id="session-start-early" type="button" class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">Start this session now</button>
+              </div>
+              <div id="session-live" class="flex flex-col items-center gap-3">
+                <button id="session-qr-btn" type="button" title="Tap to enlarge" class="p-3 bg-white rounded-lg border border-slate-200"><div id="session-qr"></div></button>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Tap the code to show it full screen</p>
+                <div class="flex items-center gap-2 w-full">
+                  <div class="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-2">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 mr-1">Code</span><span id="session-code" class="text-base font-semibold tracking-[0.2em] tabular-nums"></span>
+                  </div>
+                  <button id="session-copy" type="button" class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i>Copy</button>
+                </div>
+                <p id="session-late-note" class="text-xs text-slate-500 dark:text-slate-400 text-center"></p>
+                <details class="w-full">
+                  <summary class="text-xs text-slate-500 dark:text-slate-400 cursor-pointer text-center">Adjust start time</summary>
+                  <div class="flex items-center gap-2 w-full mt-2">
+                    <label class="text-xs text-slate-500 dark:text-slate-400 shrink-0">Start time</label>
+                    <input type="time" id="session-start-time" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-2 py-1.5">
+                  </div>
+                </details>
                 <button id="dash-regen-qr" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh code
                 </button>
-                <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center leading-relaxed">Code is bound to this class and today's date. Refreshing invalidates screenshots of the previous code.</p>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center leading-relaxed">A new code is made for every class period automatically. Refreshing invalidates screenshots of the previous code.</p>
+              </div>
+              <div id="qr-full" class="hidden fixed inset-0 z-[70] bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center" style="display:none">
+                <p id="qr-full-title" class="text-xl font-semibold"></p>
+                <p id="qr-full-sub" class="text-sm text-slate-500 dark:text-slate-400 mb-5"></p>
+                <div class="p-4 bg-white rounded-xl border border-slate-200"><div id="qr-full-box"></div></div>
+                <p id="qr-full-code" class="mt-5 text-2xl font-semibold tracking-[0.3em] tabular-nums"></p>
+                <p class="mt-6 text-xs text-slate-400">Tap anywhere to close</p>
               </div>
             </div>
 
@@ -1507,32 +1536,125 @@ function periodSubjectName() { const slot = curPeriod.slotId ? findSlot(curPerio
 
 function renderDashboard() {
   autoFollowPeriod(false);
+  autoCreateSessions();
   syncPeriodSelects();
   const hasClasses = DB.classes.length > 0;
   document.getElementById('dash-empty').classList.toggle('hidden', hasClasses);
   document.getElementById('dash-content').classList.toggle('hidden', !hasClasses);
   if (!hasClasses || !curPeriod.classId) { refreshIcons(); return; }
-  renderSessionQR(curPeriod.classId, curPeriod.slotId);
+  renderSessionCard();
   renderDashboardStats();
   refreshIcons();
 }
 
+const startedEarly = new Set();
+function fmt12(t) { const m = minOf(t); if (m === null) return ''; const h = Math.floor(m / 60); return ((h + 11) % 12 + 1) + ':' + String(m % 60).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); }
+function fmtDur(min) { min = Math.max(1, Math.round(min)); return min < 60 ? min + ' min' : Math.floor(min / 60) + ' h' + (min % 60 ? ' ' + (min % 60) + ' min' : ''); }
+function findSession(classId, slotId) { const date = todayStr(), sid = slotId || ''; return DB.sessions.find(s => s.classId === classId && s.date === date && (s.slotId || '') === sid) || null; }
+// A session (and its own code) is created by itself the moment a scheduled class starts.
+function autoCreateSessions() {
+  const created = [];
+  myPeriods().forEach(p => {
+    if (p.status !== 'now') return;
+    if (!findSession(p.classId, p.e.id)) { getOrCreateSession(p.classId, p.e.id); created.push(p); }
+  });
+  return created;
+}
+function setSessionStatus(kind, text) {
+  const el = document.getElementById('session-status');
+  const styles = {
+    live: ['bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400', '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>'],
+    soon: ['bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300', '<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>'],
+    done: ['bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400', '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>'],
+    open: ['bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300', '<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>']
+  }[kind];
+  el.className = 'inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full ' + styles[0];
+  el.innerHTML = styles[1] + escapeHtml(text);
+}
+function renderSessionCard() {
+  const classId = curPeriod.classId;
+  if (!classId) return;
+  const p = curPeriod.slotId ? myPeriods().find(x => x.e.id === curPeriod.slotId && x.classId === classId) : null;
+  const d = new Date(), nowMin = d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+  const e = p ? p.e : null, s0 = e ? minOf(e.start) : null, e0 = e ? minOf(e.end) : null;
+  const endMin = s0 === null ? null : (e0 === null ? s0 + 60 : e0);
+  const status = p ? p.status : 'whole';
+  document.getElementById('session-title').textContent = e ? e.subject : 'Whole class';
+  document.getElementById('session-sub').textContent = classLabel(classId) + (s0 !== null ? ' · ' + fmt12(e.start) + (e0 !== null ? ' – ' + fmt12(e.end) : '') : '') + (e && e.day && status === 'other' ? ' · ' + e.day : '');
+  const prog = document.getElementById('session-progress-wrap'), cd = document.getElementById('session-countdown');
+  prog.classList.add('hidden'); cd.textContent = '';
+  if (status === 'now') {
+    setSessionStatus('live', 'Live now');
+    prog.classList.remove('hidden');
+    document.getElementById('session-progress').style.width = Math.min(100, Math.max(0, (nowMin - s0) / (endMin - s0) * 100)) + '%';
+    cd.textContent = 'Ends in ' + fmtDur(endMin - nowMin);
+  } else if (status === 'later') {
+    setSessionStatus('soon', 'Starts ' + fmt12(e.start));
+    cd.textContent = 'Starts in ' + fmtDur(s0 - nowMin);
+  } else if (status === 'done') {
+    setSessionStatus('done', 'Ended ' + fmt12(e.end || ''));
+  } else if (status === 'other') {
+    setSessionStatus('done', 'Scheduled ' + (e.day || 'later'));
+  } else if (status === 'untimed') {
+    setSessionStatus('open', 'Today');
+  } else {
+    setSessionStatus('open', 'No schedule');
+  }
+  const early = p && startedEarly.has(p.value);
+  const showQR = !p || status !== 'later' || early || periodManual;
+  document.getElementById('session-upcoming').classList.toggle('hidden', showQR);
+  document.getElementById('session-live').classList.toggle('hidden', !showQR);
+  if (!showQR) {
+    document.getElementById('session-upcoming-text').textContent = e.subject + ' for ' + classLabel(classId) + ' begins at ' + fmt12(e.start) + '. Its code appears here by itself at that time.';
+    return;
+  }
+  renderSessionQR(classId, curPeriod.slotId);
+  const session = findSession(classId, curPeriod.slotId);
+  if (!session) return;
+  const lateMin = (minOf(session.startTime) || 0) + (Number(DB.settings.lateThresholdMinutes) || 0);
+  document.getElementById('session-late-note').textContent = 'Counted late after ' + fmt12(String(Math.floor(lateMin / 60) % 24).padStart(2, '0') + ':' + String(lateMin % 60).padStart(2, '0')) +
+    (p ? ' · started automatically from your schedule' : ' · add your schedule in My Profile to start sessions automatically');
+}
 function renderSessionQR(classId, slotId) {
   const session = getOrCreateSession(classId, slotId);
   const payload = ['ATTENDLY', 'SESSION', classId, session.date, session.sessionKey, session.id].join('|');
   const container = document.getElementById('session-qr');
-  container.innerHTML = '';
-  new QRCode(container, { text: payload, width: 176, height: 176, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-  document.getElementById('session-meta').textContent = (session.subject ? session.subject + ' · ' : '') + classLabel(classId) + ' · ' + session.date + ' · Code ' + session.sessionKey.slice(-6).toUpperCase();
+  if (container.dataset.payload !== payload || !container.firstChild) {
+    container.innerHTML = '';
+    new QRCode(container, { text: payload, width: 176, height: 176, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    container.dataset.payload = payload;
+  }
+  document.getElementById('session-code').textContent = session.sessionKey.slice(-6).toUpperCase();
   document.getElementById('session-start-time').value = session.startTime;
 }
+document.getElementById('session-start-early').addEventListener('click', () => {
+  const p = myPeriods().find(x => x.e.id === curPeriod.slotId && x.classId === curPeriod.classId);
+  if (p) startedEarly.add(p.value);
+  renderDashboard();
+});
+document.getElementById('session-copy').addEventListener('click', () => {
+  const code = document.getElementById('session-code').textContent;
+  const done = () => toast('Code ' + code + ' copied.', 'success');
+  try { navigator.clipboard.writeText(code).then(done, () => toast('Could not copy. Code is ' + code, 'warning')); } catch (err) { toast('Could not copy. Code is ' + code, 'warning'); }
+});
+document.getElementById('session-qr-btn').addEventListener('click', () => {
+  const session = findSession(curPeriod.classId, curPeriod.slotId);
+  if (!session) return;
+  const box = document.getElementById('qr-full-box'); box.innerHTML = '';
+  new QRCode(box, { text: ['ATTENDLY', 'SESSION', curPeriod.classId, session.date, session.sessionKey, session.id].join('|'), width: 280, height: 280, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  document.getElementById('qr-full-title').textContent = session.subject || 'Attendance';
+  document.getElementById('qr-full-sub').textContent = classLabel(curPeriod.classId);
+  document.getElementById('qr-full-code').textContent = document.getElementById('session-code').textContent;
+  const f = document.getElementById('qr-full'); f.classList.remove('hidden'); f.style.display = 'flex';
+});
+document.getElementById('qr-full').addEventListener('click', e => { e.currentTarget.style.display = 'none'; e.currentTarget.classList.add('hidden'); });
 
 function renderDashboardStats() {
   const classId = curPeriod.classId;
   if (!classId) return;
-  const session = getOrCreateSession(classId, curPeriod.slotId);
+  const session = findSession(classId, curPeriod.slotId);
   const roster = DB.students.filter(s => s.classId === classId);
-  const logs = DB.logs.filter(l => l.sessionId === session.id);
+  const logs = session ? DB.logs.filter(l => l.sessionId === session.id) : [];
   const present = logs.filter(l => l.status === 'present').length;
   const late = logs.filter(l => l.status === 'late').length;
   const enrolled = roster.length;
@@ -1564,7 +1686,7 @@ document.getElementById('dash-regen-qr').addEventListener('click', () => {
   if (!curPeriod.classId) return;
   DB.sessions = DB.sessions.filter(s => !(s.classId === curPeriod.classId && s.date === todayStr() && (s.slotId || '') === (curPeriod.slotId || '')));
   saveDB();
-  renderSessionQR(curPeriod.classId, curPeriod.slotId);
+  renderSessionCard();
   renderDashboardStats();
   toast('Session code refreshed. The previous code is now invalid.', 'success');
 });
@@ -1573,6 +1695,7 @@ document.getElementById('session-start-time').addEventListener('change', e => {
   const session = getOrCreateSession(curPeriod.classId, curPeriod.slotId);
   session.startTime = e.target.value || '08:00';
   saveDB();
+  renderSessionCard();
   renderDashboardStats();
   toast('Session start time updated.', 'success');
 });
@@ -1625,17 +1748,23 @@ document.getElementById('scanner-class-select').addEventListener('change', e => 
 });
 document.getElementById('scanner-follow').addEventListener('click', () => { periodManual = false; autoFollowPeriod(true); syncPeriodSelects(); });
 // Follow the clock: when a new period starts the selection moves to it (unless the teacher chose one by hand).
-setInterval(() => {
-  if (!getMyTeacher() || periodManual) return;
-  const changed = autoFollowPeriod(false);
+function periodTick() {
+  if (!getMyTeacher()) return;
+  const created = autoCreateSessions();
+  const changed = periodManual ? false : autoFollowPeriod(false);
   const active = document.querySelector('.view-section.active');
-  if (!active) return;
-  if (active.dataset.view === 'dashboard') { if (changed) renderDashboard(); else syncPeriodSelects(); }
-  else if (active.dataset.view === 'scanner') {
+  if (active && active.dataset.view === 'dashboard') { if (changed || created.length) renderDashboard(); else { syncPeriodSelects(); renderSessionCard(); } }
+  else if (active && active.dataset.view === 'scanner') {
     syncPeriodSelects();
     if (changed) toast('Now scanning for ' + (periodSubjectName() || classLabel(curPeriod.classId)) + ', ' + classLabel(curPeriod.classId) + '.', 'success');
   }
-}, 30000);
+  if (created.length && active && (active.dataset.view === 'dashboard' || active.dataset.view === 'scanner')) {
+    const c = created[0];
+    toast('Class started: ' + c.e.subject + ', ' + classLabel(c.classId) + '. A new session code is ready.', 'success');
+  }
+}
+setInterval(periodTick, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) periodTick(); });
 
 function setScannerStatus(active) {
   const el = document.getElementById('scanner-status');
