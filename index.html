@@ -45,6 +45,9 @@
   :root { color-scheme: light dark; }
   .fit-zoom #app, .fit-zoom .h-screen { height: calc(100vh / var(--fit-k)); }
   .fit-zoom .max-h-\[90vh\] { max-height: calc(90vh / var(--fit-k)); }
+  html.fit-zoom, .fit-zoom body { height: calc(100vh / var(--fit-k)); overflow: hidden; }
+  label:has(> input.sr-only) { position: relative; }
+  input.sr-only { pointer-events: none; }
   html, body { height: 100%; }
   body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -330,8 +333,10 @@
       <section data-view="dashboard" class="view-section active p-4 md:p-6 max-w-6xl mx-auto space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
           <div>
-            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Class</label>
-            <select id="dash-class-select" class="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Subject and class</label>
+            <select id="dash-class-select" class="w-full sm:w-64 xl:w-96 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            <p id="dash-period-hint" class="text-xs text-slate-500 dark:text-slate-400 mt-1.5"></p>
+            <button type="button" id="dash-follow" class="hidden mt-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Follow my schedule</button>
           </div>
           <div class="flex gap-2">
             <button id="dash-export-csv" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -467,8 +472,10 @@
       <section data-view="scanner" class="view-section p-4 md:p-6 max-w-4xl mx-auto space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
           <div>
-            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Scanning for class</label>
-            <select id="scanner-class-select" class="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Scanning for subject and class</label>
+            <select id="scanner-class-select" class="w-full sm:w-64 xl:w-96 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            <p id="scanner-period-hint" class="text-xs text-slate-500 dark:text-slate-400 mt-1.5"></p>
+            <button type="button" id="scanner-follow" class="hidden mt-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Follow my schedule</button>
           </div>
           <div id="scanner-status" class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 self-start sm:self-auto">
             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Camera off
@@ -1254,11 +1261,13 @@ document.getElementById('confirm-action-btn').addEventListener('click', () => {
 });
 
 /* ==================== SESSIONS & ATTENDANCE LOGIC ==================== */
-function getOrCreateSession(classId) {
-  const date = todayStr();
-  let session = DB.sessions.find(s => s.classId === classId && s.date === date);
+function getOrCreateSession(classId, slotId) {
+  const date = todayStr(), sid = slotId || '';
+  let session = DB.sessions.find(s => s.classId === classId && s.date === date && (s.slotId || '') === sid);
   if (!session) {
-    session = { id: uid('sess'), classId, date, sessionKey: uid('key'), startTime: scheduledStartFor(classId) || DB.settings.sessionStartTime || '08:00', createdAt: new Date().toISOString() };
+    const slot = sid ? findSlot(sid) : null;
+    session = { id: uid('sess'), classId, date, slotId: sid, subject: slot ? slot.entry.subject : '', sessionKey: uid('key'),
+      startTime: (slot && slot.entry.start) || scheduledStartFor(classId) || DB.settings.sessionStartTime || '08:00', createdAt: new Date().toISOString() };
     DB.sessions.push(session);
     saveDB();
   }
@@ -1272,7 +1281,7 @@ function computeStatus(session) {
   return now.getTime() > lateAt.getTime() ? 'late' : 'present';
 }
 function logAttendance(session, student, status, method) {
-  DB.logs.push({ id: uid('log'), sessionId: session.id, classId: session.classId, studentId: student.id, role: 'student', date: session.date, timestamp: new Date().toISOString(), status, method });
+  DB.logs.push({ id: uid('log'), sessionId: session.id, classId: session.classId, slotId: session.slotId || '', subject: session.subject || '', studentId: student.id, role: 'student', date: session.date, timestamp: new Date().toISOString(), status, method });
   saveDB();
 }
 function statusBadge(status) {
@@ -1282,7 +1291,6 @@ function statusBadge(status) {
 }
 
 /* ==================== DASHBOARD ==================== */
-let dashSelectedClassId = null;
 
 function populateClassSelect(selectEl, includeEmpty) {
   const current = selectEl.value;
@@ -1297,38 +1305,123 @@ function populateClassSelect(selectEl, includeEmpty) {
   if (DB.classes.some(c => c.id === current)) selectEl.value = current;
 }
 
-function renderDashboard() {
-  populateClassSelect(document.getElementById('dash-class-select'), false);
-  if (!dashSelectedClassId || !DB.classes.some(c => c.id === dashSelectedClassId)) {
-    dashSelectedClassId = DB.classes[0] ? DB.classes[0].id : null;
+/* ---- periods: one scheduled subject taught to one class, picked automatically by day and time ---- */
+let curPeriod = { slotId: '', classId: '' };
+let periodManual = false;
+let periodSig = '';
+function minOf(t) { const m = /^(\d{1,2}):(\d{2})/.exec(t || ''); return m ? (+m[1]) * 60 + (+m[2]) : null; }
+function findSlot(slotId) {
+  for (const t of DB.teachers) { const e = (t.schedule || []).find(x => x.id === slotId); if (e) return { entry: e, teacher: t }; }
+  return null;
+}
+function periodTime(e) { return [e.day, e.start ? e.start + (e.end ? '–' + e.end : '') : ''].filter(Boolean).join(' '); }
+function periodText(e, classId) { const t = periodTime(e); return e.subject + ' — ' + classLabel(classId) + (t ? ' (' + t + ')' : ''); }
+function periodStatus(e, today, nowMin) {
+  if (e.day && e.day !== today) return 'other';
+  const s0 = minOf(e.start), e0 = minOf(e.end);
+  if (s0 === null) return 'untimed';
+  const end = e0 === null ? s0 + 60 : e0;
+  if (nowMin >= s0 && nowMin < end) return 'now';
+  return nowMin < s0 ? 'later' : 'done';
+}
+function myPeriods() {
+  const t = getMyTeacher(), out = [];
+  if (!t) return out;
+  const d = new Date(), today = DAY_NAMES[d.getDay()], nowMin = d.getHours() * 60 + d.getMinutes();
+  (t.schedule || []).forEach(e => (e.classIds || []).forEach(cid => {
+    if (DB.classes.some(c => c.id === cid)) out.push({ e, classId: cid, value: e.id + '|' + cid, status: periodStatus(e, today, nowMin), start: minOf(e.start) });
+  }));
+  return out;
+}
+function pickCurrentPeriod(ps) {
+  const today = DAY_NAMES[new Date().getDay()];
+  const by = k => ps.filter(p => p.status === k);
+  const now = by('now').sort((a, b) => ((b.e.day === today) - (a.e.day === today)) || (a.start - b.start))[0];
+  if (now) return now;
+  const later = by('later').sort((a, b) => a.start - b.start)[0];
+  if (later) return later;
+  const untimed = by('untimed')[0];
+  if (untimed) return untimed;
+  return by('done').sort((a, b) => b.start - a.start)[0] || null;
+}
+function fillPeriodSelect(sel) {
+  const ps = myPeriods();
+  const groups = [['now', 'Happening now'], ['later', 'Later today'], ['untimed', 'Today (no time set)'], ['done', 'Earlier today'], ['other', 'Other days']];
+  let html = '';
+  groups.forEach(g => {
+    const list = ps.filter(p => p.status === g[0]).sort((a, b) => (a.start === null ? 0 : a.start) - (b.start === null ? 0 : b.start));
+    if (list.length) html += '<optgroup label="' + g[1] + '">' + list.map(p => '<option value="' + p.value + '">' + escapeHtml(periodText(p.e, p.classId)) + '</option>').join('') + '</optgroup>';
+  });
+  const classes = lcTeacherClasses();
+  html += '<optgroup label="Whole class (no subject)">' + classes.map(c => '<option value="|' + c.id + '">' + escapeHtml(classLabel(c.id)) + '</option>').join('') + '</optgroup>';
+  sel.innerHTML = html;
+}
+function setPeriodFromValue(v) { const a = (v || '').split('|'); curPeriod = { slotId: a[0] || '', classId: a[1] || '' }; }
+function autoFollowPeriod(force) {
+  if (!getMyTeacher()) return false;
+  if (periodManual && !force) return false;
+  const before = curPeriod.slotId + '|' + curPeriod.classId;
+  const pick = pickCurrentPeriod(myPeriods());
+  if (pick) curPeriod = { slotId: pick.e.id, classId: pick.classId };
+  else if (!curPeriod.classId || !DB.classes.some(c => c.id === curPeriod.classId)) {
+    const c = lcTeacherClasses()[0];
+    curPeriod = { slotId: '', classId: c ? c.id : '' };
   }
-  if (dashSelectedClassId) document.getElementById('dash-class-select').value = dashSelectedClassId;
+  return before !== curPeriod.slotId + '|' + curPeriod.classId;
+}
+function periodHint() {
+  if (periodManual) return 'Chosen by you.';
+  const ps = myPeriods(), cur = ps.find(p => p.e.id === curPeriod.slotId && p.classId === curPeriod.classId);
+  if (!ps.length) return 'No subjects with a section in your profile yet. Add them in My Profile to switch automatically.';
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (!cur) return 'No class is scheduled right now.';
+  if (cur.status === 'now') return 'Now (' + t + '): ' + cur.e.subject + ', ' + classLabel(cur.classId) + (cur.e.end ? ', until ' + cur.e.end : '') + '.';
+  if (cur.status === 'later') return 'Next at ' + cur.e.start + ': ' + cur.e.subject + ', ' + classLabel(cur.classId) + '.';
+  if (cur.status === 'untimed') return 'No time set for this subject. Add a start time in My Profile.';
+  return 'No class is scheduled right now. Showing the last one today.';
+}
+function syncPeriodSelects() {
+  const ps = myPeriods();
+  const sig = ps.map(p => p.value + p.status).join(',') + '|' + lcTeacherClasses().map(c => c.id).join(',');
+  const v = curPeriod.slotId + '|' + curPeriod.classId;
+  [['dash-class-select', 'dash-period-hint', 'dash-follow'], ['scanner-class-select', 'scanner-period-hint', 'scanner-follow']].forEach(ids => {
+    const sel = document.getElementById(ids[0]);
+    if (!sel) return;
+    if (sig !== periodSig || !sel.options.length) fillPeriodSelect(sel);
+    if (Array.from(sel.options).some(o => o.value === v)) sel.value = v;
+    document.getElementById(ids[1]).textContent = periodHint();
+    document.getElementById(ids[2]).classList.toggle('hidden', !periodManual);
+  });
+  periodSig = sig;
+}
+function periodSubjectName() { const slot = curPeriod.slotId ? findSlot(curPeriod.slotId) : null; return slot ? slot.entry.subject : ''; }
 
+function renderDashboard() {
+  autoFollowPeriod(false);
+  syncPeriodSelects();
   const hasClasses = DB.classes.length > 0;
   document.getElementById('dash-empty').classList.toggle('hidden', hasClasses);
   document.getElementById('dash-content').classList.toggle('hidden', !hasClasses);
-  if (!hasClasses) { refreshIcons(); return; }
-
-  renderSessionQR(dashSelectedClassId);
+  if (!hasClasses || !curPeriod.classId) { refreshIcons(); return; }
+  renderSessionQR(curPeriod.classId, curPeriod.slotId);
   renderDashboardStats();
   refreshIcons();
 }
 
-function renderSessionQR(classId) {
-  const session = getOrCreateSession(classId);
-  const payload = ['ATTENDLY', 'SESSION', classId, session.date, session.sessionKey].join('|');
+function renderSessionQR(classId, slotId) {
+  const session = getOrCreateSession(classId, slotId);
+  const payload = ['ATTENDLY', 'SESSION', classId, session.date, session.sessionKey, session.id].join('|');
   const container = document.getElementById('session-qr');
   container.innerHTML = '';
   new QRCode(container, { text: payload, width: 176, height: 176, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-  const cls = DB.classes.find(c => c.id === classId);
-  document.getElementById('session-meta').textContent = (cls ? cls.name : '') + ' · ' + session.date + ' · Code ' + session.sessionKey.slice(-6).toUpperCase();
+  document.getElementById('session-meta').textContent = (session.subject ? session.subject + ' · ' : '') + classLabel(classId) + ' · ' + session.date + ' · Code ' + session.sessionKey.slice(-6).toUpperCase();
   document.getElementById('session-start-time').value = session.startTime;
 }
 
 function renderDashboardStats() {
-  const classId = dashSelectedClassId;
+  const classId = curPeriod.classId;
   if (!classId) return;
-  const session = getOrCreateSession(classId);
+  const session = getOrCreateSession(classId, curPeriod.slotId);
   const roster = DB.students.filter(s => s.classId === classId);
   const logs = DB.logs.filter(l => l.sessionId === session.id);
   const present = logs.filter(l => l.status === 'present').length;
@@ -1353,42 +1446,44 @@ function renderDashboardStats() {
 }
 
 document.getElementById('dash-class-select').addEventListener('change', e => {
-  dashSelectedClassId = e.target.value;
-  renderSessionQR(dashSelectedClassId);
-  renderDashboardStats();
-  refreshIcons();
+  setPeriodFromValue(e.target.value);
+  periodManual = true;
+  renderDashboard();
 });
+document.getElementById('dash-follow').addEventListener('click', () => { periodManual = false; autoFollowPeriod(true); renderDashboard(); });
 document.getElementById('dash-regen-qr').addEventListener('click', () => {
-  if (!dashSelectedClassId) return;
-  DB.sessions = DB.sessions.filter(s => !(s.classId === dashSelectedClassId && s.date === todayStr()));
+  if (!curPeriod.classId) return;
+  DB.sessions = DB.sessions.filter(s => !(s.classId === curPeriod.classId && s.date === todayStr() && (s.slotId || '') === (curPeriod.slotId || '')));
   saveDB();
-  renderSessionQR(dashSelectedClassId);
+  renderSessionQR(curPeriod.classId, curPeriod.slotId);
+  renderDashboardStats();
   toast('Session code refreshed. The previous code is now invalid.', 'success');
 });
 document.getElementById('session-start-time').addEventListener('change', e => {
-  if (!dashSelectedClassId) return;
-  const session = getOrCreateSession(dashSelectedClassId);
+  if (!curPeriod.classId) return;
+  const session = getOrCreateSession(curPeriod.classId, curPeriod.slotId);
   session.startTime = e.target.value || '08:00';
   saveDB();
   renderDashboardStats();
   toast('Session start time updated.', 'success');
 });
 document.getElementById('dash-export-csv').addEventListener('click', () => {
-  if (!dashSelectedClassId) { toast('Select a class first.', 'warning'); return; }
-  exportClassCSV(dashSelectedClassId);
+  if (!curPeriod.classId) { toast('Select a class first.', 'warning'); return; }
+  exportClassCSV(curPeriod.classId, curPeriod.slotId);
 });
 
-function exportClassCSV(classId) {
+function exportClassCSV(classId, slotId) {
   const cls = DB.classes.find(c => c.id === classId);
-  const session = getOrCreateSession(classId);
+  const session = getOrCreateSession(classId, slotId);
   const roster = DB.students.filter(s => s.classId === classId);
-  const rows = [['Full Name', 'Student ID', 'Section', 'Status', 'Time']];
+  const rows = [['Full Name', 'Student ID', 'Section', 'Subject', 'Status', 'Time']];
   roster.forEach(s => {
     const log = DB.logs.find(l => l.sessionId === session.id && l.studentId === s.id);
-    rows.push([s.name, s.studentId, s.section || '', log ? log.status : 'absent', log ? formatTime(log.timestamp) : '']);
+    rows.push([s.name, s.studentId, s.section || '', session.subject || '', log ? log.status : 'absent', log ? formatTime(log.timestamp) : '']);
   });
   const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
-  downloadBlob(csv, 'attendance-' + (cls ? cls.name.replace(/[^a-z0-9]+/gi, '-') : 'class') + '-' + session.date + '.csv', 'text/csv');
+  const tag = (session.subject ? session.subject.replace(/[^a-z0-9]+/gi, '-') + '-' : '') + (cls ? cls.name.replace(/[^a-z0-9]+/gi, '-') : 'class');
+  downloadBlob(csv, 'attendance-' + tag + '-' + session.date + '.csv', 'text/csv');
   toast('Attendance exported as CSV.', 'success');
 }
 
@@ -1407,11 +1502,31 @@ let teacherScanner = null;
 let teacherScannerActive = false;
 
 function renderScannerView() {
-  populateClassSelect(document.getElementById('scanner-class-select'), true);
+  autoFollowPeriod(false);
+  syncPeriodSelects();
   document.getElementById('scanner-feed').innerHTML = '';
   document.getElementById('scanner-feed-empty').classList.remove('hidden');
   refreshIcons();
 }
+
+document.getElementById('scanner-class-select').addEventListener('change', e => {
+  setPeriodFromValue(e.target.value);
+  periodManual = true;
+  syncPeriodSelects();
+});
+document.getElementById('scanner-follow').addEventListener('click', () => { periodManual = false; autoFollowPeriod(true); syncPeriodSelects(); });
+// Follow the clock: when a new period starts the selection moves to it (unless the teacher chose one by hand).
+setInterval(() => {
+  if (!getMyTeacher() || periodManual) return;
+  const changed = autoFollowPeriod(false);
+  const active = document.querySelector('.view-section.active');
+  if (!active) return;
+  if (active.dataset.view === 'dashboard') { if (changed) renderDashboard(); else syncPeriodSelects(); }
+  else if (active.dataset.view === 'scanner') {
+    syncPeriodSelects();
+    if (changed) toast('Now scanning for ' + (periodSubjectName() || classLabel(curPeriod.classId)) + ', ' + classLabel(curPeriod.classId) + '.', 'success');
+  }
+}, 30000);
 
 function setScannerStatus(active) {
   const el = document.getElementById('scanner-status');
@@ -1488,19 +1603,20 @@ function handleTeacherScan(decodedText) {
   if (parts[0] !== 'ATTENDLY' || parts[1] !== 'STUDENT') { toast('Unrecognized QR code.', 'error'); beep(220, 200); return; }
   const student = DB.students.find(s => s.id === parts[2]);
   if (!student) { toast('This student ID is not in local records.', 'error'); beep(220, 200); return; }
-  const selectedClassId = document.getElementById('scanner-class-select').value;
-  if (selectedClassId && student.classId !== selectedClassId) {
+  const slot = curPeriod.slotId ? findSlot(curPeriod.slotId) : null;
+  const allowed = slot ? (slot.entry.classIds || []) : (curPeriod.classId ? [curPeriod.classId] : []);
+  if (allowed.length && !allowed.includes(student.classId)) {
     toast(student.name + ' is not enrolled in the selected class.', 'error'); beep(220, 200); return;
   }
-  const session = getOrCreateSession(student.classId);
+  const session = getOrCreateSession(student.classId, curPeriod.slotId);
   const already = DB.logs.find(l => l.sessionId === session.id && l.studentId === student.id);
   if (already) { toast(student.name + ' is already checked in today.', 'warning'); beep(440, 150); return; }
   const status = computeStatus(session);
   logAttendance(session, student, status, 'scan');
   beep(880, 140);
-  toast(student.name + ' marked ' + status + '.', 'success');
+  toast(student.name + ' marked ' + status + (session.subject ? ' for ' + session.subject : '') + '.', 'success');
   addToScannerFeed(student, status);
-  if (dashSelectedClassId === student.classId) renderDashboardStats();
+  if (curPeriod.classId === student.classId) renderDashboardStats();
 }
 
 function addToScannerFeed(student, status) {
@@ -1548,19 +1664,23 @@ function handleStudentScan(decodedText) {
   if (parts[0] !== 'ATTENDLY' || parts[1] !== 'SESSION') { toast('This is not a valid session code.', 'error'); beep(220, 200); return; }
   const classId = parts[2], date = parts[3], sessionKey = parts[4];
   if (date !== todayStr()) { toast('This code is not valid for today.', 'error'); beep(220, 200); return; }
-  const session = DB.sessions.find(s => s.classId === classId && s.date === date);
+  const session = parts[5] ? DB.sessions.find(s => s.id === parts[5] && s.classId === classId && s.date === date)
+                           : DB.sessions.find(s => s.classId === classId && s.date === date && !(s.slotId));
   if (!session || session.sessionKey !== sessionKey) { toast("Session code has expired. Ask your teacher to refresh it.", 'error'); beep(220, 200); return; }
   const myId = DB.auth ? DB.auth.userId : null;
   const student = DB.students.find(s => s.id === myId);
   if (!student) { toast('Save your student details first (name, ID and class) before checking in.', 'warning'); return; }
-  if (student.classId !== classId) { toast('Your saved profile is not enrolled in this class.', 'error'); beep(220, 200); return; }
-  const already = DB.logs.find(l => l.sessionId === session.id && l.studentId === student.id);
-  if (already) { toast('You are already checked in today.', 'warning'); beep(440, 150); return; }
-  const status = computeStatus(session);
-  logAttendance(session, student, status, 'self');
+  const slot = session.slotId ? findSlot(session.slotId) : null;
+  const sameCombined = student.classId !== classId && slot && (slot.entry.classIds || []).includes(student.classId);
+  if (student.classId !== classId && !sameCombined) { toast('Your saved profile is not enrolled in this class.', 'error'); beep(220, 200); return; }
+  const target = sameCombined ? getOrCreateSession(student.classId, session.slotId) : session;
+  const already = DB.logs.find(l => l.sessionId === target.id && l.studentId === student.id);
+  if (already) { toast('You are already checked in for this class.', 'warning'); beep(440, 150); return; }
+  const status = computeStatus(target);
+  logAttendance(target, student, status, 'self');
   beep(880, 140);
-  toast('Checked in — marked ' + status + '.', 'success');
-  if (dashSelectedClassId === classId) renderDashboardStats();
+  toast('Checked in' + (target.subject ? ' for ' + target.subject : '') + ' — marked ' + status + '.', 'success');
+  if (curPeriod.classId === student.classId) renderDashboardStats();
 }
 
 /* ==================== ROSTER MANAGER ==================== */
@@ -1866,7 +1986,7 @@ document.getElementById('set-clear-data').addEventListener('click', () => {
   askConfirm('Clear all data', 'This permanently deletes every class, student, session and attendance log on this device.', () => {
     DB = defaultDB();
     saveDB();
-    dashSelectedClassId = null; rosterSelectedClassId = null;
+    curPeriod = { slotId: '', classId: '' }; periodManual = false; rosterSelectedClassId = null;
     toast('All data cleared.', 'success');
     goToView('dashboard');
   });
@@ -1918,6 +2038,7 @@ function renderAuthGate() {
 function showApp() {
   hideAllAuthScreens();
   document.getElementById('app').style.display = '';
+  periodManual = false;
   if (DB.auth && DB.auth.role === 'teacher') syncSubjectsOnce(getMyTeacher());
   applyRoleNav();
   goToView(defaultViewForRole(DB.auth.role));
