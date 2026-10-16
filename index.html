@@ -72,6 +72,7 @@
     #print-card, #print-card * { visibility: visible; }
     #print-card { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); }
   }
+  .nav-btn-m { flex-shrink: 0; }
   .view-section { display: none; }
   .view-section.active { display: block; }
   input[type="checkbox"].switch { appearance: none; width: 36px; height: 20px; border-radius: 999px; background: #cbd5e1; position: relative; cursor: pointer; transition: background .15s; flex-shrink:0; }
@@ -295,8 +296,17 @@
       <button data-view="teachers" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="contact" class="w-4 h-4"></i><span>Teachers</span>
       </button>
+      <button data-view="counseling" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="heart" class="w-4 h-4"></i><span>Counseling</span>
+      </button>
       <button data-view="studentid" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="user" class="w-4 h-4"></i><span>Profile</span>
+      </button>
+      <button data-view="messages" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="message-circle" class="w-4 h-4"></i><span>Messages</span>
+      </button>
+      <button data-view="guidance" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="heart-handshake" class="w-4 h-4"></i><span>Counseling</span>
       </button>
       <button data-view="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="settings" class="w-4 h-4"></i><span>Settings</span>
@@ -478,6 +488,13 @@
             <p class="text-xs text-slate-500 dark:text-slate-400">Students</p>
             <p id="admin-stat-students" class="text-2xl font-semibold tabular-nums mt-1">0</p>
           </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Guidance counselor</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Enter the email of the counselor's teacher account. Only this teacher sees the Counseling menu, and students can send check-ins and appointment requests to them.</p>
+          <div class="flex gap-2"><input id="adm-counselor" type="email" placeholder="counselor@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-counselor-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
+          <p id="adm-counselor-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
@@ -739,6 +756,21 @@
         <div id="tch-list" class="space-y-3"></div>
       </section>
 
+      <!-- COUNSELING (students) -->
+      <section data-view="counseling" class="view-section p-4 md:p-6 max-w-3xl mx-auto">
+        <div id="cn-root"></div>
+      </section>
+
+      <!-- MESSAGES (teachers) -->
+      <section data-view="messages" class="view-section p-4 md:p-6 max-w-3xl mx-auto">
+        <div id="msg-root"></div>
+      </section>
+
+      <!-- COUNSELING INBOX (counselor only) -->
+      <section data-view="guidance" class="view-section p-4 md:p-6 max-w-3xl mx-auto">
+        <div id="gd-root"></div>
+      </section>
+
       <!-- LMS -->
       <section data-view="learning" class="view-section p-4 md:p-6 max-w-6xl mx-auto">
         <div id="learning-root"></div>
@@ -894,7 +926,7 @@
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around py-1.5 z-30">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around overflow-x-auto py-1.5 z-30">
     <button data-view="admin" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="shield" class="w-5 h-5"></i>Admin
     </button>
@@ -922,8 +954,17 @@
     <button data-view="teachers" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="contact" class="w-5 h-5"></i>Teachers
     </button>
+    <button data-view="counseling" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="heart" class="w-5 h-5"></i>Counseling
+    </button>
     <button data-view="studentid" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="user" class="w-5 h-5"></i>Profile
+    </button>
+    <button data-view="messages" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>Messages
+    </button>
+    <button data-view="guidance" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+      <i data-lucide="heart-handshake" class="w-5 h-5"></i>Counseling
     </button>
     <button data-view="settings" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="settings" class="w-5 h-5"></i>Settings
@@ -1428,9 +1469,9 @@ function tickClock() {
 /* ==================== NAVIGATION ==================== */
 const PAGE_TITLES = {
   admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
-  studentid: 'Profile', classroom: 'Classroom', learning: 'LMS', attendance: 'Attendance', subjects: 'Subjects', teachers: 'Teachers', settings: 'Settings'
+  studentid: 'Profile', counseling: 'Counseling', messages: 'Messages', guidance: 'Counseling', classroom: 'Classroom', learning: 'LMS', attendance: 'Attendance', subjects: 'Subjects', teachers: 'Teachers', settings: 'Settings'
 };
-const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
+const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], counseling: ['student'], messages: ['teacher'], guidance: ['teacher'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
 function defaultViewForRole(role) {
   if (role === 'admin') return 'admin';
   if (role === 'teacher') return 'dashboard';
@@ -1439,7 +1480,7 @@ function defaultViewForRole(role) {
 function goToView(view) {
   const role = DB.auth ? DB.auth.role : null;
   const allowedRoles = NAV_ROLES[view];
-  if (!role || !allowedRoles || !allowedRoles.includes(role)) view = defaultViewForRole(role);
+  if (!role || !allowedRoles || !allowedRoles.includes(role) || (view === 'guidance' && !isCounselor())) view = defaultViewForRole(role);
   document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.dataset.view === view));
   document.querySelectorAll('.nav-btn').forEach(b => {
     const active = b.dataset.view === view;
@@ -1467,6 +1508,10 @@ function goToView(view) {
   if (view === 'attendance') renderAttendanceView();
   if (view === 'subjects') renderSubjectsView();
   if (view === 'teachers') renderTeachersView();
+  if (view !== 'counseling') cnStopBreath();
+  if (view === 'counseling') renderCounseling();
+  if (view === 'messages') renderInbox('messages');
+  if (view === 'guidance') renderInbox('guidance');
   if (view === 'classroom') renderClassroom();
   if (view === 'learning') renderLearning();
   if (view === 'settings') renderSettings();
@@ -2995,6 +3040,8 @@ function applyRoleNav() {
     const allowed = NAV_ROLES[b.dataset.view] || [];
     b.classList.toggle('hidden', !(role && allowed.includes(role)));
   });
+  document.querySelectorAll('[data-view="guidance"].nav-btn, [data-view="guidance"].nav-btn-m').forEach(b => { if (!isCounselor()) b.classList.add('hidden'); });
+  document.querySelectorAll('[data-view="messages"].nav-btn, [data-view="messages"].nav-btn-m').forEach(b => { if (isCounselor()) b.classList.add('hidden'); });
   document.querySelectorAll('.nav-btn[data-view="settings"], .nav-btn-m[data-view="settings"]').forEach(b => {
     const label = role === 'teacher' ? 'My Profile' : 'Settings';
     const span = b.querySelector('span');
@@ -3517,6 +3564,490 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
   }
 });
 
+
+/* ==================== COUNSELING (students) + INBOXES (teachers / counselor) ==================== */
+// Hotlines: please confirm these with your school before relying on them.
+const CN_HOTLINES = [
+  { name: 'NCMH Crisis Hotline', nums: ['1553', '0917-899-8727', '0966-351-4518'], note: '24/7, English or Filipino' },
+  { name: 'Hopeline PH', nums: ['0917-558-4673', '804-4673'], note: '24/7' },
+  { name: 'Emergency', nums: ['911'], note: 'If someone is in immediate danger' }
+];
+const CN_QUIZ = [
+  { key: 'load', title: 'School and pressure', q: 'In the past 2 weeks, how often have homework, exams or projects felt like too much?', opts: ['Rarely, I can manage', 'Sometimes, but I catch up', 'Often, I fall behind or cannot start', 'Almost always, it feels impossible'] },
+  { key: 'body', title: 'Body and sleep', q: 'How have your sleep, appetite and energy been?', opts: ['Pretty normal', 'A bit off some days', 'Often tired, headaches, trouble sleeping', 'Exhausted most days, hard to get up'] },
+  { key: 'belong', title: 'Friends and belonging', q: 'Do you have someone you can talk to, and do you feel safe and accepted at school?', opts: ['Yes, I feel supported', 'Somewhat, a few people', 'Rarely, I often feel alone or left out', 'No, I feel alone, bullied or unsafe'] },
+  { key: 'mood', title: 'Mood', q: 'How often have you felt sad, anxious, angry or empty?', opts: ['Rarely', 'Some days', 'Most days', 'Nearly every day'] },
+  { key: 'safety', title: 'Safety', q: 'Have you had thoughts of hurting yourself, or that life is not worth living?', opts: ['No, never', 'Once or twice, they passed', 'Sometimes', 'Often, or right now'] }
+];
+const CN_LEVELS = [
+  { max: 3, name: 'Doing okay', cls: 'emerald', tip: 'Your answers look steady. Keep your routines, rest well, and try a breathing exercise whenever school feels heavy.' },
+  { max: 6, name: 'Some strain', cls: 'amber', tip: 'Something is weighing on you. A short breathing break and a chat with a friend, your adviser or the counselor can help before it grows.' },
+  { max: 9, name: 'High strain', cls: 'orange', tip: 'You have been carrying a lot. Please consider talking to the counselor or a teacher you trust. You do not have to handle this alone.' },
+  { max: 12, name: 'Needs support', cls: 'rose', tip: 'Your answers show that things are very hard right now. Please reach out to the counselor or a trusted adult soon. Support is available.' }
+];
+const CN_TRACKS = [
+  { id: '77ZozI0rw7w', title: 'Dreamy piano and nostalgic serenity', tag: 'Peaceful piano' },
+  { id: '_4kHxtiuML0', title: 'Chill lofi beats and rain', tag: 'Chill lofi' },
+  { id: 'xRcWlA1I9z0', title: 'Acoustic warmth and gentle fingerpicking', tag: 'Acoustic calm' },
+  { id: '9Zq79uu_o5E', title: 'Ethereal ambient waves', tag: 'Ambient waves' },
+  { id: 'tNjOqzkJ2CE', title: 'Ocean shoreline and sleep', tag: 'Deep sleep' },
+  { id: 'Pg6t-HMj2jg', title: 'Celestial stillness and soft solitude', tag: 'Soft calm' },
+  { id: '1ZYbU82GVz4', title: 'Deep serenity and restorative peace', tag: 'Deep rest' },
+  { id: 'I3OJUwILelU', title: 'Peaceful acoustic and soft harmonies', tag: 'Focus and study' },
+  { id: 'z-qigE1ym40', title: 'Continuous ocean flow and lofi calm', tag: 'Live 24/7' }
+];
+const CN_TOPICS = ['School stress', 'Family', 'Friends or bullying', 'Feeling sad or anxious', 'Something else'];
+const cn = { tab: 'home', built: false, uid: null, items: [], loaded: false, loading: false, err: '', quiz: { step: 0, ans: [], done: false, sent: false, busy: false }, breath: { on: false, phase: 0, left: 0, cycles: 0, timer: null }, music: { id: null, timer: null }, openThread: null };
+const inbox = { guidance: { filter: 'new', open: null, busy: false }, messages: { filter: 'new', open: null, busy: false } };
+const CN_CARD = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5';
+const CN_INP = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
+const CN_BTN = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 disabled:opacity-50';
+const CN_BTN2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg px-4 py-2';
+
+function cnAcct() { if (!DB.auth) return null; return (DB.auth.role === 'teacher' ? DB.teachers : DB.students).find(x => x.id === DB.auth.userId) || null; }
+function cnMyEmail() { const a = cnAcct(); return normEmail(a && a.email); }
+function isCounselor() {
+  const a = DB.auth && DB.auth.role === 'teacher' ? cnAcct() : null;
+  return !!(a && DB.settings && DB.settings.counselorEmail && normEmail(a.email) === normEmail(DB.settings.counselorEmail));
+}
+function cnCounselor() { const e = normEmail(DB.settings && DB.settings.counselorEmail); return e ? (DB.teachers.find(t => normEmail(t.email) === e) || { name: 'Guidance counselor', email: e }) : null; }
+function cnWhen(iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
+function cnFirst() { const a = cnAcct(); return a && a.name ? a.name.split(/\s+/)[0] : 'there'; }
+
+/* ---- local wellness log (stays on this device) ---- */
+function cnKey() { return 'attendly_well_' + (DB.auth ? DB.auth.userId : 'x'); }
+function cnLog() { try { return JSON.parse(localStorage.getItem(cnKey()) || '[]'); } catch (e) { return []; } }
+function cnDay(t) { const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function cnAddLog(type, title, min, val) {
+  const l = cnLog(); l.push({ t: Date.now(), type, title, min: min || 0, val });
+  try { localStorage.setItem(cnKey(), JSON.stringify(l.slice(-500))); } catch (e) {}
+  if (cn.built) { cnRenderPanel('progress'); cnRenderPanel('home'); }
+}
+function cnStats() {
+  const l = cnLog(), days = new Set(l.map(x => cnDay(x.t)));
+  let streak = 0; const d = new Date();
+  if (!days.has(cnDay(d.getTime()))) d.setDate(d.getDate() - 1);
+  while (days.has(cnDay(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); }
+  const week = []; for (let i = 6; i >= 0; i--) { const x = new Date(); x.setDate(x.getDate() - i); const k = cnDay(x.getTime()); week.push({ label: x.toLocaleDateString([], { weekday: 'short' }), n: l.filter(e => cnDay(e.t) === k && e.type !== 'mood').length, mood: (l.filter(e => cnDay(e.t) === k && e.type === 'mood').pop() || {}).val }); }
+  return { total: l.filter(x => x.type !== 'mood').length, minutes: Math.round(l.reduce((a, x) => a + (x.min || 0), 0)), streak, week, breaths: l.filter(x => x.type === 'breath').length };
+}
+
+/* ---- server calls (private table, access enforced by row level security) ---- */
+async function cnSession() {
+  if (!sb) { toast('You need internet to do this.', 'warning'); return null; }
+  const r = await sb.auth.getSession(); const u = r && r.data && r.data.session && r.data.session.user;
+  if (!u) { toast('Please log out and sign in again to use messages.', 'warning'); return null; }
+  return u;
+}
+function cnErrText(e) { return /relation|does not exist|schema cache|not find the table/i.test(e && e.message || '') ? 'Counseling is not set up on the server yet. Ask your admin to run the counseling SQL file.' : ((e && e.message) || 'Something went wrong.'); }
+async function cnSend(row) {
+  const u = await cnSession(); if (!u) return null;
+  const me = cnAcct() || {};
+  const r = await sb.from('counseling_items').insert(Object.assign({ from_email: u.email, from_name: me.name || '', from_role: DB.auth.role, status: 'new' }, row)).select().single();
+  if (r.error) { toast(cnErrText(r.error), 'error'); return null; }
+  cn.items.unshift(r.data);
+  return r.data;
+}
+async function cnLoad() {
+  if (!sb || cn.loading) return;
+  cn.loading = true;
+  try {
+    const r = await sb.from('counseling_items').select('*').order('created_at', { ascending: false }).limit(300);
+    if (r.error) { cn.err = cnErrText(r.error); } else { cn.items = r.data || []; cn.err = ''; cn.loaded = true; }
+  } catch (e) { cn.err = 'Could not load messages.'; }
+  cn.loading = false;
+  cnRefreshLive();
+}
+async function cnSetStatus(id, status) {
+  if (!sb) return;
+  const r = await sb.from('counseling_items').update({ status }).eq('id', id);
+  if (!r.error) { const it = cn.items.find(x => x.id === id); if (it) it.status = status; }
+}
+function cnThreads(me) {
+  const by = {};
+  cn.items.forEach(i => { const k = i.thread_id || i.id; (by[k] = by[k] || []).push(i); });
+  return Object.keys(by).map(k => {
+    const msgs = by[k].slice().sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    const root = msgs.find(x => x.id === k) || msgs[0], last = msgs[msgs.length - 1];
+    return { id: k, root, msgs, last, mineRoot: normEmail(root.to_email) === me, awaiting: normEmail(last.from_email) !== me };
+  }).sort((a, b) => String(b.last.created_at).localeCompare(String(a.last.created_at)));
+}
+function cnLevelOf(total) { return CN_LEVELS.find(l => total <= l.max) || CN_LEVELS[3]; }
+const CN_CHIP = {
+  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300', amber: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
+  orange: 'bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300', rose: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
+  sky: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300', teal: 'bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300', slate: 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+};
+function cnChip(text, cls) { return '<span class="inline-block text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ' + (CN_CHIP[cls] || CN_CHIP.slate) + '">' + escapeHtml(text) + '</span>'; }
+function cnHotlinesHtml(compact) {
+  return CN_HOTLINES.map(h => '<div class="flex items-start justify-between gap-3 py-2 ' + (compact ? '' : 'border-t border-rose-200/60 dark:border-rose-900/50 first:border-0') + '"><div class="min-w-0"><p class="text-sm font-medium">' + escapeHtml(h.name) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(h.note) + '</p></div><div class="flex flex-wrap justify-end gap-1.5">' +
+    h.nums.map(n => '<a href="tel:' + n.replace(/[^0-9+]/g, '') + '" class="text-xs font-semibold tabular-nums rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-2.5 py-1 hover:bg-rose-100 dark:hover:bg-rose-950/40">' + escapeHtml(n) + '</a>').join('') + '</div></div>').join('');
+}
+
+/* ---- student view shell ---- */
+const CN_TABS = [['home', 'Home', 'heart'], ['checkin', 'Check-in', 'clipboard-list'], ['breathe', 'Breathe', 'wind'], ['music', 'Music', 'music'], ['talk', 'Talk to someone', 'message-circle'], ['progress', 'My progress', 'activity']];
+function renderCounseling() {
+  const root = document.getElementById('cn-root'); if (!root) return;
+  if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
+    cnStopBreath(); cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false;
+    cn.quiz = { step: 0, ans: [], done: false, sent: false, busy: false };
+    root.innerHTML = '<div class="space-y-4">' +
+      '<div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
+      '<p class="text-[11px] text-slate-500 dark:text-slate-400">In danger or need urgent help? Call <a href="tel:911" class="font-semibold underline">911</a> or the NCMH crisis line <a href="tel:1553" class="font-semibold underline">1553</a>.</p>' +
+      CN_TABS.map(t => '<div id="cn-p-' + t[0] + '" data-cn-panel="' + t[0] + '" class="hidden"></div>').join('') + '</div>';
+    cnBuildStatic();
+  }
+  cnShowTab(cn.tab, true);
+  cnLoad();
+}
+function cnShowTab(name, keep) {
+  cn.tab = name;
+  document.querySelectorAll('#cn-root [data-cn-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.cnPanel !== name));
+  document.querySelectorAll('#cn-root .cn-tab').forEach(b => {
+    const a = b.dataset.cnTab === name;
+    b.classList.toggle('bg-teal-600', a); b.classList.toggle('text-white', a); b.classList.toggle('border-teal-600', a);
+    b.classList.toggle('border-slate-300', !a); b.classList.toggle('dark:border-slate-700', !a); b.classList.toggle('text-slate-600', !a); b.classList.toggle('dark:text-slate-300', !a);
+  });
+  if (name === 'home' || name === 'checkin' || name === 'talk' || name === 'progress') cnRenderPanel(name);
+  refreshIcons();
+}
+function cnRenderPanel(name) {
+  const el = document.getElementById('cn-p-' + name); if (!el) return;
+  if (name === 'home') el.innerHTML = cnPanelHome();
+  else if (name === 'checkin') el.innerHTML = cnPanelCheckin();
+  else if (name === 'talk') { if (!el.dataset.built) { el.innerHTML = cnPanelTalk(); el.dataset.built = '1'; } cnRenderConvos(); }
+  else if (name === 'progress') el.innerHTML = cnPanelProgress();
+  refreshIcons();
+}
+function cnRefreshLive() {
+  if (!cn.built) return;
+  if (cn.tab === 'home') cnRenderPanel('home');
+  if (cn.tab === 'talk') cnRenderConvos();
+  const a = document.querySelector('.view-section.active');
+  if (a && a.dataset.view === 'guidance') renderInbox('guidance');
+  if (a && a.dataset.view === 'messages') renderInbox('messages');
+}
+
+/* ---- Home ---- */
+function cnUnreadReplies() { const me = cnMyEmail(); return cn.items.filter(i => normEmail(i.to_email) === me && i.status === 'new').length; }
+function cnPanelHome() {
+  const unread = cnUnreadReplies(), moods = [['😣', 1, 'Rough'], ['😕', 2, 'Low'], ['😐', 3, 'Okay'], ['🙂', 4, 'Good'], ['😄', 5, 'Great']];
+  return '<div class="rounded-2xl p-6 bg-gradient-to-br from-teal-50 via-sky-50 to-indigo-50 dark:from-teal-950/50 dark:via-slate-900 dark:to-indigo-950/40 border border-teal-100 dark:border-teal-900/60">' +
+    '<p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">A gentle place</p>' +
+    '<h2 class="text-xl font-semibold mt-1">Hi, ' + escapeHtml(cnFirst()) + '. How are you today?</h2>' +
+    '<p class="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-md">This is a quiet corner of school. Take a breath, listen to something calm, or talk to someone who can help.</p>' +
+    '<div class="flex gap-2 mt-4 flex-wrap">' + moods.map(m => '<button data-cn-mood="' + m[1] + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-teal-400"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div></div>' +
+    (unread ? '<button data-cn-tab="talk" class="w-full text-left rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 px-4 py-3 text-sm font-medium text-teal-800 dark:text-teal-200">You have ' + unread + ' new repl' + (unread === 1 ? 'y' : 'ies') + '. Tap to read.</button>' : '') +
+    '<div class="grid grid-cols-2 gap-3">' + [['checkin', 'Check-in', 'A 2 minute quiz about how you are doing', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['music', 'Calming music', 'Soft sounds for study and rest', 'music'], ['talk', 'Talk to someone', 'Message the counselor, your adviser or a teacher', 'message-circle']].map(c =>
+      '<button data-cn-tab="' + c[0] + '" class="' + CN_CARD + ' !p-4 text-left hover:border-teal-400 dark:hover:border-teal-700"><i data-lucide="' + c[3] + '" class="w-5 h-5 text-teal-600 dark:text-teal-400"></i><p class="text-sm font-semibold mt-2">' + c[1] + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">' + c[2] + '</p></button>').join('') + '</div>' +
+    '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Need help right now?</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">You are not alone. These lines are free to call. Tell a trusted adult too.</p>' + cnHotlinesHtml() + '</div>';
+}
+
+/* ---- Check-in quiz ---- */
+function cnPanelCheckin() {
+  const q = cn.quiz;
+  if (!q.done) {
+    const s = q.step, item = CN_QUIZ[s];
+    return '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-2"><p class="text-xs text-slate-500 dark:text-slate-400">Question ' + (s + 1) + ' of ' + CN_QUIZ.length + ' · ' + escapeHtml(item.title) + '</p>' + (s ? '<button data-cn-back class="text-xs text-slate-500 hover:underline">Back</button>' : '') + '</div>' +
+      '<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 overflow-hidden"><div class="h-full bg-teal-500" style="width:' + Math.round(s / CN_QUIZ.length * 100) + '%"></div></div>' +
+      '<h3 class="text-base font-semibold mb-3">' + escapeHtml(item.q) + '</h3><div class="space-y-2">' +
+      item.opts.map((o, i) => '<button data-cn-ans="' + i + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (q.ans[s] === i ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div>' +
+      '<p class="text-[11px] text-slate-400 mt-4">This is a check-in, not a diagnosis. Nothing is sent unless you choose to send it.</p></div>';
+  }
+  const total = CN_QUIZ.slice(0, 4).reduce((a, it, i) => a + (q.ans[i] || 0), 0), safety = q.ans[4] || 0, lv = cnLevelOf(total), cs = cnCounselor();
+  const urgent = safety >= 1;
+  return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">Your check-in</p>' +
+    '<div class="flex items-center gap-2 mt-1">' + cnChip(lv.name, lv.cls) + '<span class="text-xs text-slate-400 tabular-nums">' + total + ' / 12</span></div>' +
+    '<p class="text-sm mt-2">' + escapeHtml(lv.tip) + '</p>' +
+    (urgent ? '<div class="mt-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>' : '') +
+    '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (q.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to the counselor. You will see their reply under Talk to someone.</p>' :
+      (cs ? '<p class="text-sm font-semibold">Share this with the counselor?</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Sending is your choice. Only you and the counselor can read it. ' + (urgent ? 'Because of your answer about safety, we really encourage you to send it.' : '') + '</p>' +
+        '<textarea id="cn-q-note" rows="3" maxlength="1000" placeholder="Anything you want the counselor to know? (optional)" class="' + CN_INP + '"></textarea>' +
+        '<label class="flex items-start gap-2 text-xs mt-2"><input id="cn-q-consent" type="checkbox" class="mt-0.5 rounded"' + (urgent ? ' checked' : '') + '><span>I agree to share these answers and my name with ' + escapeHtml(cs.name) + '.</span></label>' +
+        '<div class="flex gap-2 mt-3"><button data-cn-sendq class="' + CN_BTN + '">Send to counselor</button><button data-cn-quizreset class="' + CN_BTN2 + '">Not now</button></div>'
+        : '<p class="text-xs text-slate-500 dark:text-slate-400">Your school has not set up a guidance counselor in Attendly yet. You can still message a teacher under Talk to someone.</p><button data-cn-quizreset class="' + CN_BTN2 + ' mt-3">Done</button>')) + '</div></div>';
+}
+async function cnQuizSend() {
+  const q = cn.quiz; if (q.busy) return;
+  const cs = cnCounselor(); if (!cs) return;
+  if (!document.getElementById('cn-q-consent').checked) { toast('Tick the box to agree to share your answers.', 'warning'); return; }
+  const scores = {}; CN_QUIZ.forEach((it, i) => scores[it.key] = q.ans[i] || 0);
+  const total = CN_QUIZ.slice(0, 4).reduce((a, it, i) => a + (q.ans[i] || 0), 0), safety = q.ans[4] || 0, lv = cnLevelOf(total);
+  const priority = safety >= 2 ? 'urgent' : (safety === 1 || total >= 7 ? 'high' : 'normal');
+  const note = document.getElementById('cn-q-note').value.trim();
+  q.busy = true;
+  const me = cnAcct() || {};
+  const r = await cnSend({ kind: 'checkin', to_email: cs.email, to_name: cs.name, subject: 'Wellness check-in', body: note, meta: { scores, total, level: lv.name, safety, priority, cls: classLabel(me.classId) } });
+  q.busy = false;
+  if (r) { q.sent = true; cnAddLog('checkin', 'Sent a check-in', 0); toast('Sent to the counselor.', 'success'); cnRenderPanel('checkin'); }
+}
+
+/* ---- Breathing 4-7-8 ---- */
+const CN_PHASES = [['Breathe in', 4, 1], ['Hold', 7, 1], ['Breathe out', 8, 0.55]];
+function cnBuildStatic() {
+  document.getElementById('cn-p-breathe').innerHTML = '<div class="' + CN_CARD + ' text-center"><p class="text-sm font-semibold">4-7-8 ocean breath</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Breathe in for 4, hold for 7, breathe out slowly for 8. It helps your body settle when school feels heavy.</p>' +
+    '<div class="flex justify-center my-6"><div class="relative w-48 h-48 flex items-center justify-center"><div id="cn-b-circle" class="absolute inset-0 rounded-full bg-teal-200/70 dark:bg-teal-700/40" style="transform:scale(.55);transition:transform 1s ease-in-out"></div><div class="relative text-center"><p id="cn-b-label" class="text-sm font-medium text-teal-800 dark:text-teal-200">Ready</p><p id="cn-b-count" class="text-3xl font-semibold tabular-nums">4-7-8</p></div></div></div>' +
+    '<p id="cn-b-cycles" class="text-xs text-slate-500 dark:text-slate-400 mb-3">Cycles completed: 0</p><button id="cn-b-btn" data-cn-breath class="' + CN_BTN + '">Start</button></div>';
+  document.getElementById('cn-p-music').innerHTML = '<div class="' + CN_CARD + '"><p class="text-sm font-semibold">Calming music</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Pick a track. It plays from YouTube and needs internet. Set a timer if you want it to stop by itself.</p>' +
+    '<div id="cn-m-player" class="hidden mb-3"><div class="aspect-video rounded-lg overflow-hidden bg-black"><iframe id="cn-m-frame" class="w-full h-full" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" title="Calming music"></iframe></div><div class="flex items-center gap-2 mt-2 flex-wrap"><span class="text-xs text-slate-500">Stop after:</span>' + [15, 30, 60].map(m => '<button data-cn-timer="' + m + '" class="cn-timer text-xs rounded-full border border-slate-300 dark:border-slate-700 px-2.5 py-1">' + m + ' min</button>').join('') + '<button data-cn-mstop class="ml-auto text-xs text-rose-600 hover:underline">Stop music</button></div><p id="cn-m-timer" class="text-[11px] text-slate-400 mt-1"></p></div>' +
+    '<div class="space-y-1.5">' + CN_TRACKS.map((t, i) => '<button data-cn-track="' + i + '" class="cn-track w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 hover:border-teal-400"><i data-lucide="play" class="w-4 h-4 text-teal-600 shrink-0"></i><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(t.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.tag) + '</span></span></button>').join('') + '</div></div>';
+}
+function cnBreathUi() {
+  const b = cn.breath, c = document.getElementById('cn-b-circle'); if (!c) return;
+  const ph = CN_PHASES[b.phase];
+  document.getElementById('cn-b-label').textContent = b.on ? ph[0] : (b.cycles ? 'Well done' : 'Ready');
+  document.getElementById('cn-b-count').textContent = b.on ? b.left : '4-7-8';
+  document.getElementById('cn-b-cycles').textContent = 'Cycles completed: ' + b.cycles;
+  document.getElementById('cn-b-btn').textContent = b.on ? 'Stop' : (b.cycles ? 'Start again' : 'Start');
+}
+function cnBreathPhase() {
+  const b = cn.breath, ph = CN_PHASES[b.phase], c = document.getElementById('cn-b-circle');
+  b.left = ph[1];
+  if (c) { c.style.transition = 'transform ' + (b.phase === 1 ? 0.2 : ph[1]) + 's ease-in-out'; c.style.transform = 'scale(' + ph[2] + ')'; }
+  cnBreathUi();
+}
+function cnBreathTick() {
+  const b = cn.breath; if (!b.on) return;
+  b.left--;
+  if (b.left <= 0) {
+    b.phase++;
+    if (b.phase >= CN_PHASES.length) { b.phase = 0; b.cycles++; if (b.cycles >= 8) { cnStopBreath(true); return; } }
+    cnBreathPhase();
+  } else cnBreathUi();
+  b.timer = setTimeout(cnBreathTick, 1000);
+}
+function cnStartBreath() {
+  const b = cn.breath; if (b.on) return;
+  b.on = true; b.phase = 0; b.cycles = 0;
+  const c = document.getElementById('cn-b-circle'); if (c) { c.style.transition = 'none'; c.style.transform = 'scale(.55)'; void c.offsetWidth; }
+  cnBreathPhase(); b.timer = setTimeout(cnBreathTick, 1000);
+}
+function cnStopBreath(finished) {
+  const b = cn.breath; clearTimeout(b.timer); const was = b.on; b.on = false;
+  if (was && b.cycles >= 1) { cnAddLog('breath', '4-7-8 breathing', Math.round(b.cycles * 19 / 6) / 10); if (finished) toast('Nice work. ' + b.cycles + ' calm cycles done.', 'success'); }
+  const c = document.getElementById('cn-b-circle'); if (c) { c.style.transition = 'transform 1s ease-in-out'; c.style.transform = 'scale(.55)'; }
+  cnBreathUi();
+}
+
+/* ---- Music ---- */
+function cnPlayTrack(i) {
+  const t = CN_TRACKS[i]; if (!t) return;
+  document.getElementById('cn-m-frame').src = 'https://www.youtube-nocookie.com/embed/' + t.id + '?autoplay=1&playsinline=1&rel=0';
+  document.getElementById('cn-m-player').classList.remove('hidden');
+  cn.music.id = t.id; cnAddLog('music', t.title, 0);
+  document.querySelectorAll('#cn-p-music .cn-track').forEach((b, k) => b.classList.toggle('border-teal-500', k === i));
+}
+function cnStopMusic() {
+  clearTimeout(cn.music.timer); cn.music = { id: null, timer: null };
+  const f = document.getElementById('cn-m-frame'); if (f) f.src = 'about:blank';
+  const p = document.getElementById('cn-m-player'); if (p) p.classList.add('hidden');
+  document.querySelectorAll('#cn-p-music .cn-track').forEach(b => b.classList.remove('border-teal-500'));
+}
+function cnSetTimer(m) {
+  clearTimeout(cn.music.timer);
+  cn.music.timer = setTimeout(() => { cnStopMusic(); toast('Music stopped. Rest well.', 'success'); }, m * 60000);
+  document.getElementById('cn-m-timer').textContent = 'Music will stop in ' + m + ' minutes.';
+  document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => b.classList.toggle('bg-teal-600', +b.dataset.cnTimer === m)), document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => b.classList.toggle('text-white', +b.dataset.cnTimer === m));
+}
+
+/* ---- Progress (this device only) ---- */
+function cnPanelProgress() {
+  const s = cnStats(), max = Math.max(1, ...s.week.map(d => d.n)), moodE = { 1: '😣', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
+  const badges = [['First step', s.total >= 1, 'Did your first activity'], ['Calm breather', s.breaths >= 5, '5 breathing sessions'], ['3-day streak', s.streak >= 3, '3 days in a row'], ['Steady', s.total >= 14, '14 activities']];
+  const box = (l, v, sub) => '<div class="rounded-lg border border-slate-200 dark:border-slate-800 p-3"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + l + '</p><p class="text-xl font-semibold tabular-nums">' + v + '</p><p class="text-[10px] text-slate-400">' + sub + '</p></div>';
+  return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">My progress</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Saved only on this device. Nobody else can see it.</p>' +
+    '<div class="grid grid-cols-3 gap-2 mb-4">' + box('Activities', s.total, 'all time') + box('Calm minutes', s.minutes, 'breathing') + box('Day streak', s.streak, 'in a row') + '</div>' +
+    '<p class="text-xs font-medium mb-2">This week</p><div class="flex items-end gap-2 h-24 mb-1">' + s.week.map(d => '<div class="flex-1 flex flex-col items-center justify-end gap-1 h-full"><span class="text-xs">' + (d.mood ? moodE[d.mood] : '') + '</span><div class="w-full rounded-t bg-teal-500/80" style="height:' + Math.max(d.n ? 8 : 2, Math.round(d.n / max * 60)) + 'px"></div></div>').join('') + '</div>' +
+    '<div class="flex gap-2 mb-4">' + s.week.map(d => '<span class="flex-1 text-center text-[10px] text-slate-400">' + d.label + '</span>').join('') + '</div>' +
+    '<div class="grid grid-cols-2 gap-2">' + badges.map(b => '<div class="rounded-lg border px-3 py-2 ' + (b[1] ? 'border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30' : 'border-slate-200 dark:border-slate-800 opacity-60') + '"><p class="text-xs font-semibold">' + b[0] + '</p><p class="text-[10px] text-slate-500 dark:text-slate-400">' + b[2] + '</p></div>').join('') + '</div></div>';
+}
+
+/* ---- Talk to someone: messages + appointment ---- */
+function cnRecipients() {
+  const st = cnAcct(), cs = cnCounselor(), out = [];
+  const adviser = st && st.classId ? DB.teachers.find(t => t.email && t.advisoryClassId === st.classId) : null;
+  if (adviser) out.push(['My adviser', adviser]);
+  if (cs && (!adviser || normEmail(adviser.email) !== normEmail(cs.email))) out.push(['Guidance counselor', cs]);
+  const rest = DB.teachers.filter(t => t.email && !out.some(o => normEmail(o[1].email) === normEmail(t.email))).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return { first: out, rest };
+}
+function cnPanelTalk() {
+  const r = cnRecipients(), cs = cnCounselor(), opt = (t, tag) => '<option value="' + escapeHtml(normEmail(t.email)) + '">' + escapeHtml((t.name || t.email) + (tag ? ' (' + tag + ')' : '')) + '</option>';
+  const today = todayStr();
+  return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Send a message</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Only you and the person you choose can read it. If your safety is at risk, they may need to involve other adults to keep you safe.</p>' +
+    '<label class="block text-xs font-medium mb-1">To</label><select id="cn-m-to" class="' + CN_INP + ' mb-3">' + r.first.map(o => opt(o[1], o[0])).join('') + (r.rest.length ? '<optgroup label="Teachers at San Juan Baño High School">' + r.rest.map(t => opt(t)).join('') + '</optgroup>' : '') + '</select>' +
+    '<label class="block text-xs font-medium mb-1">Message</label><textarea id="cn-m-body" rows="4" maxlength="1000" placeholder="Write what you want them to know..." class="' + CN_INP + '"></textarea>' +
+    '<div class="mt-3"><button data-cn-sendmsg class="' + CN_BTN + '">Send message</button></div></div>' +
+    (cs ? '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Ask for a counseling appointment</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Tell the counselor when you could meet. They will reply here.</p>' +
+      '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3"><div><label class="block text-xs font-medium mb-1">About</label><select id="cn-a-topic" class="' + CN_INP + '">' + CN_TOPICS.map(t => '<option>' + t + '</option>').join('') + '</select></div>' +
+      '<div><label class="block text-xs font-medium mb-1">Preferred day</label><input id="cn-a-date" type="date" min="' + today + '" class="' + CN_INP + '"></div>' +
+      '<div><label class="block text-xs font-medium mb-1">Time</label><select id="cn-a-time" class="' + CN_INP + '"><option>Morning</option><option>Afternoon</option><option>After class</option><option>Any time</option></select></div></div>' +
+      '<textarea id="cn-a-note" rows="2" maxlength="500" placeholder="Anything else? (optional)" class="' + CN_INP + ' mt-3"></textarea>' +
+      '<div class="mt-3"><button data-cn-sendappt class="' + CN_BTN + '">Request appointment</button></div></div>' : '') +
+    '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">My conversations</h3><button data-cn-refresh class="text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div><div id="cn-convos"></div></div>';
+}
+function cnThreadHtml(t, me, openId, prefix) {
+  const open = openId === t.id, r = t.root, other = normEmail(r.from_email) === me ? (r.to_name || r.to_email) : (r.from_name || r.from_email);
+  const kind = r.kind === 'checkin' ? 'Check-in' : r.kind === 'appointment' ? 'Appointment' : 'Message';
+  const newIn = t.msgs.some(m => normEmail(m.to_email) === me && m.status === 'new');
+  let h = '<div class="border border-slate-200 dark:border-slate-800 rounded-lg ' + (newIn ? 'ring-1 ring-teal-400' : '') + '"><button data-' + prefix + '-open="' + t.id + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium truncate">' + escapeHtml(other) + '</span>' + cnChip(kind, 'sky') + (newIn ? cnChip('New', 'teal') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(t.last.body || t.last.subject || '') + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
+  if (open) {
+    h += '<div class="px-3 pb-3 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-2">';
+    if (r.kind === 'appointment' && r.meta) h += '<p class="text-xs text-slate-500 dark:text-slate-400">Topic: ' + escapeHtml(r.meta.topic || '') + ' · Preferred: ' + escapeHtml((r.meta.date || 'any day') + ', ' + (r.meta.time || '')) + '</p>';
+    t.msgs.forEach(m => {
+      const mine = normEmail(m.from_email) === me;
+      h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(m.body || (m.kind === 'appointment' ? 'Appointment request' : m.kind === 'checkin' ? 'Shared a wellness check-in' : '')) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You' : (m.from_name || m.from_email)) + ' · ' + cnWhen(m.created_at) + '</p></div></div>';
+    });
+    h += '<div class="flex gap-2 pt-1"><input data-' + prefix + '-reply="' + t.id + '" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-' + prefix + '-sendreply="' + t.id + '" class="' + CN_BTN + ' shrink-0">Send</button></div></div>';
+  }
+  return h + '</div>';
+}
+function cnRenderConvos() {
+  const el = document.getElementById('cn-convos'); if (!el) return;
+  const me = cnMyEmail();
+  if (cn.err) { el.innerHTML = '<p class="text-xs text-rose-600">' + escapeHtml(cn.err) + '</p>'; return; }
+  if (!cn.loaded) { el.innerHTML = '<p class="text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to see your conversations.') + '</p>'; return; }
+  const th = cnThreads(me);
+  el.innerHTML = th.length ? '<div class="space-y-2">' + th.map(t => cnThreadHtml(t, me, cn.openThread, 'cn')).join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">No conversations yet. Your messages and the replies will show up here.</p>';
+}
+async function cnReply(rootId, text, prefix) {
+  const me = cnMyEmail(), t = cnThreads(me).find(x => x.id === rootId); if (!t || !text.trim()) return false;
+  const r = t.root, toEmail = normEmail(r.from_email) === me ? r.to_email : r.from_email, toName = normEmail(r.from_email) === me ? r.to_name : r.from_name;
+  const out = await cnSend({ kind: 'reply', thread_id: rootId, to_email: toEmail, to_name: toName || '', subject: 'Re: ' + (r.subject || ''), body: text.trim().slice(0, 1000) });
+  if (out && normEmail(r.to_email) === me && r.status === 'new') cnSetStatus(rootId, 'seen');
+  return !!out;
+}
+
+/* ---- Inboxes for teachers (messages) and the counselor (guidance) ---- */
+function renderInbox(which) {
+  const root = document.getElementById(which === 'guidance' ? 'gd-root' : 'msg-root'); if (!root) return;
+  const me = cnMyEmail(), st = inbox[which], kinds = which === 'guidance' ? ['checkin', 'appointment', 'message'] : ['message'];
+  if (!root.dataset.built) { root.dataset.built = '1'; }
+  if (which === 'guidance' && !isCounselor()) { root.innerHTML = '<p class="text-sm text-slate-500">This page is only for the school counselor.</p>'; return; }
+  if (!cn.loaded && !cn.loading) cnLoad();
+  let th = cnThreads(me).filter(t => t.mineRoot && (which === 'guidance' ? true : t.root.kind === 'message'));
+  if (which === 'messages' && isCounselor()) th = th.filter(t => t.root.kind === 'message');
+  const counts = { new: th.filter(t => t.root.status !== 'done' && t.awaiting).length, pri: th.filter(t => t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high')).length, all: th.length };
+  const f = st.filter;
+  th = th.filter(t => t.id === st.open || (f === 'all' ? true : f === 'pri' ? (t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high')) : (t.root.status !== 'done' && t.awaiting)));
+  const rank = t => { const p = t.root.meta && t.root.meta.priority; return p === 'urgent' ? 0 : p === 'high' ? 1 : 2; };
+  if (which === 'guidance') th.sort((a, b) => rank(a) - rank(b) || String(b.last.created_at).localeCompare(String(a.last.created_at)));
+  const chip = (k, label, n) => '<button data-in-filter="' + k + '" data-in-which="' + which + '" class="text-xs font-medium rounded-full border px-3 py-1.5 ' + (f === k ? 'bg-teal-600 text-white border-teal-600' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300') + '">' + label + ' (' + n + ')</button>';
+  const ctrl = '<div class="flex flex-wrap items-center gap-2 mb-4">' + chip('new', 'Needs reply', counts.new) + (which === 'guidance' ? chip('pri', 'Priority', counts.pri) : '') + chip('all', 'All', counts.all) + '<button data-in-refresh data-in-which="' + which + '" class="ml-auto text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div>';
+  let body;
+  if (cn.err) body = '<p class="text-xs text-rose-600">' + escapeHtml(cn.err) + '</p>';
+  else if (!cn.loaded) body = '<p class="text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to read messages.') + '</p>';
+  else body = th.length ? '<div class="space-y-2">' + th.map(t => inboxCard(t, me, st.open, which)).join('') + '</div>' : '<p class="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">Nothing here right now.</p>';
+  const head = which === 'guidance' ? '<div class="rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/60 dark:bg-teal-950/20 p-4 mb-4"><p class="text-sm font-semibold">Counseling inbox</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Check-ins, appointment requests and messages sent to you. Only you can read these.</p></div>'
+    : '<div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 mb-4"><p class="text-sm font-semibold">Student messages</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Messages students sent to you. Only you can read them.</p></div>';
+  const prevScroll = window.scrollY, active = document.activeElement, keep = active && active.matches && active.matches('[data-in-reply]') ? { id: active.dataset.inReply, v: active.value } : null;
+  root.innerHTML = head + ctrl + body;
+  if (keep) { const i = root.querySelector('[data-in-reply="' + keep.id + '"]'); if (i) { i.value = keep.v; i.focus(); } }
+  refreshIcons();
+}
+function inboxCard(t, me, openId, which) {
+  const r = t.root, m = r.meta || {}, open = openId === t.id, who = r.from_name || r.from_email;
+  const kind = r.kind === 'checkin' ? 'Check-in' : r.kind === 'appointment' ? 'Appointment' : 'Message';
+  const lv = r.kind === 'checkin' ? CN_LEVELS.find(l => l.name === m.level) || CN_LEVELS[0] : null;
+  let h = '<div class="border rounded-lg ' + (m.priority === 'urgent' ? 'border-rose-400 dark:border-rose-700' : 'border-slate-200 dark:border-slate-800') + '"><button data-in-open="' + t.id + '" data-in-which="' + which + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium">' + escapeHtml(who) + '</span>' + (m.cls ? '<span class="text-[11px] text-slate-500">' + escapeHtml(m.cls) + '</span>' : '') + cnChip(kind, 'sky') + (lv ? cnChip(lv.name, lv.cls) : '') +
+    (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (r.status === 'new' ? cnChip('New', 'teal') : r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(t.last.body || t.last.subject || '') + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
+  if (open) {
+    h += '<div class="px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2 space-y-3">';
+    if (r.kind === 'checkin') {
+      h += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' + CN_QUIZ.map(it => { const v = (m.scores || {})[it.key] || 0; return '<div class="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(it.title) + '</p><p class="text-xs font-medium">' + escapeHtml(it.opts[v]) + '</p><div class="h-1 rounded-full bg-slate-200 dark:bg-slate-700 mt-1.5"><div class="h-full rounded-full ' + (v >= 3 ? 'bg-rose-500' : v === 2 ? 'bg-orange-400' : v === 1 ? 'bg-amber-400' : 'bg-emerald-400') + '" style="width:' + (v + 1) * 25 + '%"></div></div></div>'; }).join('') + '</div>';
+      if ((m.safety || 0) >= 1) h += '<p class="text-xs font-semibold text-rose-700 dark:text-rose-300">Safety answer: ' + escapeHtml(CN_QUIZ[4].opts[m.safety]) + '. Please follow your school protocol.</p>';
+    }
+    if (r.kind === 'appointment') h += '<p class="text-xs text-slate-500 dark:text-slate-400">Topic: ' + escapeHtml(m.topic || '') + ' · Preferred: ' + escapeHtml((m.date || 'any day') + ', ' + (m.time || '')) + '</p>';
+    t.msgs.forEach(x => { const mine = normEmail(x.from_email) === me; if (!x.body) return; h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(x.body) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You' : (x.from_name || x.from_email)) + ' · ' + cnWhen(x.created_at) + '</p></div></div>'; });
+    h += '<div class="flex gap-2"><input data-in-reply="' + t.id + '" data-in-which="' + which + '" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-in-sendreply="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN + ' shrink-0">Send</button></div>' +
+      '<div class="flex gap-2">' + (r.status === 'done' ? '<button data-in-status="seen" data-in-id="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN2 + ' !py-1 text-xs">Reopen</button>' : '<button data-in-status="done" data-in-id="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN2 + ' !py-1 text-xs">Mark done</button>') + '</div></div>';
+  }
+  return h + '</div>';
+}
+
+/* ---- events ---- */
+document.addEventListener('click', async ev => {
+  const g = sel => ev.target.closest(sel);
+  let el;
+  if ((el = g('[data-cn-tab]'))) { cnShowTab(el.dataset.cnTab); window.scrollTo(0, 0); return; }
+  if ((el = g('[data-cn-mood]'))) { cnAddLog('mood', 'Mood', 0, +el.dataset.cnMood); toast(+el.dataset.cnMood <= 2 ? 'Thanks for telling us. Try Breathe, or talk to someone.' : 'Logged. Thanks for checking in.', 'success'); return; }
+  if ((el = g('[data-cn-ans]'))) { const q = cn.quiz; q.ans[q.step] = +el.dataset.cnAns; if (q.step >= CN_QUIZ.length - 1) q.done = true; else q.step++; cnRenderPanel('checkin'); return; }
+  if (g('[data-cn-back]')) { cn.quiz.step = Math.max(0, cn.quiz.step - 1); cnRenderPanel('checkin'); return; }
+  if (g('[data-cn-quizreset]')) { const q = cn.quiz; if (q.done && !q.sent) cnAddLog('checkin', 'Completed a check-in', 0); cn.quiz = { step: 0, ans: [], done: false, sent: false, busy: false }; cnShowTab('home'); return; }
+  if (g('[data-cn-sendq]')) { cnQuizSend(); return; }
+  if (g('[data-cn-breath]')) { cn.breath.on ? cnStopBreath() : cnStartBreath(); return; }
+  if ((el = g('[data-cn-track]'))) { cnPlayTrack(+el.dataset.cnTrack); return; }
+  if ((el = g('[data-cn-timer]'))) { cnSetTimer(+el.dataset.cnTimer); return; }
+  if (g('[data-cn-mstop]')) { cnStopMusic(); return; }
+  if (g('[data-cn-refresh]')) { cnLoad(); return; }
+  if (g('[data-cn-sendmsg]')) {
+    const to = document.getElementById('cn-m-to').value, body = document.getElementById('cn-m-body').value.trim();
+    if (!to) { toast('Choose who to send it to.', 'warning'); return; }
+    if (!body) { toast('Write a message first.', 'warning'); return; }
+    const t = DB.teachers.find(x => normEmail(x.email) === to), me = cnAcct() || {};
+    const r = await cnSend({ kind: 'message', to_email: to, to_name: t ? t.name : '', subject: 'Message from a student', body, meta: { cls: classLabel(me.classId) } });
+    if (r) { document.getElementById('cn-m-body').value = ''; toast('Message sent.', 'success'); cn.openThread = r.id; cnRenderConvos(); }
+    return;
+  }
+  if (g('[data-cn-sendappt]')) {
+    const cs = cnCounselor(); if (!cs) return;
+    const topic = document.getElementById('cn-a-topic').value, date = document.getElementById('cn-a-date').value, time = document.getElementById('cn-a-time').value, note = document.getElementById('cn-a-note').value.trim(), me = cnAcct() || {};
+    const r = await cnSend({ kind: 'appointment', to_email: cs.email, to_name: cs.name, subject: 'Appointment request', body: note, meta: { topic, date, time, cls: classLabel(me.classId), priority: 'normal' } });
+    if (r) { document.getElementById('cn-a-note').value = ''; toast('Request sent. The counselor will reply here.', 'success'); cn.openThread = r.id; cnRenderConvos(); }
+    return;
+  }
+  if ((el = g('[data-cn-open]'))) {
+    cn.openThread = cn.openThread === el.dataset.cnOpen ? null : el.dataset.cnOpen;
+    const me = cnMyEmail(); cn.items.filter(i => (i.thread_id || i.id) === cn.openThread && normEmail(i.to_email) === me && i.status === 'new').forEach(i => cnSetStatus(i.id, 'seen'));
+    cnRenderConvos(); return;
+  }
+  if ((el = g('[data-cn-sendreply]'))) {
+    const inp = document.querySelector('[data-cn-reply="' + el.dataset.cnSendreply + '"]');
+    if (inp && await cnReply(el.dataset.cnSendreply, inp.value, 'cn')) { inp.value = ''; cnRenderConvos(); }
+    return;
+  }
+  // inboxes
+  if ((el = g('[data-in-filter]'))) { inbox[el.dataset.inWhich].filter = el.dataset.inFilter; renderInbox(el.dataset.inWhich); return; }
+  if ((el = g('[data-in-refresh]'))) { await cnLoad(); renderInbox(el.dataset.inWhich); return; }
+  if ((el = g('[data-in-open]'))) {
+    const w = el.dataset.inWhich, st = inbox[w], id = el.dataset.inOpen;
+    st.open = st.open === id ? null : id;
+    if (st.open) { const root = cn.items.find(i => i.id === id); if (root && root.status === 'new' && normEmail(root.to_email) === cnMyEmail()) await cnSetStatus(id, 'seen'); cn.items.filter(i => i.thread_id === id && normEmail(i.to_email) === cnMyEmail() && i.status === 'new').forEach(i => cnSetStatus(i.id, 'seen')); }
+    renderInbox(w); return;
+  }
+  if ((el = g('[data-in-sendreply]'))) {
+    const w = el.dataset.inWhich, inp = document.querySelector('[data-in-reply="' + el.dataset.inSendreply + '"]');
+    if (inp && inp.value.trim() && await cnReply(el.dataset.inSendreply, inp.value, 'in')) { toast('Reply sent.', 'success'); renderInbox(w); }
+    return;
+  }
+  if ((el = g('[data-in-status]'))) { await cnSetStatus(el.dataset.inId, el.dataset.inStatus); renderInbox(el.dataset.inWhich); return; }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Enter') return;
+  const t = ev.target; if (!t || !t.matches) return;
+  if (t.matches('[data-cn-reply]')) { ev.preventDefault(); const b = document.querySelector('[data-cn-sendreply="' + t.dataset.cnReply + '"]'); if (b) b.click(); }
+  if (t.matches('[data-in-reply]')) { ev.preventDefault(); const b = document.querySelector('[data-in-sendreply="' + t.dataset.inReply + '"]'); if (b) b.click(); }
+});
+setInterval(() => {
+  const a = document.querySelector('.view-section.active'); if (!a || !DB.auth) return;
+  const v = a.dataset.view;
+  if ((v === 'counseling' && cn.tab === 'talk') || v === 'guidance' || v === 'messages' || (v === 'counseling' && cn.tab === 'home')) cnLoad();
+}, 30000);
+
+/* admin: choose the guidance counselor */
+function renderCounselorSetting() {
+  const inp = document.getElementById('adm-counselor'); if (!inp) return;
+  inp.value = (DB.settings && DB.settings.counselorEmail) || '';
+  const e = normEmail(inp.value), t = e ? DB.teachers.find(x => normEmail(x.email) === e) : null;
+  document.getElementById('adm-counselor-note').textContent = !e ? 'No counselor set. Students will not see the counselor option.' : (t ? 'Counselor: ' + t.name + '. They will see the Counseling menu.' : 'No teacher account has this email yet. The counselor must sign up as a teacher with this email.');
+}
+document.addEventListener('click', ev => {
+  if (!ev.target.closest('#adm-counselor-save')) return;
+  const e = normEmail(document.getElementById('adm-counselor').value);
+  DB.settings.counselorEmail = e; saveDB(); renderCounselorSetting(); applyRoleNav();
+  toast(e ? 'Counselor saved.' : 'Counselor cleared.', 'success');
+});
+
 /* ==================== STUDENT: MY TEACHERS ==================== */
 
 /* ==================== STUDENT MENUS: ATTENDANCE, SUBJECTS, TEACHERS ==================== */
@@ -3676,6 +4207,7 @@ document.getElementById('login-scan-badge').addEventListener('click', () => {
 
 /* ==================== ADMIN CONSOLE ==================== */
 function renderAdminView() {
+  renderCounselorSetting();
   document.getElementById('admin-stat-teachers').textContent = DB.teachers.length;
   document.getElementById('admin-stat-students').textContent = DB.students.length;
 
