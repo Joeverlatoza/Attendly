@@ -503,6 +503,17 @@
           <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Saved with the Save button above. Students pick from these on weekdays.</p>
         </div>
 
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Survey email receiver</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">The Gmail that receives students' survey results (Excel file). Change it here when the guidance office changes. It is saved safely on the server, not in the shared school data.</p>
+          <label class="block text-xs font-medium mb-1" for="adm-recv">Receiver email</label>
+          <input id="adm-recv" type="email" placeholder="guidance@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-pw">Admin password (to confirm)</label>
+          <div class="flex gap-2"><input id="adm-recv-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-recv-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
+          <button id="adm-recv-load" class="text-xs text-indigo-600 dark:text-indigo-400 mt-2 underline">Show current receiver</button>
+          <p id="adm-recv-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Until your own domain is verified in Resend, Resend only delivers to the email that owns the Resend account. Email is not a fully private channel.</p>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-3">Teacher directory</h2>
@@ -4504,7 +4515,18 @@ const LANG_FIL = {
 "e.g. Section A": "hal. Section A",
 "Teacher ID": "Teacher ID",
 "Hello, I would like to join a peer circle.": "Kumusta po, gusto ko pong sumali sa grupo ng kaklase.",
-"Quick check-in:": "Mabilis na check-in:"
+"Quick check-in:": "Mabilis na check-in:",
+"Survey email receiver": "Tatanggap ng survey email",
+"The Gmail that receives students' survey results (Excel file). Change it here when the guidance office changes. It is saved safely on the server, not in the shared school data.": "Ang Gmail na tumatanggap ng resulta ng survey ng mga estudyante (Excel file). Palitan ito dito kapag nagbago ang guidance office. Ligtas itong nakatago sa server, hindi sa shared na datos ng paaralan.",
+"Receiver email": "Email ng tatanggap",
+"Admin password (to confirm)": "Admin password (para kumpirmahin)",
+"Show current receiver": "Ipakita ang kasalukuyang tatanggap",
+"Until your own domain is verified in Resend, Resend only delivers to the email that owns the Resend account. Email is not a fully private channel.": "Hangga't hindi pa na-verify ang sarili ninyong domain sa Resend, sa email lang ng may-ari ng Resend account makakarating ang mga email. Hindi ganap na pribado ang email.",
+"Receiver saved.": "Nai-save ang tatanggap.",
+"Receiver cleared.": "Natanggal ang tatanggap.",
+"Enter a valid email.": "Maglagay ng tamang email.",
+"Could not reach the server. Check the send-survey function was updated.": "Hindi maabot ang server. Tiyaking na-update ang send-survey function.",
+"No receiver set yet.": "Wala pang tatanggap."
 };
 const LANG_PATS = [
 [
@@ -5628,6 +5650,30 @@ document.addEventListener('click', ev => {
   if (sl) { const list = sl.value.split(/[,\s]+/).map(x => x.trim()).filter(x => /^\d{1,2}:\d{2}$/.test(x)).map(x => x.padStart(5, '0')); DB.settings.counselSlots = list.length ? Array.from(new Set(list)).sort() : CN_DEFAULT_SLOTS.slice(); }
   saveDB(); renderCounselorSetting(); applyRoleNav();
   toast(e ? 'Counselor saved.' : 'Counselor cleared.', 'success');
+});
+
+/* admin: survey email receiver (stored server-side; changed through the send-survey function with the admin password) */
+async function recvCall(body) {
+  if (!sb || !sb.functions) throw new Error('offline');
+  const r = await sb.functions.invoke('send-survey', { body });
+  if (r.error) { let m = ''; try { const j = await r.error.context.json(); m = j.error || ''; } catch (e) {} throw new Error(m || 'failed'); }
+  return r.data || {};
+}
+document.addEventListener('click', async ev => {
+  const save = ev.target.closest('#adm-recv-save'), load = ev.target.closest('#adm-recv-load');
+  if (!save && !load) return;
+  const em = document.getElementById('adm-recv'), pw = document.getElementById('adm-recv-pw'), note = document.getElementById('adm-recv-note');
+  if (!pw.value) { toast('Enter the admin password.', 'warning'); return; }
+  const email = normEmail(em.value);
+  if (save && email && !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email)) { toast('Enter a valid email.', 'warning'); return; }
+  try {
+    const d = await recvCall(save ? { action: 'set_receiver', password: pw.value, email } : { action: 'get_receiver', password: pw.value });
+    em.value = d.email || ''; pw.value = '';
+    if (save) toast(d.email ? 'Receiver saved.' : 'Receiver cleared.', 'success');
+    note.textContent = d.email ? 'Survey emails go to: ' + d.email : 'No receiver set yet.';
+  } catch (e) {
+    toast(/password/.test(e.message) ? 'Incorrect admin password.' : 'Could not reach the server. Check the send-survey function was updated.', 'error');
+  }
 });
 
 /* ==================== STUDENT: MY TEACHERS ==================== */
