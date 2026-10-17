@@ -129,6 +129,7 @@
 
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
         <div class="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
+        <div class="flex items-center justify-between gap-3 mb-4"><span class="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"><i data-lucide="languages" class="w-3.5 h-3.5"></i><span>Language</span></span><div class="inline-flex gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5"><button type="button" data-lang-set="en" class="lang-btn">English</button><button type="button" data-lang-set="fil" class="lang-btn">Filipino</button></div></div>
         <div class="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mb-4">
           <button data-login-role="teacher" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Teacher</button>
           <button data-login-role="student" class="role-tab-btn text-xs font-medium rounded-md px-2 py-1.5">Student</button>
@@ -786,6 +787,7 @@
       </section>
 
       <section data-view="settings" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3 "><span class="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"><i data-lucide="languages" class="w-3.5 h-3.5"></i><span>Language</span></span><div class="inline-flex gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5"><button type="button" data-lang-set="en" class="lang-btn">English</button><button type="button" data-lang-set="fil" class="lang-btn">Filipino</button></div></div></div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><i data-lucide="moon" class="w-4 h-4"></i><span>Dark mode</span></div><input type="checkbox" class="switch" data-theme-switch aria-label="Dark mode"></div></div>
         <div class="teacher-only-setting bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h2 class="text-sm font-semibold mb-4">My profile</h2>
@@ -3575,6 +3577,60 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
 });
 
 
+
+/* ==================== LANGUAGE: English / Filipino ==================== */
+// Short labels only. Anything not listed here stays in English.
+const LANG_FIL = {"Sign in to continue": "Mag-sign in para magpatuloy", "Dark mode": "Madilim na mode", "Language": "Wika", "Teacher": "Guro", "Student": "Mag-aaral", "Log in": "Mag-log in", "Sign up": "Mag-sign up", "Scan your badge instead": "I-scan ang badge mo", "Continue": "Magpatuloy", "Use a different account": "Gumamit ng ibang account", "Continue with Google": "Magpatuloy gamit ang Google", "Continue with Facebook": "Magpatuloy gamit ang Facebook", "or use your email": "o gamitin ang email", "Email": "Email", "Password": "Password", "Forgot password?": "Nakalimutan ang password?", "Enter your email. We will send you a link to choose a new password.": "Ilagay ang email mo. Magpapadala kami ng link para pumili ng bagong password.", "Teacher ID": "Teacher ID", "New password": "Bagong password", "Confirm new password": "Kumpirmahin ang bagong password", "Send reset link": "Ipadala ang reset link", "Back to log in": "Bumalik sa log in", "Full name": "Buong pangalan", "Confirm": "Kumpirmahin", "Create account": "Gumawa ng account", "Continue as Admin": "Magpatuloy bilang Admin", "All data stays on this device": "Nasa device na ito ang lahat ng data", "Restore from a backup file": "I-restore mula sa backup file", "Teacher Dashboard": "Dashboard ng Guro", "Live Scanner": "Scanner", "Roster Manager": "Listahan ng mga Estudyante", "Classroom": "Klase", "Attendance": "Pagdalo", "Subjects": "Mga Subject", "Teachers": "Mga Guro", "Messages": "Mensahe", "Settings": "Mga Setting", "Log out": "Mag-log out", "Cancel": "Kanselahin", "Save": "I-save", "Back": "Bumalik", "My profile": "Aking profile", "Photo (optional)": "Larawan (opsyonal)", "School": "Paaralan", "Advisory class (optional)": "Advisory class (opsyonal)", "Save profile": "I-save ang profile", "Subjects & schedule": "Mga subject at schedule", "No subjects added yet.": "Wala pang naidagdag na subject.", "Add subject": "Magdagdag ng subject", "Start": "Simula", "End": "Tapos", "Monday": "Lunes", "Tuesday": "Martes", "Wednesday": "Miyerkules", "Thursday": "Huwebes", "Friday": "Biyernes", "Any day": "Kahit anong araw", "Download Excel template": "I-download ang Excel template", "Remove all subjects": "Alisin lahat ng subject", "School term": "Termino ng paaralan", "Current term": "Kasalukuyang termino", "Save term": "I-save ang termino", "Attendance rules": "Patakaran sa pagdalo", "Default session start time": "Karaniwang oras ng simula", "Late threshold (minutes)": "Late pagkatapos ng (minuto)", "Save settings": "I-save ang settings", "Data & backup": "Data at backup", "Export full backup (JSON)": "I-export ang buong backup (JSON)", "Import backup (JSON)": "I-import ang backup (JSON)", "Danger zone": "Delikadong bahagi", "Clear all data": "Burahin lahat ng data"};
+const LANG_KEY = 'attendly_lang';
+let APP_LANG = (() => { try { return localStorage.getItem(LANG_KEY) === 'fil' ? 'fil' : 'en'; } catch (e) { return 'en'; } })();
+let langApplying = false, langPending = false, langObserver = null;
+function langNode(n) {
+  const cur = n.nodeValue, t = cur.trim();
+  if (!t) return;
+  let en;
+  if (n.__fil !== undefined && cur === n.__fil) en = n.__en;
+  else { if (!Object.prototype.hasOwnProperty.call(LANG_FIL, t)) return; en = t; }
+  const useFil = APP_LANG === 'fil' && Object.prototype.hasOwnProperty.call(LANG_FIL, en);
+  const want = useFil ? LANG_FIL[en] : en;
+  if (useFil) { n.__en = en; n.__fil = want; } else { n.__fil = undefined; }
+  const i = cur.indexOf(t);
+  const out = cur.slice(0, i) + want + cur.slice(i + t.length);
+  if (out !== cur) n.nodeValue = out;
+}
+function applyLang() {
+  langApplying = true;
+  try {
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => (n.parentNode && !['SCRIPT', 'STYLE', 'TEXTAREA'].includes(n.parentNode.nodeName)) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const list = []; while (w.nextNode()) list.push(w.currentNode);
+    list.forEach(langNode);
+  } finally { langApplying = false; }
+}
+function langSchedule() {
+  if (langApplying || langPending) return;
+  langPending = true;
+  requestAnimationFrame(() => { langPending = false; applyLang(); });
+}
+function langPaintButtons() {
+  document.querySelectorAll('[data-lang-set]').forEach(b => {
+    const on = b.dataset.langSet === APP_LANG;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.className = 'lang-btn text-xs font-medium rounded-md px-2.5 py-1 transition-colors ' + (on ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200');
+  });
+}
+function setAppLang(l) {
+  APP_LANG = l === 'fil' ? 'fil' : 'en';
+  try { localStorage.setItem(LANG_KEY, APP_LANG); } catch (e) {}
+  document.documentElement.lang = APP_LANG === 'fil' ? 'fil' : 'en';
+  if (APP_LANG === 'fil') {
+    if (!langObserver) { langObserver = new MutationObserver(langSchedule); langObserver.observe(document.body, { childList: true, subtree: true, characterData: true }); }
+  } else if (langObserver) { langObserver.disconnect(); langObserver = null; }
+  applyLang(); langPaintButtons();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-lang-set]');
+  if (b) setAppLang(b.dataset.langSet);
+});
+(function initLang() { setAppLang(APP_LANG); })();
 
 /* ==================== COUNSELING (students) + INBOXES (teachers / counselor) ==================== */
 // Hotlines: please confirm these with your school before relying on them.
