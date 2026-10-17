@@ -43,7 +43,9 @@
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
 <style>
   :root { color-scheme: light dark; }
+  @supports (height: 100dvh) { #app.h-screen, #app { height: 100dvh; } html.fit-zoom, .fit-zoom body { height: 100dvh; } }
   .fit-zoom #app, .fit-zoom .h-screen { height: calc(100vh / var(--fit-k)); }
+  @supports (height: 100dvh) { .fit-zoom #app, .fit-zoom .h-screen, html.fit-zoom, .fit-zoom body { height: calc(100dvh / var(--fit-k)); } }
   .fit-zoom .max-h-\[90vh\] { max-height: calc(90vh / var(--fit-k)); }
   html.fit-zoom, .fit-zoom body { height: calc(100vh / var(--fit-k)); overflow: hidden; }
   label:has(> input.sr-only) { position: relative; }
@@ -334,7 +336,7 @@
         <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
           <i data-lucide="wifi-off" class="w-3 h-3"></i><span>Offline mode</span>
         </div>
-        <span id="clock" class="text-xs md:text-sm text-slate-500 dark:text-slate-400 tabular-nums"></span>
+        <span id="clock" class="hidden sm:inline text-xs md:text-sm text-slate-500 dark:text-slate-400 tabular-nums"></span>
         <div class="hidden sm:flex items-center gap-1.5 text-xs pl-1 border-l border-slate-200 dark:border-slate-800 ml-1">
           <span id="header-user-role" class="px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium capitalize"></span>
           <span id="header-user-name" class="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[110px]"></span>
@@ -346,7 +348,7 @@
     </header>
 
     <!-- VIEWS -->
-    <main class="flex-1 overflow-y-auto pb-20 md:pb-0">
+    <main class="flex-1 overflow-y-auto pb-24 md:pb-0">
 
       <!-- DASHBOARD -->
       <section data-view="dashboard" class="view-section active p-4 md:p-6 max-w-6xl mx-auto space-y-6">
@@ -495,6 +497,9 @@
           <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Enter the email of the counselor's teacher account. Only this teacher sees the Counseling menu, and students can send check-ins and appointment requests to them.</p>
           <div class="flex gap-2"><input id="adm-counselor" type="email" placeholder="counselor@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-counselor-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
           <p id="adm-counselor-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
+          <label class="block text-xs font-medium mt-4 mb-1" for="adm-slots">Appointment times (24-hour, separated by commas)</label>
+          <input id="adm-slots" type="text" placeholder="08:30, 09:30, 10:30, 13:30, 14:30, 15:30" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Saved with the Save button above. Students pick from these on weekdays.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
@@ -1323,30 +1328,35 @@ function xlsxZip(files) {
 }
 function xlsxEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); }
 function xlsxCol(i) { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
-function makeXlsx(rows, sheetName, widths) {
+function makeXlsxBook(sheets) {
   const head = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
   const ns = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
-  const sheetRows = rows.map((r, ri) => '<row r="' + (ri + 1) + '">' + r.map((v, ci) => {
-    const ref = xlsxCol(ci) + (ri + 1), s = ri === 0 ? ' s="1"' : '';
-    if (v === '' || v == null) return '<c r="' + ref + '"' + s + '/>';
-    return '<c r="' + ref + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + xlsxEsc(v) + '</t></is></c>';
-  }).join('') + '</row>').join('');
-  const cols = widths ? '<cols>' + widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join('') + '</cols>' : '';
-  const sheet = head + '<worksheet ' + ns + '><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' + cols + '<sheetData>' + sheetRows + '</sheetData></worksheet>';
+  const mk = sh => {
+    const sheetRows = sh.rows.map((r, ri) => '<row r="' + (ri + 1) + '">' + r.map((v, ci) => {
+      const ref = xlsxCol(ci) + (ri + 1), s = ri === 0 ? ' s="1"' : '';
+      if (v === '' || v == null) return '<c r="' + ref + '"' + s + '/>';
+      if (typeof v === 'number' && isFinite(v)) return '<c r="' + ref + '"' + s + '><v>' + v + '</v></c>';
+      return '<c r="' + ref + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + xlsxEsc(v) + '</t></is></c>';
+    }).join('') + '</row>').join('');
+    const cols = sh.widths ? '<cols>' + sh.widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join('') + '</cols>' : '';
+    return head + '<worksheet ' + ns + '><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' + cols + '<sheetData>' + sheetRows + '</sheetData></worksheet>';
+  };
   const styles = head + '<styleSheet ' + ns + '><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>' +
     '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE2E8F0"/></patternFill></fill></fills>' +
     '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
     '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
-  const name = xlsxEsc((sheetName || 'Sheet1').replace(/[\\\/?*\[\]:]/g, ' ').slice(0, 31));
-  return xlsxZip([
-    { name: '[Content_Types].xml', text: head + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
-    { name: '_rels/.rels', text: head + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
-    { name: 'xl/workbook.xml', text: head + '<workbook ' + ns + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + name + '" sheetId="1" r:id="rId1"/></sheets></workbook>' },
-    { name: 'xl/_rels/workbook.xml.rels', text: head + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
-    { name: 'xl/styles.xml', text: styles },
-    { name: 'xl/worksheets/sheet1.xml', text: sheet }
-  ]);
+  const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const files = [
+    { name: '[Content_Types].xml', text: head + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + sheets.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('') + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { name: '_rels/.rels', text: head + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + R + '/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: 'xl/workbook.xml', text: head + '<workbook ' + ns + ' xmlns:r="' + R + '"><sheets>' + sheets.map((s, i) => '<sheet name="' + xlsxEsc((s.name || 'Sheet' + (i + 1)).replace(/[\\\/?*\[\]:]/g, ' ').slice(0, 31)) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join('') + '</sheets></workbook>' },
+    { name: 'xl/_rels/workbook.xml.rels', text: head + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map((s, i) => '<Relationship Id="rId' + (i + 1) + '" Type="' + R + '/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join('') + '<Relationship Id="rId' + (sheets.length + 1) + '" Type="' + R + '/styles" Target="styles.xml"/></Relationships>' },
+    { name: 'xl/styles.xml', text: styles }
+  ];
+  sheets.forEach((s, i) => files.push({ name: 'xl/worksheets/sheet' + (i + 1) + '.xml', text: mk(s) }));
+  return xlsxZip(files);
 }
+function makeXlsx(rows, sheetName, widths) { return makeXlsxBook([{ name: sheetName, rows, widths }]); }
 function downloadXlsx(rows, filename, sheetName, widths) { downloadBlob(makeXlsx(rows, sheetName, widths), filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
 async function xlsxInflate(u8) {
   const ds = new DecompressionStream('deflate-raw');
@@ -3565,6 +3575,7 @@ document.getElementById('t-sched-csv').addEventListener('change', e => {
 });
 
 
+
 /* ==================== COUNSELING (students) + INBOXES (teachers / counselor) ==================== */
 // Hotlines: please confirm these with your school before relying on them.
 const CN_HOTLINES = [
@@ -3585,6 +3596,41 @@ const CN_LEVELS = [
   { max: 9, name: 'High strain', cls: 'orange', tip: 'You have been carrying a lot. Please consider talking to the counselor or a teacher you trust. You do not have to handle this alone.' },
   { max: 12, name: 'Needs support', cls: 'rose', tip: 'Your answers show that things are very hard right now. Please reach out to the counselor or a trusted adult soon. Support is available.' }
 ];
+const CN_SCALE4 = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
+const CN_SCALE_B = ['Rarely or never', 'Sometimes', 'Often', 'Almost always'];
+// Screening questions. "Low mood" follows the PHQ-9 and "Anxiety" follows the GAD-7 (both free to use); wording is lightly adjusted for students.
+const CN_SURVEYS = {
+  quick: { id: 'quick', kind: 'checkin', name: 'Quick check-in', short: 'Check-in', minutes: 1, blurb: 'Five quick questions about school, sleep, friends and mood.', source: 'Attendly quick check-in',
+    items: CN_QUIZ.map(q => ({ q: q.q, title: q.title, opts: q.opts, area: q.key })), scoreIdx: [0, 1, 2, 3], safetyIdx: 4,
+    levels: CN_LEVELS.map((l, i) => ({ max: l.max, name: l.name, cls: l.cls, high: i >= 2, tip: l.tip })) },
+  phq: { id: 'phq', kind: 'survey', name: 'Low mood (depression) screen', short: 'Depression', minutes: 3, blurb: 'Nine questions about mood, interest, sleep and energy over the last 2 weeks.', source: 'Based on the PHQ-9 (screening only, not a diagnosis)',
+    lead: 'Over the last 2 weeks, how often have you been bothered by the following?', scale: CN_SCALE4, scoreIdx: [0, 1, 2, 3, 4, 5, 6, 7, 8], safetyIdx: 8,
+    items: [['Little interest or pleasure in doing things', 'mood'], ['Feeling down, sad or hopeless', 'mood'], ['Trouble falling asleep, staying asleep, or sleeping too much', 'body'], ['Feeling tired or having little energy', 'body'], ['Poor appetite or overeating', 'body'],
+      ['Feeling bad about yourself, or that you are a failure or have let yourself or your family down', 'self'], ['Trouble concentrating on things, like schoolwork or reading', 'load'], ['Moving or speaking so slowly that other people noticed, or being so fidgety or restless that you move around a lot more than usual', 'body'], ['Thoughts that you would be better off dead, or of hurting yourself in some way', 'safety']].map(a => ({ q: a[0], area: a[1] })),
+    levels: [{ max: 4, name: 'Minimal', cls: 'emerald', tip: 'Your answers suggest few signs of low mood right now. Keep doing what helps you.' }, { max: 9, name: 'Mild', cls: 'amber', tip: 'You have some signs of low mood. Small daily habits and talking to someone you trust can help.' },
+      { max: 14, name: 'Moderate', cls: 'orange', high: true, tip: 'Your answers suggest a moderate level of low mood. Please consider talking to the counselor.' }, { max: 19, name: 'Moderately severe', cls: 'rose', high: true, tip: 'Your answers suggest this has been very heavy. Please talk to the counselor or a trusted adult soon.' },
+      { max: 27, name: 'Severe', cls: 'rose', high: true, tip: 'Your answers suggest things are very hard. Please reach out to the counselor or a trusted adult today.' }] },
+  gad: { id: 'gad', kind: 'survey', name: 'Anxiety screen', short: 'Anxiety', minutes: 2, blurb: 'Seven questions about worry, nerves and feeling on edge over the last 2 weeks.', source: 'Based on the GAD-7 (screening only, not a diagnosis)',
+    lead: 'Over the last 2 weeks, how often have you been bothered by the following?', scale: CN_SCALE4, scoreIdx: [0, 1, 2, 3, 4, 5, 6], safetyIdx: null,
+    items: [['Feeling nervous, anxious or on edge', 'worry'], ['Not being able to stop or control worrying', 'worry'], ['Worrying too much about different things', 'worry'], ['Trouble relaxing', 'body'], ['Being so restless that it is hard to sit still', 'body'], ['Becoming easily annoyed or irritable', 'mood'], ['Feeling afraid, as if something awful might happen', 'worry']].map(a => ({ q: a[0], area: a[1] })),
+    levels: [{ max: 4, name: 'Minimal', cls: 'emerald', tip: 'Your answers suggest few signs of anxiety right now.' }, { max: 9, name: 'Mild', cls: 'amber', tip: 'You have some signs of anxiety. Breathing and grounding can help you feel steadier.' },
+      { max: 14, name: 'Moderate', cls: 'orange', high: true, tip: 'Your answers suggest a moderate level of anxiety. Please consider talking to the counselor.' }, { max: 21, name: 'Severe', cls: 'rose', high: true, tip: 'Your answers suggest anxiety is taking a lot of your energy. Please talk to the counselor or a trusted adult soon.' }] },
+  burn: { id: 'burn', kind: 'survey', name: 'Burnout and pacing check', short: 'Burnout', minutes: 2, blurb: 'Eight questions about school overload, tiredness, belonging and rest.', source: 'Attendly burnout and pacing check (screening only)',
+    lead: 'Thinking about the past 2 weeks, how true is each statement?', scale: CN_SCALE_B, scoreIdx: [0, 1, 2, 3, 4, 5, 6, 7], safetyIdx: null,
+    items: [['I feel overwhelmed by schoolwork, projects and deadlines.', 'load'], ['I feel tired or drained even after I rest.', 'body'], ['It is hard to get started on schoolwork, even things I care about.', 'load'], ['I get headaches, tight shoulders or an upset stomach when I think about school.', 'body'],
+      ['I feel that my effort at school is not noticed or does not matter.', 'belong'], ['I feel alone or left out at school or in my class.', 'belong'], ['I find it hard to take a break without feeling guilty.', 'rest'], ['I have lost interest in school or in things I used to enjoy.', 'mood']].map(a => ({ q: a[0], area: a[1] })),
+    levels: [{ max: 7, name: 'Low strain', cls: 'emerald', tip: 'Your workload and energy look manageable. Keep your routines and rest.' }, { max: 15, name: 'Moderate burnout risk', cls: 'orange', tip: 'You are carrying noticeable strain. Pacing your work and resting on purpose can help before it builds.' },
+      { max: 24, name: 'High burnout risk', cls: 'rose', high: true, tip: 'You are carrying a heavy load. Please talk to the counselor or a teacher about pacing your work and getting support.' }] }
+};
+const CN_STEPS = {
+  load: 'Break schoolwork into 25-minute blocks with 5-minute breaks, and write your top 3 tasks for tomorrow.',
+  body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders.',
+  belong: 'Message one person you trust today, like a friend, your adviser or the counselor. You do not have to carry this alone.',
+  rest: 'Plan one guilt-free break each day: a walk, music or a hobby, with no screen and no schoolwork.',
+  mood: 'Do one small thing you usually enjoy for 10 minutes today, even if you do not feel like it.',
+  self: 'Write down three things that went okay this week, however small. Be as kind to yourself as you would to a friend.',
+  worry: 'When worry spikes, try 5-4-3-2-1 grounding: name 5 things you see, 4 you feel, 3 you hear, 2 you smell and 1 you taste. Then pick one small action for the worry.'
+};
 const CN_TRACKS = [
   { id: '77ZozI0rw7w', title: 'Dreamy piano and nostalgic serenity', tag: 'Peaceful piano' },
   { id: '_4kHxtiuML0', title: 'Chill lofi beats and rain', tag: 'Chill lofi' },
@@ -3597,12 +3643,49 @@ const CN_TRACKS = [
   { id: 'z-qigE1ym40', title: 'Continuous ocean flow and lofi calm', tag: 'Live 24/7' }
 ];
 const CN_TOPICS = ['School stress', 'Family', 'Friends or bullying', 'Feeling sad or anxious', 'Something else'];
-const cn = { tab: 'home', built: false, uid: null, items: [], loaded: false, loading: false, err: '', quiz: { step: 0, ans: [], done: false, sent: false, busy: false }, breath: { on: false, phase: 0, left: 0, cycles: 0, timer: null }, music: { id: null, timer: null }, openThread: null };
+const CN_APPT_TYPES = [
+  { id: 'counsel', name: 'Individual counseling', minutes: 30, icon: 'user', desc: 'One-on-one time with the counselor about stress, family, friends or anything on your mind.' },
+  { id: 'burnout', name: 'Burnout and study-stress support', minutes: 30, icon: 'battery-low', desc: 'Plan your workload, pacing and rest so school feels more manageable.' },
+  { id: 'group', name: 'Peer circle', minutes: 45, icon: 'users', desc: 'A small group session with classmates, guided by the counselor.' },
+  { id: 'advocacy', name: 'Advocacy and referral', minutes: 30, icon: 'hand-helping', desc: 'Help with school concerns or accommodations, and information about outside services.' }
+];
+const CN_FORMATS = [['person', 'In person at the guidance office', 'map-pin'], ['chat', 'Chat in this app', 'message-circle']];
+const CN_DEFAULT_SLOTS = ['08:30', '09:30', '10:30', '13:30', '14:30', '15:30'];
+const CN_PRACTICES = [['Three good things', 'Think of or write 3 things that went okay today.', 1], ['Body scan', 'Close your eyes and relax slowly from your forehead down to your toes.', 2], ['20-20-20 screen break', 'Look at something 20 feet away for 20 seconds.', 1], ['Stretch break', 'Roll your shoulders and stretch your neck and wrists.', 1], ['Water and breathe', 'Drink some water and take 5 slow breaths.', 1]];
+const CN_PAGES = {
+  grounding: { group: 'Pillar', title: 'Coastal Grounding', tag: 'Somatic regulation', icon: 'waves', grad: 'from-sky-100 to-teal-100 dark:from-sky-950/60 dark:to-teal-950/60',
+    intro: 'When stress hits, your body reacts first: a fast heartbeat, tight shoulders, shallow breathing. Grounding practices help your body settle so your mind can follow.',
+    points: ['4-7-8 breathing in the Breathe tab', '5-4-3-2-1 senses grounding in Quick calm', 'Shoulder drop and jaw release before a quiz or exam', 'Calming music for studying and for sleep'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Calming music', 'tab:music']] },
+  circles: { group: 'Pillar', title: 'Study Circles', tag: 'Peer resilience', icon: 'users', grad: 'from-indigo-100 to-sky-100 dark:from-indigo-950/60 dark:to-sky-950/60',
+    intro: 'Small, guided groups of classmates who talk about how school really feels. You hear that you are not the only one, and you practice simple coping skills together.',
+    points: ['Guided by the school counselor', 'Share what is stressing you, or just listen', 'Practice calming and study-pacing skills with classmates'], actions: [['Ask to join a circle', 'circle'], ['Book a peer circle', 'tab:book']] },
+  anchor: { group: 'Pillar', title: 'Community Anchor', tag: 'Accessible care', icon: 'anchor', grad: 'from-teal-100 to-emerald-100 dark:from-teal-950/60 dark:to-emerald-950/60',
+    intro: 'A steady place to go when things feel too big: counseling at school, help with problems at home or in class, and information about outside support when you need it.',
+    points: ['One-on-one counseling with the school counselor', 'Help talking to teachers about workload or accommodations', 'Information about outside services and hotlines'], actions: [['Book an appointment', 'tab:book'], ['Message the counselor', 'tab:talk']] },
+  journal: { group: 'Pillar', title: 'Rest Journal', tag: 'Micro-practices', icon: 'notebook-pen', grad: 'from-amber-100 to-rose-100 dark:from-amber-950/50 dark:to-rose-950/50',
+    intro: 'One-minute practices you can do between classes. Tap one when you finish it and it counts toward your progress.', points: [], practices: true, actions: [['See my progress', 'tab:progress']] },
+  circles2: { group: 'Offering', title: 'Peer Cohort Circles', tag: 'Group support', icon: 'users', grad: 'from-indigo-100 to-sky-100 dark:from-indigo-950/60 dark:to-sky-950/60',
+    intro: 'Group sessions where classmates support each other, guided by the counselor. A good fit if school feels lonely or heavy.', points: ['Small groups, guided by the counselor', 'Share and listen at your own pace', 'Learn simple skills for stress and study pacing'], actions: [['Ask to join a circle', 'circle'], ['Book a peer circle', 'tab:book']] },
+  burnout: { group: 'Offering', title: 'Burnout Triage', tag: 'Self-check and pacing', icon: 'battery-low', grad: 'from-orange-100 to-amber-100 dark:from-orange-950/50 dark:to-amber-950/50',
+    intro: 'A kind check on school overload, tiredness and rest. You get a personal plan with small steps, and you can send the result to the counselor.', points: ['Eight short questions', 'A plan matched to your answers, which you can copy', 'An Excel file you can download or send to the counselor'], actions: [['Take the burnout check', 'survey:burn'], ['Book study-stress support', 'tab:book']] },
+  somatic: { group: 'Offering', title: 'Somatic Regulation', tag: 'Breath and body calm', icon: 'wind', grad: 'from-sky-100 to-teal-100 dark:from-sky-950/60 dark:to-teal-950/60',
+    intro: 'Guided breathing and grounding that tell your body it is safe, so your heart rate slows and your thoughts settle.', points: ['4-7-8 breathing', 'A 60-second Quick calm', 'Calming music with a sleep timer'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Calming music', 'tab:music']] },
+  advocacy: { group: 'Offering', title: 'Community Advocacy', tag: 'Support and referrals', icon: 'hand-helping', grad: 'from-teal-100 to-emerald-100 dark:from-teal-950/60 dark:to-emerald-950/60',
+    intro: 'Direct access to counseling support, help with school concerns, and information about community resources.', points: ['Talk to the counselor, your adviser or any teacher', 'Ask for help with school accommodations', 'Find hotlines and outside services'], actions: [['Message someone', 'tab:talk'], ['Book an appointment', 'tab:book']] }
+};
+const cn = { tab: 'home', built: false, uid: null, items: [], loaded: false, loading: false, err: '', sv: null, page: null, breath: { on: false, phase: 0, left: 0, cycles: 0, timer: null }, music: { id: null, timer: null }, openThread: null,
+  book: { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false }, calm: { timer: null, left: 0 }, results: [] };
 const inbox = { guidance: { filter: 'new', open: null, busy: false }, messages: { filter: 'new', open: null, busy: false } };
 const CN_CARD = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5';
 const CN_INP = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
 const CN_BTN = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 disabled:opacity-50';
 const CN_BTN2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg px-4 py-2';
+const CN_CHIP = {
+  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300', amber: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
+  orange: 'bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300', rose: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
+  sky: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300', teal: 'bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300', slate: 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+};
+function cnChip(text, cls) { return '<span class="inline-block text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ' + (CN_CHIP[cls] || CN_CHIP.slate) + '">' + escapeHtml(text) + '</span>'; }
 
 function cnAcct() { if (!DB.auth) return null; return (DB.auth.role === 'teacher' ? DB.teachers : DB.students).find(x => x.id === DB.auth.userId) || null; }
 function cnMyEmail() { const a = cnAcct(); return normEmail(a && a.email); }
@@ -3613,15 +3696,54 @@ function isCounselor() {
 function cnCounselor() { const e = normEmail(DB.settings && DB.settings.counselorEmail); return e ? (DB.teachers.find(t => normEmail(t.email) === e) || { name: 'Guidance counselor', email: e }) : null; }
 function cnWhen(iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
 function cnFirst() { const a = cnAcct(); return a && a.name ? a.name.split(/\s+/)[0] : 'there'; }
+function cnT12(t) { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m) return t || ''; const h = +m[1]; return ((h + 11) % 12 + 1) + ':' + m[2] + (h >= 12 ? ' PM' : ' AM'); }
+function cnDateNice(d) { try { return new Date(d + 'T00:00:00').toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) { return d; } }
+function cnSlots() { const raw = DB.settings && DB.settings.counselSlots; const l = Array.isArray(raw) && raw.length ? raw : CN_DEFAULT_SLOTS; return l.filter(t => /^\d{1,2}:\d{2}$/.test(t)).map(t => t.padStart(5, '0')).sort(); }
+function cnSlotTaken(date, time) { return ((DB.settings && DB.settings.bookedSlots) || []).some(b => b.date === date && b.time === time); }
+function cnCopy(text) {
+  const done = () => toast('Copied.', 'success');
+  try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, () => cnCopyOld(text, done)); return; } } catch (e) {}
+  cnCopyOld(text, done);
+}
+function cnCopyOld(text, done) {
+  const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+  try { document.execCommand('copy'); done(); } catch (e) { toast('Could not copy. Select the text and copy it yourself.', 'warning'); }
+  t.remove();
+}
 
-/* ---- local wellness log (stays on this device) ---- */
+/* ---- username: a label for results, no password. The student is already signed in to Attendly. ---- */
+function cnUsername() { const a = cnAcct(); return (a && a.counselUsername) || ''; }
+function cnSuggestUsername() { const a = cnAcct() || {}; const f = String(a.name || 'student').split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'; const d = String(a.studentId || '').replace(/\D/g, '').slice(-3); return f + (d ? '.' + d : ''); }
+function cnUsernameOk(u) {
+  if (!/^[a-z0-9._]{3,20}$/.test(u)) return 'Use 3 to 20 letters, numbers, dots or underscores.';
+  const me = cnAcct(); if (DB.students.some(s => s !== me && s.counselUsername === u)) return 'That username is taken. Try another one.';
+  return '';
+}
+function cnRenderUser() {
+  const el = document.getElementById('cn-user'); if (!el) return;
+  const u = cnUsername();
+  el.innerHTML = u && !cn.editUser ? '<p class="text-[11px] text-slate-500 dark:text-slate-400">Your username: <span class="font-semibold text-slate-700 dark:text-slate-200">@' + escapeHtml(u) + '</span> · it labels your results · <button data-cn-userchange class="underline">change</button></p>' :
+    '<div class="rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/60 dark:bg-teal-950/20 p-4"><p class="text-sm font-semibold">Pick a username</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-2">It labels your survey results so they stay organized. You are already signed in, so there is no extra password. You can choose a nickname instead of your real name.</p>' +
+    '<div class="flex gap-2"><input id="cn-username" type="text" maxlength="20" autocapitalize="none" value="' + escapeHtml(u || cnSuggestUsername()) + '" class="' + CN_INP + '"><button data-cn-usersave class="' + CN_BTN + ' shrink-0">Save</button></div><p id="cn-user-err" class="text-[11px] text-rose-600 mt-1"></p></div>';
+}
+function cnSaveUsername() {
+  const u = document.getElementById('cn-username').value.trim().toLowerCase(), err = cnUsernameOk(u);
+  if (err) { document.getElementById('cn-user-err').textContent = err; return; }
+  const a = cnAcct(); if (!a) return; a.counselUsername = u; cn.editUser = false; saveDB(); cnRenderUser(); toast('Username saved.', 'success');
+}
+function cnNeedUsername() { if (cnUsername()) return false; toast('Pick a username first.', 'warning'); const i = document.getElementById('cn-username'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } return true; }
+
+/* ---- local wellness log + saved results (stay on this device) ---- */
 function cnKey() { return 'attendly_well_' + (DB.auth ? DB.auth.userId : 'x'); }
+function cnResKey() { return 'attendly_well_res_' + (DB.auth ? DB.auth.userId : 'x'); }
 function cnLog() { try { return JSON.parse(localStorage.getItem(cnKey()) || '[]'); } catch (e) { return []; } }
+function cnResults() { try { return JSON.parse(localStorage.getItem(cnResKey()) || '[]'); } catch (e) { return []; } }
+function cnSaveResults(l) { try { localStorage.setItem(cnResKey(), JSON.stringify(l.slice(-60))); } catch (e) {} }
 function cnDay(t) { const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
 function cnAddLog(type, title, min, val) {
   const l = cnLog(); l.push({ t: Date.now(), type, title, min: min || 0, val });
   try { localStorage.setItem(cnKey(), JSON.stringify(l.slice(-500))); } catch (e) {}
-  if (cn.built) { cnRenderPanel('progress'); cnRenderPanel('home'); }
+  if (cn.built) { cnRenderPanel('progress'); if (cn.tab === 'home') cnRenderPanel('home'); }
 }
 function cnStats() {
   const l = cnLog(), days = new Set(l.map(x => cnDay(x.t)));
@@ -3629,7 +3751,8 @@ function cnStats() {
   if (!days.has(cnDay(d.getTime()))) d.setDate(d.getDate() - 1);
   while (days.has(cnDay(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); }
   const week = []; for (let i = 6; i >= 0; i--) { const x = new Date(); x.setDate(x.getDate() - i); const k = cnDay(x.getTime()); week.push({ label: x.toLocaleDateString([], { weekday: 'short' }), n: l.filter(e => cnDay(e.t) === k && e.type !== 'mood').length, mood: (l.filter(e => cnDay(e.t) === k && e.type === 'mood').pop() || {}).val }); }
-  return { total: l.filter(x => x.type !== 'mood').length, minutes: Math.round(l.reduce((a, x) => a + (x.min || 0), 0)), streak, week, breaths: l.filter(x => x.type === 'breath').length };
+  const by = {}; l.forEach(e => { if (e.type !== 'mood') by[e.type] = (by[e.type] || 0) + 1; });
+  return { total: l.filter(x => x.type !== 'mood').length, minutes: Math.round(l.reduce((a, x) => a + (x.min || 0), 0)), streak, week, breaths: l.filter(x => x.type === 'breath').length, by };
 }
 
 /* ---- server calls (private table, access enforced by row level security) ---- */
@@ -3669,38 +3792,106 @@ function cnThreads(me) {
   return Object.keys(by).map(k => {
     const msgs = by[k].slice().sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
     const root = msgs.find(x => x.id === k) || msgs[0], last = msgs[msgs.length - 1];
-    return { id: k, root, msgs, last, mineRoot: normEmail(root.to_email) === me, awaiting: normEmail(last.from_email) !== me };
+    return { id: k, root, msgs, last, mineRoot: normEmail(root.to_email) === me, awaiting: normEmail(last.from_email) !== me, confirmed: msgs.find(x => x.meta && x.meta.confirmed) };
   }).sort((a, b) => String(b.last.created_at).localeCompare(String(a.last.created_at)));
 }
-function cnLevelOf(total) { return CN_LEVELS.find(l => total <= l.max) || CN_LEVELS[3]; }
-const CN_CHIP = {
-  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300', amber: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
-  orange: 'bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300', rose: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
-  sky: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300', teal: 'bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300', slate: 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-};
-function cnChip(text, cls) { return '<span class="inline-block text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ' + (CN_CHIP[cls] || CN_CHIP.slate) + '">' + escapeHtml(text) + '</span>'; }
 function cnHotlinesHtml(compact) {
   return CN_HOTLINES.map(h => '<div class="flex items-start justify-between gap-3 py-2 ' + (compact ? '' : 'border-t border-rose-200/60 dark:border-rose-900/50 first:border-0') + '"><div class="min-w-0"><p class="text-sm font-medium">' + escapeHtml(h.name) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(h.note) + '</p></div><div class="flex flex-wrap justify-end gap-1.5">' +
     h.nums.map(n => '<a href="tel:' + n.replace(/[^0-9+]/g, '') + '" class="text-xs font-semibold tabular-nums rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-2.5 py-1 hover:bg-rose-100 dark:hover:bg-rose-950/40">' + escapeHtml(n) + '</a>').join('') + '</div></div>').join('');
 }
 
+/* ---- surveys: scoring, plan, Excel, email ---- */
+function cnSurveyResult(sv, ans) {
+  const total = sv.scoreIdx.reduce((a, i) => a + (ans[i] || 0), 0), max = sv.scoreIdx.length * 3;
+  let li = sv.levels.findIndex(l => total <= l.max); if (li < 0) li = sv.levels.length - 1;
+  const level = sv.levels[li], safety = sv.safetyIdx == null ? 0 : (ans[sv.safetyIdx] || 0);
+  const priority = safety >= 2 ? 'urgent' : (safety >= 1 || level.high ? 'high' : 'normal');
+  return { total, max, li, level, safety, priority };
+}
+function cnPlanFor(sv, ans, res) {
+  const sums = {}, cnts = {};
+  sv.items.forEach((it, i) => { if (!it.area || it.area === 'safety') return; sums[it.area] = (sums[it.area] || 0) + (ans[i] || 0); cnts[it.area] = (cnts[it.area] || 0) + 1; });
+  const areas = Object.keys(sums).filter(a => CN_STEPS[a]).sort((a, b) => (sums[b] / cnts[b]) - (sums[a] / cnts[a]));
+  const steps = [];
+  if (res.li === 0) { steps.push('Keep the routines that are working for you: sleep, meals, breaks and time with people you like.'); steps.push('Check in again in a couple of weeks, or any time things feel heavier.'); }
+  else { areas.filter(a => sums[a] > 0).slice(0, 3).forEach(a => steps.push(CN_STEPS[a])); steps.push('Try the Breathe tab for 2 minutes of 4-7-8 breathing, once in the morning and once at night.'); }
+  if (res.level.high) steps.push('Talk to the counselor or an adult you trust soon. You can book a time in the Book tab or send a message in the Talk tab.');
+  if (res.safety >= 1) steps.push('Please tell a trusted adult today. You can also call the NCMH crisis line at 1553 at any time.');
+  return steps;
+}
+function cnPlanText(rec) {
+  const sv = CN_SURVEYS[rec.survey] || CN_SURVEYS.quick;
+  return 'A Gentle Place: my plan\n' + sv.name + ' · ' + new Date(rec.t).toLocaleDateString() + '\nResult: ' + rec.level + ' (' + rec.total + '/' + rec.max + ')\n\n' + rec.plan.map((s, i) => (i + 1) + '. ' + s).join('\n') + '\n\nThis is a screening, not a diagnosis. Talk to your school counselor or a trusted adult if you need support.';
+}
+function cnMakeRecord(sv, ans) {
+  const res = cnSurveyResult(sv, ans), plan = cnPlanFor(sv, ans, res);
+  return { id: uid('wr'), survey: sv.id, t: Date.now(), ans: ans.slice(), total: res.total, max: res.max, level: res.level.name, cls: res.level.cls, safety: res.safety, priority: res.priority, plan, username: cnUsername(), sent: false };
+}
+function cnItemText(sv, i, a) { const it = sv.items[i]; const opts = it.opts || sv.scale; return opts[a] != null ? opts[a] : ''; }
+// One workbook per result, filled in from the student's account.
+function cnWorkbookFrom(r) {
+  const sv = CN_SURVEYS[r.survey] || CN_SURVEYS.quick;
+  const when = new Date(r.t), pr = { normal: 'Normal', high: 'Priority', urgent: 'Urgent' }[r.priority] || 'Normal';
+  const sum = [['Field', 'Value'], ['Student', r.name || ''], ['Username', r.username || ''], ['ID / LRN', r.sid || ''], ['Class', r.cls || ''], ['School year', r.sy || ''], ['Term', r.term || ''], ['Survey', sv.name], ['Date', when.toLocaleDateString()], ['Time', when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })],
+    ['Score', r.total], ['Out of', r.max], ['Result', r.level], ['Priority', pr], ['Safety question answer', sv.safetyIdx == null ? 'Not asked' : cnItemText(sv, sv.safetyIdx, r.safety)], ['Note from student', r.note || ''], ['Source', sv.source], ['Reminder', 'This is a screening result, not a diagnosis.']];
+  const ans = [['No.', 'Question', 'Response', 'Score']].concat(sv.items.map((it, i) => [i + 1, it.q, cnItemText(sv, i, r.ans[i] || 0), r.ans[i] || 0]));
+  const plan = [['Step', 'Suggested action']].concat((r.plan || []).map((s, i) => [i + 1, s]));
+  return [{ name: 'Summary', rows: sum, widths: [24, 60] }, { name: 'Answers', rows: ans, widths: [6, 70, 34, 8] }, { name: 'Plan', rows: plan, widths: [6, 110] }];
+}
+function cnRecFromItem(it) {
+  const m = it.meta || {}, sv = CN_SURVEYS[m.survey] || CN_SURVEYS.quick;
+  const ans = Array.isArray(m.answers) ? m.answers : sv.items.map(x => (m.scores || {})[x.area] || 0);
+  return { survey: sv.id, t: Date.parse(it.created_at) || Date.now(), ans, total: m.total || 0, max: m.max || sv.scoreIdx.length * 3, level: m.level || '', safety: m.safety || 0, priority: m.priority || 'normal', plan: m.plan || [], username: m.username || '', name: it.from_name || '', sid: m.sid || '', cls: m.cls || '', sy: m.sy || '', term: m.term || '', note: it.body || '' };
+}
+function cnFileStamp(t) { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function cnDownloadRec(r) { downloadBlob(makeXlsxBook(cnWorkbookFrom(r)), 'wellness-' + (r.username || 'student') + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
+function cnFillRec(r) { const a = cnAcct() || {}; r.name = a.name || ''; r.sid = a.studentId || ''; r.cls = classLabel(a.classId); r.sy = DB.settings.schoolYear || ''; r.term = 'Term ' + DB.settings.currentTerm; return r; }
+function cnBlobB64(blob) { return new Promise(res => { const f = new FileReader(); f.onload = () => res(String(f.result).split(',')[1] || ''); f.onerror = () => res(''); f.readAsDataURL(blob); }); }
+async function cnEmailRec(r) {
+  if (!sb || !sb.functions) return 'unavailable';
+  try {
+    const b64 = await cnBlobB64(makeXlsxBook(cnWorkbookFrom(r)));
+    const x = await sb.functions.invoke('send-survey', { body: { filename: 'wellness-' + (r.username || 'student') + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', base64: b64, username: r.username, survey: (CN_SURVEYS[r.survey] || {}).name, cls: r.cls, priority: r.priority } });
+    return x && x.error ? 'error' : 'ok';
+  } catch (e) { return 'error'; }
+}
+async function cnSurveySend() {
+  const s = cn.sv; if (!s || s.busy || !s.rec) return;
+  const cs = cnCounselor(); if (!cs) return;
+  if (cnNeedUsername()) return;
+  if (!document.getElementById('cn-q-consent').checked) { toast('Tick the box to agree to share your answers.', 'warning'); return; }
+  const sv = CN_SURVEYS[s.id], r = s.rec; r.note = document.getElementById('cn-q-note').value.trim(); r.username = cnUsername(); cnFillRec(r);
+  s.busy = true;
+  const out = await cnSend({ kind: sv.kind, to_email: cs.email, to_name: cs.name, subject: sv.name, body: r.note, meta: { survey: sv.id, answers: r.ans, total: r.total, max: r.max, level: r.level, safety: r.safety, priority: r.priority, plan: r.plan, username: r.username, sid: r.sid, cls: r.cls, sy: r.sy, term: r.term } });
+  if (!out) { s.busy = false; return; }
+  const em = await cnEmailRec(r);
+  s.busy = false; s.sent = true; s.email = em; r.sent = true;
+  const l = cnResults().map(x => x.id === r.id ? r : x); cnSaveResults(l);
+  toast(em === 'ok' ? 'Sent to the counselor and emailed as an Excel file.' : 'Sent to the counselor. The email could not be sent yet.', em === 'ok' ? 'success' : 'warning');
+  cnRenderPanel('surveys');
+}
+
 /* ---- student view shell ---- */
-const CN_TABS = [['home', 'Home', 'heart'], ['checkin', 'Check-in', 'clipboard-list'], ['breathe', 'Breathe', 'wind'], ['music', 'Music', 'music'], ['talk', 'Talk to someone', 'message-circle'], ['progress', 'My progress', 'activity']];
+const CN_TABS = [['home', 'Home', 'heart'], ['explore', 'Explore', 'compass'], ['surveys', 'Surveys', 'clipboard-list'], ['breathe', 'Breathe', 'wind'], ['music', 'Music', 'music'], ['talk', 'Talk', 'message-circle'], ['book', 'Book', 'calendar-check'], ['progress', 'Progress', 'activity']];
+const CN_DYNAMIC = ['home', 'explore', 'surveys', 'talk', 'book', 'progress'];
 function renderCounseling() {
   const root = document.getElementById('cn-root'); if (!root) return;
   if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
-    cnStopBreath(); cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false;
-    cn.quiz = { step: 0, ans: [], done: false, sent: false, busy: false };
+    cnStopBreath(); cnStopCalm(); cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
+    cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false };
     root.innerHTML = '<div class="space-y-4">' +
-      '<div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
+      '<div class="flex items-center gap-2"><div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 flex-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
+      '<button data-cn-calm class="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 px-3 py-1.5"><i data-lucide="life-buoy" class="w-3.5 h-3.5"></i>Quick calm</button></div>' +
+      '<div id="cn-user"></div>' +
       '<p class="text-[11px] text-slate-500 dark:text-slate-400">In danger or need urgent help? Call <a href="tel:911" class="font-semibold underline">911</a> or the NCMH crisis line <a href="tel:1553" class="font-semibold underline">1553</a>.</p>' +
       CN_TABS.map(t => '<div id="cn-p-' + t[0] + '" data-cn-panel="' + t[0] + '" class="hidden"></div>').join('') + '</div>';
     cnBuildStatic();
   }
+  cnRenderUser();
   cnShowTab(cn.tab, true);
   cnLoad();
 }
-function cnShowTab(name, keep) {
+function cnShowTab(name) {
   cn.tab = name;
   document.querySelectorAll('#cn-root [data-cn-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.cnPanel !== name));
   document.querySelectorAll('#cn-root .cn-tab').forEach(b => {
@@ -3708,14 +3899,16 @@ function cnShowTab(name, keep) {
     b.classList.toggle('bg-teal-600', a); b.classList.toggle('text-white', a); b.classList.toggle('border-teal-600', a);
     b.classList.toggle('border-slate-300', !a); b.classList.toggle('dark:border-slate-700', !a); b.classList.toggle('text-slate-600', !a); b.classList.toggle('dark:text-slate-300', !a);
   });
-  if (name === 'home' || name === 'checkin' || name === 'talk' || name === 'progress') cnRenderPanel(name);
+  if (CN_DYNAMIC.includes(name)) cnRenderPanel(name);
   refreshIcons();
 }
 function cnRenderPanel(name) {
   const el = document.getElementById('cn-p-' + name); if (!el) return;
   if (name === 'home') el.innerHTML = cnPanelHome();
-  else if (name === 'checkin') el.innerHTML = cnPanelCheckin();
+  else if (name === 'explore') el.innerHTML = cnPanelExplore();
+  else if (name === 'surveys') el.innerHTML = cnPanelSurveys();
   else if (name === 'talk') { if (!el.dataset.built) { el.innerHTML = cnPanelTalk(); el.dataset.built = '1'; } cnRenderConvos(); }
+  else if (name === 'book') el.innerHTML = cnPanelBook();
   else if (name === 'progress') el.innerHTML = cnPanelProgress();
   refreshIcons();
 }
@@ -3723,9 +3916,16 @@ function cnRefreshLive() {
   if (!cn.built) return;
   if (cn.tab === 'home') cnRenderPanel('home');
   if (cn.tab === 'talk') cnRenderConvos();
+  if (cn.tab === 'book' && !cn.book.sent) { const l = document.getElementById('cn-appts'); if (l) l.innerHTML = cnApptList(); }
   const a = document.querySelector('.view-section.active');
   if (a && a.dataset.view === 'guidance') renderInbox('guidance');
   if (a && a.dataset.view === 'messages') renderInbox('messages');
+}
+function cnGo(go) {
+  if (go === 'calm') { cnStartCalm(); return; }
+  if (go === 'circle') { cnShowTab('talk'); const b = document.getElementById('cn-m-body'), to = document.getElementById('cn-m-to'), cs = cnCounselor(); if (to && cs) to.value = normEmail(cs.email); if (b) { b.value = 'Hello, I would like to join a peer circle.'; b.focus(); } return; }
+  if (go.indexOf('survey:') === 0) { cnShowTab('surveys'); cnStartSurvey(go.slice(7)); return; }
+  if (go.indexOf('tab:') === 0) { cnShowTab(go.slice(4)); window.scrollTo(0, 0); }
 }
 
 /* ---- Home ---- */
@@ -3734,52 +3934,77 @@ function cnPanelHome() {
   const unread = cnUnreadReplies(), moods = [['😣', 1, 'Rough'], ['😕', 2, 'Low'], ['😐', 3, 'Okay'], ['🙂', 4, 'Good'], ['😄', 5, 'Great']];
   return '<div class="rounded-2xl p-6 bg-gradient-to-br from-teal-50 via-sky-50 to-indigo-50 dark:from-teal-950/50 dark:via-slate-900 dark:to-indigo-950/40 border border-teal-100 dark:border-teal-900/60">' +
     '<p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">A gentle place</p>' +
-    '<h2 class="text-xl font-semibold mt-1">Hi, ' + escapeHtml(cnFirst()) + '. How are you today?</h2>' +
-    '<p class="text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-md">This is a quiet corner of school. Take a breath, listen to something calm, or talk to someone who can help.</p>' +
-    '<div class="flex gap-2 mt-4 flex-wrap">' + moods.map(m => '<button data-cn-mood="' + m[1] + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-teal-400"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div></div>' +
+    '<h2 class="text-2xl font-semibold mt-1 leading-tight">Hi, ' + escapeHtml(cnFirst()) + '.<br>How are you today?</h2>' +
+    '<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-md">Student wellness and counseling at San Juan Baño High School. A calm, private space to breathe, check in with yourself, and reach someone who can help.</p>' +
+    '<div class="flex flex-wrap gap-1.5 mt-3">' + ['Private and safe', 'Counseling', 'Community support'].map(t => '<span class="text-[11px] rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300">' + t + '</span>').join('') + '</div>' +
+    '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-tab="explore" class="' + CN_BTN + '">Explore pathways</button><button data-cn-tab="music" class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Calming music</button><button data-cn-calm class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Quick calm</button></div>' +
+    '<div class="flex gap-2 mt-5 flex-wrap">' + moods.map(m => '<button data-cn-mood="' + m[1] + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-teal-400"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div></div>' +
     (unread ? '<button data-cn-tab="talk" class="w-full text-left rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 px-4 py-3 text-sm font-medium text-teal-800 dark:text-teal-200">You have ' + unread + ' new repl' + (unread === 1 ? 'y' : 'ies') + '. Tap to read.</button>' : '') +
-    '<div class="grid grid-cols-2 gap-3">' + [['checkin', 'Check-in', 'A 2 minute quiz about how you are doing', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['music', 'Calming music', 'Soft sounds for study and rest', 'music'], ['talk', 'Talk to someone', 'Message the counselor, your adviser or a teacher', 'message-circle']].map(c =>
+    '<div class="grid grid-cols-2 gap-3">' + [['surveys', 'Surveys', 'Check how you are doing and get a plan', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['book', 'Book a time', 'Ask to meet the counselor', 'calendar-check'], ['talk', 'Talk to someone', 'Message the counselor, your adviser or a teacher', 'message-circle']].map(c =>
       '<button data-cn-tab="' + c[0] + '" class="' + CN_CARD + ' !p-4 text-left hover:border-teal-400 dark:hover:border-teal-700"><i data-lucide="' + c[3] + '" class="w-5 h-5 text-teal-600 dark:text-teal-400"></i><p class="text-sm font-semibold mt-2">' + c[1] + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">' + c[2] + '</p></button>').join('') + '</div>' +
     '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Need help right now?</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">You are not alone. These lines are free to call. Tell a trusted adult too.</p>' + cnHotlinesHtml() + '</div>';
 }
 
-/* ---- Check-in quiz ---- */
-function cnPanelCheckin() {
-  const q = cn.quiz;
-  if (!q.done) {
-    const s = q.step, item = CN_QUIZ[s];
-    return '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-2"><p class="text-xs text-slate-500 dark:text-slate-400">Question ' + (s + 1) + ' of ' + CN_QUIZ.length + ' · ' + escapeHtml(item.title) + '</p>' + (s ? '<button data-cn-back class="text-xs text-slate-500 hover:underline">Back</button>' : '') + '</div>' +
-      '<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 overflow-hidden"><div class="h-full bg-teal-500" style="width:' + Math.round(s / CN_QUIZ.length * 100) + '%"></div></div>' +
-      '<h3 class="text-base font-semibold mb-3">' + escapeHtml(item.q) + '</h3><div class="space-y-2">' +
-      item.opts.map((o, i) => '<button data-cn-ans="' + i + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (q.ans[s] === i ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div>' +
-      '<p class="text-[11px] text-slate-400 mt-4">This is a check-in, not a diagnosis. Nothing is sent unless you choose to send it.</p></div>';
+/* ---- Explore: pillars and offerings ---- */
+function cnPanelExplore() {
+  if (cn.page && CN_PAGES[cn.page]) {
+    const p = CN_PAGES[cn.page];
+    return '<button data-cn-pageback class="text-xs text-teal-700 dark:text-teal-400 hover:underline mb-3">← Back to Explore</button>' +
+      '<div class="rounded-2xl p-6 bg-gradient-to-br ' + p.grad + ' border border-slate-200 dark:border-slate-800"><div class="flex items-center gap-2 mb-2">' + cnChip(p.group, 'teal') + '<span class="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</span></div><div class="flex items-center gap-3"><i data-lucide="' + p.icon + '" class="w-7 h-7 text-teal-700 dark:text-teal-300"></i><h2 class="text-xl font-semibold">' + escapeHtml(p.title) + '</h2></div><p class="text-sm text-slate-700 dark:text-slate-300 mt-3 max-w-lg">' + escapeHtml(p.intro) + '</p></div>' +
+      (p.points.length ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">What you can do</p><ul class="space-y-1.5">' + p.points.map(x => '<li class="flex gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-teal-600 shrink-0 mt-0.5"></i><span>' + escapeHtml(x) + '</span></li>').join('') + '</ul></div>' : '') +
+      (p.practices ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">Micro-practices</p><div class="space-y-2">' + CN_PRACTICES.map((x, i) => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="min-w-0 flex-1"><p class="text-sm font-medium">' + escapeHtml(x[0]) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(x[1]) + '</p></div><button data-cn-practice="' + i + '" class="' + CN_BTN2 + ' !py-1 text-xs shrink-0">I did it</button></div>').join('') + '</div></div>' : '') +
+      '<div class="flex flex-wrap gap-2 mt-4">' + p.actions.map((a, i) => '<button data-cn-go="' + a[1] + '" class="' + (i ? CN_BTN2 : CN_BTN) + '">' + escapeHtml(a[0]) + '</button>').join('') + '</div>';
   }
-  const total = CN_QUIZ.slice(0, 4).reduce((a, it, i) => a + (q.ans[i] || 0), 0), safety = q.ans[4] || 0, lv = cnLevelOf(total), cs = cnCounselor();
-  const urgent = safety >= 1;
-  return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">Your check-in</p>' +
-    '<div class="flex items-center gap-2 mt-1">' + cnChip(lv.name, lv.cls) + '<span class="text-xs text-slate-400 tabular-nums">' + total + ' / 12</span></div>' +
-    '<p class="text-sm mt-2">' + escapeHtml(lv.tip) + '</p>' +
+  const card = (id, i) => { const p = CN_PAGES[id]; return '<button data-cn-page="' + id + '" class="text-left rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-teal-400"><div class="h-20 bg-gradient-to-br ' + p.grad + ' flex items-center justify-center"><i data-lucide="' + p.icon + '" class="w-8 h-8 text-teal-700 dark:text-teal-300"></i></div><div class="p-3"><p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</p><p class="text-sm font-semibold">' + escapeHtml(p.title) + '</p><p class="text-[11px] text-teal-700 dark:text-teal-400 mt-1">View details →</p></div></button>'; };
+  return '<div class="' + CN_CARD + '"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Pillars</p><h3 class="text-base font-semibold mb-3">Four ways we support you</h3><div class="grid grid-cols-2 gap-3">' + ['grounding', 'circles', 'anchor', 'journal'].map(card).join('') + '</div></div>' +
+    '<div class="' + CN_CARD + ' mt-4"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Offerings</p><h3 class="text-base font-semibold mb-3">Care that moves with you</h3><div class="space-y-2">' +
+    ['circles2', 'burnout', 'somatic', 'advocacy'].map(id => { const p = CN_PAGES[id]; return '<button data-cn-page="' + id + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ' + p.grad + ' flex items-center justify-center shrink-0"><i data-lucide="' + p.icon + '" class="w-5 h-5 text-teal-700 dark:text-teal-300"></i></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(p.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p.intro.split('. ')[0]) + '.</span></span><span class="text-[11px] text-teal-700 dark:text-teal-400 shrink-0">Learn more →</span></button>'; }).join('') + '</div>' +
+    '<p class="text-[11px] text-slate-400 mt-3">Ask the counselor which of these are running at school right now.</p></div>';
+}
+
+/* ---- Surveys ---- */
+function cnStartSurvey(id) {
+  if (!CN_SURVEYS[id]) return;
+  cn.sv = { id, step: 0, ans: [], done: false, sent: false, busy: false, rec: null, email: '' };
+  cnRenderPanel('surveys'); window.scrollTo(0, 0);
+}
+function cnPanelSurveys() {
+  const s = cn.sv;
+  if (!s) {
+    return '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">Surveys</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-4">Pick one. You get a result and a plan with small next steps. These are screening questions, not a diagnosis, and nothing is sent unless you choose to send it.</p><div class="space-y-2">' +
+      Object.keys(CN_SURVEYS).map(k => { const v = CN_SURVEYS[k]; return '<button data-cn-sv="' + k + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(v.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(v.blurb) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">~' + v.minutes + ' min</span></button>'; }).join('') + '</div>' +
+      '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for students.</p></div>';
+  }
+  const sv = CN_SURVEYS[s.id];
+  if (!s.done) {
+    const i = s.step, it = sv.items[i], opts = it.opts || sv.scale;
+    return '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-2"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + ' · ' + (i + 1) + ' of ' + sv.items.length + '</p><button data-cn-svback class="text-xs text-slate-500 hover:underline">' + (i ? 'Back' : 'Cancel') + '</button></div>' +
+      '<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 overflow-hidden"><div class="h-full bg-teal-500" style="width:' + Math.round(i / sv.items.length * 100) + '%"></div></div>' +
+      (sv.lead ? '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">' + escapeHtml(sv.lead) + '</p>' : '') +
+      '<h3 class="text-base font-semibold mb-3">' + escapeHtml(it.q) + '</h3><div class="space-y-2">' +
+      opts.map((o, k) => '<button data-cn-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (s.ans[i] === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div></div>';
+  }
+  const r = s.rec, res = cnSurveyResult(sv, s.ans), cs = cnCounselor(), urgent = res.safety >= 1;
+  return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + '</p>' +
+    '<div class="flex items-center gap-2 mt-1">' + cnChip(res.level.name, res.level.cls) + '<span class="text-xs text-slate-400 tabular-nums">' + res.total + ' / ' + res.max + '</span></div>' +
+    '<p class="text-sm mt-2">' + escapeHtml(res.level.tip) + '</p>' +
     (urgent ? '<div class="mt-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>' : '') +
-    '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (q.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to the counselor. You will see their reply under Talk to someone.</p>' :
-      (cs ? '<p class="text-sm font-semibold">Share this with the counselor?</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Sending is your choice. Only you and the counselor can read it. ' + (urgent ? 'Because of your answer about safety, we really encourage you to send it.' : '') + '</p>' +
+    '<div class="mt-4"><p class="text-sm font-semibold mb-2">Your plan</p><ol class="space-y-2">' + r.plan.map((x, i) => '<li class="flex gap-2 text-sm"><span class="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[11px] font-semibold flex items-center justify-center shrink-0 mt-0.5">' + (i + 1) + '</span><span>' + escapeHtml(x) + '</span></li>').join('') + '</ol></div>' +
+    '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-copyplan="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="copy" class="w-4 h-4"></i>Copy plan</button><button data-cn-dl="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="download" class="w-4 h-4"></i>Download Excel</button></div>' +
+    '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (s.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to the counselor' + (s.email === 'ok' ? ' and emailed as an Excel file' : '') + '. You will see their reply under Talk.</p>' + (s.email !== 'ok' ? '<p class="text-[11px] text-slate-500 mt-1">The email could not be sent yet. The counselor can still read your result in the app.</p>' : '') :
+      (cs ? '<p class="text-sm font-semibold">Share this with the counselor?</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Sending is your choice. Your answers, name and username go to ' + escapeHtml(cs.name) + ', and an Excel file is emailed to them. ' + (urgent ? 'Because of your answer about safety, we really encourage you to send it.' : '') + '</p>' +
         '<textarea id="cn-q-note" rows="3" maxlength="1000" placeholder="Anything you want the counselor to know? (optional)" class="' + CN_INP + '"></textarea>' +
         '<label class="flex items-start gap-2 text-xs mt-2"><input id="cn-q-consent" type="checkbox" class="mt-0.5 rounded"' + (urgent ? ' checked' : '') + '><span>I agree to share these answers and my name with ' + escapeHtml(cs.name) + '.</span></label>' +
-        '<div class="flex gap-2 mt-3"><button data-cn-sendq class="' + CN_BTN + '">Send to counselor</button><button data-cn-quizreset class="' + CN_BTN2 + '">Not now</button></div>'
-        : '<p class="text-xs text-slate-500 dark:text-slate-400">Your school has not set up a guidance counselor in Attendly yet. You can still message a teacher under Talk to someone.</p><button data-cn-quizreset class="' + CN_BTN2 + ' mt-3">Done</button>')) + '</div></div>';
+        '<div class="flex gap-2 mt-3"><button data-cn-svsend class="' + CN_BTN + '">Send to counselor</button></div>'
+        : '<p class="text-xs text-slate-500 dark:text-slate-400">Your school has not set up a guidance counselor in Attendly yet. You can still download your result and message a teacher under Talk.</p>')) +
+    '<button data-cn-svreset class="' + CN_BTN2 + ' mt-3">' + (s.sent ? 'Done' : 'Not now') + '</button></div></div>';
 }
-async function cnQuizSend() {
-  const q = cn.quiz; if (q.busy) return;
-  const cs = cnCounselor(); if (!cs) return;
-  if (!document.getElementById('cn-q-consent').checked) { toast('Tick the box to agree to share your answers.', 'warning'); return; }
-  const scores = {}; CN_QUIZ.forEach((it, i) => scores[it.key] = q.ans[i] || 0);
-  const total = CN_QUIZ.slice(0, 4).reduce((a, it, i) => a + (q.ans[i] || 0), 0), safety = q.ans[4] || 0, lv = cnLevelOf(total);
-  const priority = safety >= 2 ? 'urgent' : (safety === 1 || total >= 7 ? 'high' : 'normal');
-  const note = document.getElementById('cn-q-note').value.trim();
-  q.busy = true;
-  const me = cnAcct() || {};
-  const r = await cnSend({ kind: 'checkin', to_email: cs.email, to_name: cs.name, subject: 'Wellness check-in', body: note, meta: { scores, total, level: lv.name, safety, priority, cls: classLabel(me.classId) } });
-  q.busy = false;
-  if (r) { q.sent = true; cnAddLog('checkin', 'Sent a check-in', 0); toast('Sent to the counselor.', 'success'); cnRenderPanel('checkin'); }
+function cnFinishSurvey() {
+  const s = cn.sv, sv = CN_SURVEYS[s.id];
+  s.rec = cnMakeRecord(sv, s.ans); s.done = true;
+  const l = cnResults(); l.push(s.rec); cnSaveResults(l);
+  cnAddLog('survey', sv.name, 0);
+  cnRenderPanel('surveys'); window.scrollTo(0, 0);
 }
 
 /* ---- Breathing 4-7-8 ---- */
@@ -3791,6 +4016,14 @@ function cnBuildStatic() {
   document.getElementById('cn-p-music').innerHTML = '<div class="' + CN_CARD + '"><p class="text-sm font-semibold">Calming music</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Pick a track. It plays from YouTube and needs internet. Set a timer if you want it to stop by itself.</p>' +
     '<div id="cn-m-player" class="hidden mb-3"><div class="aspect-video rounded-lg overflow-hidden bg-black"><iframe id="cn-m-frame" class="w-full h-full" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" title="Calming music"></iframe></div><div class="flex items-center gap-2 mt-2 flex-wrap"><span class="text-xs text-slate-500">Stop after:</span>' + [15, 30, 60].map(m => '<button data-cn-timer="' + m + '" class="cn-timer text-xs rounded-full border border-slate-300 dark:border-slate-700 px-2.5 py-1">' + m + ' min</button>').join('') + '<button data-cn-mstop class="ml-auto text-xs text-rose-600 hover:underline">Stop music</button></div><p id="cn-m-timer" class="text-[11px] text-slate-400 mt-1"></p></div>' +
     '<div class="space-y-1.5">' + CN_TRACKS.map((t, i) => '<button data-cn-track="' + i + '" class="cn-track w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 hover:border-teal-400"><i data-lucide="play" class="w-4 h-4 text-teal-600 shrink-0"></i><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(t.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.tag) + '</span></span></button>').join('') + '</div></div>';
+  if (!document.getElementById('cn-calm')) {
+    const d = document.createElement('div'); d.id = 'cn-calm'; d.className = 'hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-sky-100 via-teal-50 to-indigo-100 dark:from-slate-950 dark:via-teal-950 dark:to-slate-900';
+    d.innerHTML = '<button data-cn-calm-close class="absolute top-4 right-4 text-sm text-slate-600 dark:text-slate-300 underline">Close</button><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Quick calm</p>' +
+      '<div class="relative w-52 h-52 my-6 flex items-center justify-center"><div id="cn-c-circle" class="absolute inset-0 rounded-full bg-teal-300/60 dark:bg-teal-600/40" style="transform:scale(.55);transition:transform 4s ease-in-out"></div><div class="relative"><p id="cn-c-phase" class="text-sm font-medium text-teal-900 dark:text-teal-100">Get ready</p><p id="cn-c-left" class="text-3xl font-semibold tabular-nums">60</p></div></div>' +
+      '<p id="cn-c-text" class="text-base max-w-xs text-slate-700 dark:text-slate-200 min-h-[3rem]"></p>' +
+      '<div id="cn-c-end" class="hidden mt-4 space-y-2"><p class="text-sm text-slate-600 dark:text-slate-300">Well done. How do you feel now?</p><div class="flex flex-wrap gap-2 justify-center"><button data-cn-calm-done class="' + CN_BTN + '">I feel calmer</button><button data-cn-calm-talk class="' + CN_BTN2 + '">I want to talk to someone</button></div></div>';
+    document.body.appendChild(d);
+  }
 }
 function cnBreathUi() {
   const b = cn.breath, c = document.getElementById('cn-b-circle'); if (!c) return;
@@ -3829,6 +4062,32 @@ function cnStopBreath(finished) {
   cnBreathUi();
 }
 
+/* ---- Quick calm: 60 seconds, box breathing and grounding ---- */
+const CN_CALM_TEXT = ['Feel your feet on the floor.', 'Drop your shoulders and unclench your jaw.', 'Notice 5 things you can see.', 'You are safe right now. This feeling will pass.'];
+function cnStartCalm() {
+  cnBuildStatic();
+  const el = document.getElementById('cn-calm'); if (!el) return;
+  clearInterval(cn.calm.timer); cn.calm.left = 60;
+  el.classList.remove('hidden'); document.getElementById('cn-c-end').classList.add('hidden');
+  cnCalmUi();
+  cn.calm.timer = setInterval(() => { cn.calm.left--; if (cn.calm.left <= 0) { clearInterval(cn.calm.timer); cn.calm.timer = null; cnCalmEnd(); } else cnCalmUi(); }, 1000);
+}
+function cnCalmUi() {
+  const left = cn.calm.left, el = document.getElementById('cn-calm'); if (!el) return;
+  const t = 60 - left, phases = ['Breathe in', 'Hold', 'Breathe out', 'Hold'], p = Math.floor(t / 4) % 4;
+  document.getElementById('cn-c-left').textContent = left;
+  document.getElementById('cn-c-phase').textContent = phases[p];
+  const c = document.getElementById('cn-c-circle'); c.style.transform = 'scale(' + (p === 0 || p === 1 ? 1 : 0.55) + ')';
+  document.getElementById('cn-c-text').textContent = CN_CALM_TEXT[Math.min(3, Math.floor(t / 15))];
+}
+function cnCalmEnd() {
+  document.getElementById('cn-c-phase').textContent = 'Done'; document.getElementById('cn-c-left').textContent = '0';
+  document.getElementById('cn-c-text').textContent = 'Take one more slow breath.';
+  document.getElementById('cn-c-end').classList.remove('hidden');
+  cnAddLog('calm', 'Quick calm', 1);
+}
+function cnStopCalm() { clearInterval(cn.calm.timer); cn.calm.timer = null; const el = document.getElementById('cn-calm'); if (el) el.classList.add('hidden'); }
+
 /* ---- Music ---- */
 function cnPlayTrack(i) {
   const t = CN_TRACKS[i]; if (!t) return;
@@ -3847,22 +4106,27 @@ function cnSetTimer(m) {
   clearTimeout(cn.music.timer);
   cn.music.timer = setTimeout(() => { cnStopMusic(); toast('Music stopped. Rest well.', 'success'); }, m * 60000);
   document.getElementById('cn-m-timer').textContent = 'Music will stop in ' + m + ' minutes.';
-  document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => b.classList.toggle('bg-teal-600', +b.dataset.cnTimer === m)), document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => b.classList.toggle('text-white', +b.dataset.cnTimer === m));
+  document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => { const on = +b.dataset.cnTimer === m; b.classList.toggle('bg-teal-600', on); b.classList.toggle('text-white', on); });
 }
 
-/* ---- Progress (this device only) ---- */
+/* ---- Progress and my results (this device only) ---- */
 function cnPanelProgress() {
   const s = cnStats(), max = Math.max(1, ...s.week.map(d => d.n)), moodE = { 1: '😣', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
   const badges = [['First step', s.total >= 1, 'Did your first activity'], ['Calm breather', s.breaths >= 5, '5 breathing sessions'], ['3-day streak', s.streak >= 3, '3 days in a row'], ['Steady', s.total >= 14, '14 activities']];
   const box = (l, v, sub) => '<div class="rounded-lg border border-slate-200 dark:border-slate-800 p-3"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + l + '</p><p class="text-xl font-semibold tabular-nums">' + v + '</p><p class="text-[10px] text-slate-400">' + sub + '</p></div>';
+  const kinds = [['breath', 'Breathing'], ['music', 'Music'], ['survey', 'Surveys'], ['calm', 'Quick calm'], ['practice', 'Practices']];
+  const res = cnResults().slice().reverse();
   return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">My progress</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Saved only on this device. Nobody else can see it.</p>' +
-    '<div class="grid grid-cols-3 gap-2 mb-4">' + box('Activities', s.total, 'all time') + box('Calm minutes', s.minutes, 'breathing') + box('Day streak', s.streak, 'in a row') + '</div>' +
+    '<div class="grid grid-cols-3 gap-2 mb-4">' + box('Activities', s.total, 'all time') + box('Calm minutes', s.minutes, 'breathing and calm') + box('Day streak', s.streak, 'in a row') + '</div>' +
     '<p class="text-xs font-medium mb-2">This week</p><div class="flex items-end gap-2 h-24 mb-1">' + s.week.map(d => '<div class="flex-1 flex flex-col items-center justify-end gap-1 h-full"><span class="text-xs">' + (d.mood ? moodE[d.mood] : '') + '</span><div class="w-full rounded-t bg-teal-500/80" style="height:' + Math.max(d.n ? 8 : 2, Math.round(d.n / max * 60)) + 'px"></div></div>').join('') + '</div>' +
     '<div class="flex gap-2 mb-4">' + s.week.map(d => '<span class="flex-1 text-center text-[10px] text-slate-400">' + d.label + '</span>').join('') + '</div>' +
-    '<div class="grid grid-cols-2 gap-2">' + badges.map(b => '<div class="rounded-lg border px-3 py-2 ' + (b[1] ? 'border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30' : 'border-slate-200 dark:border-slate-800 opacity-60') + '"><p class="text-xs font-semibold">' + b[0] + '</p><p class="text-[10px] text-slate-500 dark:text-slate-400">' + b[2] + '</p></div>').join('') + '</div></div>';
+    '<p class="text-xs font-medium mb-2">What you did</p><div class="space-y-1 mb-4">' + kinds.map(k => '<div class="flex items-center gap-2 text-xs"><span class="w-20 text-slate-500 dark:text-slate-400">' + k[1] + '</span><div class="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-teal-500" style="width:' + Math.round(((s.by[k[0]] || 0) + (k[0] === 'survey' ? (s.by.checkin || 0) : 0)) / Math.max(1, s.total) * 100) + '%"></div></div><span class="w-6 text-right tabular-nums">' + ((s.by[k[0]] || 0) + (k[0] === 'survey' ? (s.by.checkin || 0) : 0)) + '</span></div>').join('') + '</div>' +
+    '<div class="grid grid-cols-2 gap-2">' + badges.map(b => '<div class="rounded-lg border px-3 py-2 ' + (b[1] ? 'border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30' : 'border-slate-200 dark:border-slate-800 opacity-60') + '"><p class="text-xs font-semibold">' + b[0] + '</p><p class="text-[10px] text-slate-500 dark:text-slate-400">' + b[2] + '</p></div>').join('') + '</div></div>' +
+    '<div class="' + CN_CARD + ' mt-4"><h3 class="text-sm font-semibold">My survey results</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Download any result as an Excel file filled in with your details, or copy your plan.</p>' +
+    (res.length ? '<div class="space-y-2">' + res.map(r => { const sv = CN_SURVEYS[r.survey] || CN_SURVEYS.quick; return '<div class="flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">' + escapeHtml(sv.name) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + new Date(r.t).toLocaleDateString() + ' · ' + escapeHtml(r.level) + ' (' + r.total + '/' + r.max + ')' + (r.sent ? ' · sent' : '') + '</p></div><button data-cn-copyplan="' + r.id + '" class="' + CN_BTN2 + ' !px-2.5 !py-1 text-xs">Copy plan</button><button data-cn-dl="' + r.id + '" class="' + CN_BTN2 + ' !px-2.5 !py-1 text-xs">Excel</button></div>'; }).join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">No results yet. Take a survey and it will show up here.</p>') + '</div>';
 }
 
-/* ---- Talk to someone: messages + appointment ---- */
+/* ---- Talk to someone: messages ---- */
 function cnRecipients() {
   const st = cnAcct(), cs = cnCounselor(), out = [];
   const adviser = st && st.classId ? DB.teachers.find(t => t.email && t.advisoryClassId === st.classId) : null;
@@ -3872,33 +4136,27 @@ function cnRecipients() {
   return { first: out, rest };
 }
 function cnPanelTalk() {
-  const r = cnRecipients(), cs = cnCounselor(), opt = (t, tag) => '<option value="' + escapeHtml(normEmail(t.email)) + '">' + escapeHtml((t.name || t.email) + (tag ? ' (' + tag + ')' : '')) + '</option>';
-  const today = todayStr();
+  const r = cnRecipients(), opt = (t, tag) => '<option value="' + escapeHtml(normEmail(t.email)) + '">' + escapeHtml((t.name || t.email) + (tag ? ' (' + tag + ')' : '')) + '</option>';
   return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Send a message</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Only you and the person you choose can read it. If your safety is at risk, they may need to involve other adults to keep you safe.</p>' +
     '<label class="block text-xs font-medium mb-1">To</label><select id="cn-m-to" class="' + CN_INP + ' mb-3">' + r.first.map(o => opt(o[1], o[0])).join('') + (r.rest.length ? '<optgroup label="Teachers at San Juan Baño High School">' + r.rest.map(t => opt(t)).join('') + '</optgroup>' : '') + '</select>' +
     '<label class="block text-xs font-medium mb-1">Message</label><textarea id="cn-m-body" rows="4" maxlength="1000" placeholder="Write what you want them to know..." class="' + CN_INP + '"></textarea>' +
     '<div class="mt-3"><button data-cn-sendmsg class="' + CN_BTN + '">Send message</button></div></div>' +
-    (cs ? '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Ask for a counseling appointment</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Tell the counselor when you could meet. They will reply here.</p>' +
-      '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3"><div><label class="block text-xs font-medium mb-1">About</label><select id="cn-a-topic" class="' + CN_INP + '">' + CN_TOPICS.map(t => '<option>' + t + '</option>').join('') + '</select></div>' +
-      '<div><label class="block text-xs font-medium mb-1">Preferred day</label><input id="cn-a-date" type="date" min="' + today + '" class="' + CN_INP + '"></div>' +
-      '<div><label class="block text-xs font-medium mb-1">Time</label><select id="cn-a-time" class="' + CN_INP + '"><option>Morning</option><option>Afternoon</option><option>After class</option><option>Any time</option></select></div></div>' +
-      '<textarea id="cn-a-note" rows="2" maxlength="500" placeholder="Anything else? (optional)" class="' + CN_INP + ' mt-3"></textarea>' +
-      '<div class="mt-3"><button data-cn-sendappt class="' + CN_BTN + '">Request appointment</button></div></div>' : '') +
-    '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">My conversations</h3><button data-cn-refresh class="text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div><div id="cn-convos"></div></div>';
+    '<div class="' + CN_CARD + ' mt-4"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">My conversations</h3><button data-cn-refresh class="text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div><div id="cn-convos"></div></div>';
 }
-function cnThreadHtml(t, me, openId, prefix) {
+function cnKindLabel(r) { return r.kind === 'checkin' ? 'Check-in' : r.kind === 'survey' ? 'Survey' : r.kind === 'appointment' ? 'Appointment' : 'Message'; }
+function cnPreview(r) { if (r.body) return r.body; const m = r.meta || {}; if (r.kind === 'survey' || r.kind === 'checkin') { const sv = CN_SURVEYS[m.survey] || CN_SURVEYS.quick; return sv.name + ': ' + (m.level || '') + ' (' + (m.total || 0) + '/' + (m.max || sv.scoreIdx.length * 3) + ')'; } if (r.kind === 'appointment') return (m.typeName || 'Appointment') + (m.date ? ' on ' + m.date + ' ' + cnT12(m.time) : ''); return r.subject || ''; }
+function cnThreadHtml(t, me, openId) {
   const open = openId === t.id, r = t.root, other = normEmail(r.from_email) === me ? (r.to_name || r.to_email) : (r.from_name || r.from_email);
-  const kind = r.kind === 'checkin' ? 'Check-in' : r.kind === 'appointment' ? 'Appointment' : 'Message';
   const newIn = t.msgs.some(m => normEmail(m.to_email) === me && m.status === 'new');
-  let h = '<div class="border border-slate-200 dark:border-slate-800 rounded-lg ' + (newIn ? 'ring-1 ring-teal-400' : '') + '"><button data-' + prefix + '-open="' + t.id + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium truncate">' + escapeHtml(other) + '</span>' + cnChip(kind, 'sky') + (newIn ? cnChip('New', 'teal') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(t.last.body || t.last.subject || '') + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
+  let h = '<div class="border border-slate-200 dark:border-slate-800 rounded-lg ' + (newIn ? 'ring-1 ring-teal-400' : '') + '"><button data-cn-open="' + t.id + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium truncate">' + escapeHtml(other) + '</span>' + cnChip(cnKindLabel(r), 'sky') + (t.confirmed ? cnChip('Confirmed', 'emerald') : r.kind === 'appointment' ? cnChip('Pending', 'amber') : '') + (newIn ? cnChip('New', 'teal') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(cnPreview(t.last)) + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
   if (open) {
     h += '<div class="px-3 pb-3 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-2">';
-    if (r.kind === 'appointment' && r.meta) h += '<p class="text-xs text-slate-500 dark:text-slate-400">Topic: ' + escapeHtml(r.meta.topic || '') + ' · Preferred: ' + escapeHtml((r.meta.date || 'any day') + ', ' + (r.meta.time || '')) + '</p>';
+    if (r.kind === 'appointment' && r.meta) h += '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml((r.meta.typeName || '') + ' · ' + (r.meta.date ? cnDateNice(r.meta.date) + ', ' + cnT12(r.meta.time) : 'any day') + ' · ' + (r.meta.format === 'chat' ? 'Chat in the app' : 'Guidance office')) + '</p>';
     t.msgs.forEach(m => {
       const mine = normEmail(m.from_email) === me;
-      h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(m.body || (m.kind === 'appointment' ? 'Appointment request' : m.kind === 'checkin' ? 'Shared a wellness check-in' : '')) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You' : (m.from_name || m.from_email)) + ' · ' + cnWhen(m.created_at) + '</p></div></div>';
+      h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(m.body || cnPreview(m)) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You' : (m.from_name || m.from_email)) + ' · ' + cnWhen(m.created_at) + '</p></div></div>';
     });
-    h += '<div class="flex gap-2 pt-1"><input data-' + prefix + '-reply="' + t.id + '" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-' + prefix + '-sendreply="' + t.id + '" class="' + CN_BTN + ' shrink-0">Send</button></div></div>';
+    h += '<div class="flex gap-2 pt-1"><input data-cn-reply="' + t.id + '" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-cn-sendreply="' + t.id + '" class="' + CN_BTN + ' shrink-0">Send</button></div></div>';
   }
   return h + '</div>';
 }
@@ -3908,9 +4166,9 @@ function cnRenderConvos() {
   if (cn.err) { el.innerHTML = '<p class="text-xs text-rose-600">' + escapeHtml(cn.err) + '</p>'; return; }
   if (!cn.loaded) { el.innerHTML = '<p class="text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to see your conversations.') + '</p>'; return; }
   const th = cnThreads(me);
-  el.innerHTML = th.length ? '<div class="space-y-2">' + th.map(t => cnThreadHtml(t, me, cn.openThread, 'cn')).join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">No conversations yet. Your messages and the replies will show up here.</p>';
+  el.innerHTML = th.length ? '<div class="space-y-2">' + th.map(t => cnThreadHtml(t, me, cn.openThread)).join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">No conversations yet. Your messages and the replies will show up here.</p>';
 }
-async function cnReply(rootId, text, prefix) {
+async function cnReply(rootId, text) {
   const me = cnMyEmail(), t = cnThreads(me).find(x => x.id === rootId); if (!t || !text.trim()) return false;
   const r = t.root, toEmail = normEmail(r.from_email) === me ? r.to_email : r.from_email, toName = normEmail(r.from_email) === me ? r.to_name : r.from_name;
   const out = await cnSend({ kind: 'reply', thread_id: rootId, to_email: toEmail, to_name: toName || '', subject: 'Re: ' + (r.subject || ''), body: text.trim().slice(0, 1000) });
@@ -3918,18 +4176,87 @@ async function cnReply(rootId, text, prefix) {
   return !!out;
 }
 
+/* ---- Book: full appointment booking ---- */
+function cnIsWeekday(d) { const x = new Date(d + 'T00:00:00').getDay(); return x >= 1 && x <= 5; }
+function cnApptList() {
+  const me = cnMyEmail(), th = cnThreads(me).filter(t => t.root.kind === 'appointment' && normEmail(t.root.from_email) === me);
+  if (!cn.loaded) return '<p class="text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to see your appointments.') + '</p>';
+  return th.length ? '<div class="space-y-2">' + th.map(t => { const m = t.root.meta || {}; return '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">' + escapeHtml(m.typeName || 'Appointment') + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml((m.date ? cnDateNice(m.date) + ', ' + cnT12(m.time) : '') + (m.format === 'chat' ? ' · chat' : ' · guidance office')) + '</p></div>' + (t.confirmed ? cnChip('Confirmed', 'emerald') : cnChip('Pending', 'amber')) + '</div>'; }).join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">You have not asked for an appointment yet.</p>';
+}
+function cnPanelBook() {
+  const b = cn.book, cs = cnCounselor();
+  if (!cs) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Book a time</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Your school has not set up a guidance counselor in Attendly yet. You can still message a teacher under Talk.</p></div>';
+  const steps = ['Type', 'Format', 'Date and time', 'Details', 'Confirm'];
+  const bar = '<div class="flex items-center gap-1 mb-4">' + steps.map((s, i) => '<div class="flex-1"><div class="h-1.5 rounded-full ' + (i + 1 <= b.step ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-800') + '"></div><p class="text-[10px] mt-1 ' + (i + 1 === b.step ? 'text-teal-700 dark:text-teal-300 font-medium' : 'text-slate-400') + '">' + s + '</p></div>').join('') + '</div>';
+  const type = CN_APPT_TYPES.find(t => t.id === b.type);
+  let body = '';
+  if (b.sent) {
+    body = '<div class="text-center py-4"><div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center mx-auto mb-3"><i data-lucide="check" class="w-6 h-6"></i></div><p class="text-base font-semibold">Request sent</p><p class="text-sm text-slate-600 dark:text-slate-300 mt-1">' + escapeHtml(type ? type.name : 'Appointment') + '<br>' + escapeHtml(cnDateNice(b.date) + ', ' + cnT12(b.time)) + '</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-3 max-w-xs mx-auto">The counselor will confirm this time or suggest another one. You will see the reply under Talk, and the status below.</p><button data-cn-bk-again class="' + CN_BTN2 + ' mt-4">Book another</button></div>';
+  } else if (b.step === 1) {
+    body = '<h3 class="text-base font-semibold mb-3">What would you like?</h3><div class="space-y-2">' + CN_APPT_TYPES.map(t => '<button data-cn-bk-type="' + t.id + '" class="w-full flex items-start gap-3 text-left rounded-lg border px-3 py-3 ' + (b.type === t.id ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400') + '"><i data-lucide="' + t.icon + '" class="w-5 h-5 text-teal-600 shrink-0 mt-0.5"></i><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(t.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.desc) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">' + t.minutes + ' min</span></button>').join('') + '</div>';
+  } else if (b.step === 2) {
+    body = '<h3 class="text-base font-semibold mb-3">How would you like to meet?</h3><div class="space-y-2">' + CN_FORMATS.map(f => '<button data-cn-bk-format="' + f[0] + '" class="w-full flex items-center gap-3 text-left rounded-lg border px-3 py-3 ' + (b.format === f[0] ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400') + '"><i data-lucide="' + f[2] + '" class="w-5 h-5 text-teal-600 shrink-0"></i><span class="text-sm font-medium">' + escapeHtml(f[1]) + '</span></button>').join('') + '</div>' +
+      '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Next</button></div>';
+  } else if (b.step === 3) {
+    const today = todayStr(), now = minutesNow(), wk = b.date && cnIsWeekday(b.date);
+    body = '<h3 class="text-base font-semibold mb-3">Pick a day and time</h3><label class="block text-xs font-medium mb-1">Day (Monday to Friday)</label><input id="cn-bk-date" data-cn-bk-date type="date" min="' + today + '" value="' + escapeHtml(b.date) + '" class="' + CN_INP + '">' +
+      (b.date && !wk ? '<p class="text-xs text-rose-600 mt-1">Please pick a weekday.</p>' : '') +
+      (b.date && wk ? '<p class="text-xs font-medium mt-4 mb-2">' + escapeHtml(cnDateNice(b.date)) + '</p><div class="grid grid-cols-3 gap-2">' + cnSlots().map(t => { const taken = cnSlotTaken(b.date, t), past = b.date === today && (minOf(t) <= now), off = taken || past; return '<button ' + (off ? 'disabled' : 'data-cn-bk-slot="' + t + '"') + ' class="text-sm rounded-lg border px-2 py-2 ' + (b.time === t ? 'border-teal-500 bg-teal-600 text-white' : off ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 line-through' : 'border-slate-300 dark:border-slate-700 hover:border-teal-400') + '">' + cnT12(t) + '</button>'; }).join('') + '</div><p class="text-[11px] text-slate-400 mt-2">Crossed-out times are already taken or have passed.</p>' : '') +
+      '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Next</button></div>';
+  } else if (b.step === 4) {
+    body = '<h3 class="text-base font-semibold mb-3">A few details</h3><label class="block text-xs font-medium mb-1">What is it about?</label><select data-cn-bk-topic class="' + CN_INP + ' mb-3">' + CN_TOPICS.map(t => '<option' + (b.topic === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
+      '<label class="block text-xs font-medium mb-1">Anything else the counselor should know? (optional)</label><textarea data-cn-bk-note rows="3" maxlength="500" class="' + CN_INP + '">' + escapeHtml(b.note) + '</textarea>' +
+      '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Review</button></div>';
+  } else {
+    const a = cnAcct() || {}, row = (k, v) => '<div class="flex justify-between gap-4 py-1.5 border-b border-slate-100 dark:border-slate-800 text-sm"><span class="text-slate-500 dark:text-slate-400">' + k + '</span><span class="text-right font-medium">' + escapeHtml(v) + '</span></div>';
+    body = '<h3 class="text-base font-semibold mb-3">Confirm your request</h3><div class="mb-3">' + row('Type', type ? type.name + ' (' + type.minutes + ' min)' : '') + row('Format', b.format === 'chat' ? 'Chat in the app' : 'In person at the guidance office') + row('Day', cnDateNice(b.date)) + row('Time', cnT12(b.time)) + row('About', b.topic) + row('Student', (a.name || '') + (cnUsername() ? ' (@' + cnUsername() + ')' : '')) + row('Class', classLabel(a.classId) || '') + (b.note ? row('Note', b.note) : '') + '</div>' +
+      '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">This is a request. The counselor will confirm the time or suggest another one.</p>' +
+      '<div class="flex gap-2"><button data-cn-bk-back class="' + CN_BTN2 + '">Edit</button><button data-cn-bk-confirm class="' + CN_BTN + '">Confirm request</button></div>';
+  }
+  return '<div class="' + CN_CARD + '">' + (b.sent ? '' : '<h2 class="text-sm font-semibold">Book a counseling time</h2><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">With ' + escapeHtml(cs.name) + '</p>' + bar) + body + '</div>' +
+    '<div class="' + CN_CARD + ' mt-4"><h3 class="text-sm font-semibold mb-3">My appointments</h3><div id="cn-appts">' + cnApptList() + '</div></div>';
+}
+async function cnBookConfirm() {
+  const b = cn.book, cs = cnCounselor(); if (!cs || b.busy) return;
+  if (cnNeedUsername()) return;
+  if (cnSlotTaken(b.date, b.time)) { toast('That time was just taken. Please pick another.', 'warning'); b.step = 3; b.time = ''; cnRenderPanel('book'); return; }
+  const type = CN_APPT_TYPES.find(t => t.id === b.type), me = cnAcct() || {};
+  b.busy = true;
+  const r = await cnSend({ kind: 'appointment', to_email: cs.email, to_name: cs.name, subject: 'Appointment request', body: b.note, meta: { type: b.type, typeName: type.name, minutes: type.minutes, format: b.format, topic: b.topic, date: b.date, time: b.time, username: cnUsername(), sid: me.studentId || '', cls: classLabel(me.classId), priority: 'normal' } });
+  b.busy = false;
+  if (r) { b.sent = true; cnAddLog('booking', 'Requested an appointment', 0); toast('Request sent.', 'success'); cnRenderPanel('book'); }
+}
+
 /* ---- Inboxes for teachers (messages) and the counselor (guidance) ---- */
+function cnExportAll() {
+  const me = cnMyEmail(), rows = cnThreads(me).filter(t => t.mineRoot && (t.root.kind === 'survey' || t.root.kind === 'checkin')).map(t => ({ it: t.root, r: cnRecFromItem(t.root), status: t.root.status }));
+  if (!rows.length) { toast('There are no survey results to export yet.', 'warning'); return; }
+  rows.sort((a, b) => (a.r.username || '~').localeCompare(b.r.username || '~') || b.r.t - a.r.t);
+  const pr = { normal: 'Normal', high: 'Priority', urgent: 'Urgent' };
+  const res = [['Date', 'Username', 'Student', 'ID / LRN', 'Class', 'Survey', 'Score', 'Out of', 'Result', 'Priority', 'Status', 'Note']].concat(rows.map(x => [new Date(x.r.t).toLocaleDateString(), x.r.username, x.r.name, x.r.sid, x.r.cls, (CN_SURVEYS[x.r.survey] || CN_SURVEYS.quick).name, x.r.total, x.r.max, x.r.level, pr[x.r.priority] || 'Normal', x.status, x.r.note]));
+  const ans = [['Date', 'Username', 'Survey', 'No.', 'Question', 'Response', 'Score']];
+  rows.forEach(x => { const sv = CN_SURVEYS[x.r.survey] || CN_SURVEYS.quick; sv.items.forEach((q, i) => ans.push([new Date(x.r.t).toLocaleDateString(), x.r.username, sv.name, i + 1, q.q, cnItemText(sv, i, x.r.ans[i] || 0), x.r.ans[i] || 0])); });
+  downloadBlob(makeXlsxBook([{ name: 'Results', rows: res, widths: [12, 16, 24, 14, 18, 28, 7, 7, 20, 10, 8, 40] }, { name: 'Answers', rows: ans, widths: [12, 16, 28, 5, 70, 34, 7] }]), 'counseling-results-' + cnFileStamp(Date.now()) + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
+async function cnConfirmAppt(id) {
+  const me = cnMyEmail(), t = cnThreads(me).find(x => x.id === id); if (!t) return;
+  const m = t.root.meta || {};
+  if (cnSlotTaken(m.date, m.time) && !(DB.settings.bookedSlots || []).some(b => b.id === id)) { toast('That time is already booked for someone else. Reply to suggest another time.', 'warning'); return; }
+  const out = await cnSend({ kind: 'reply', thread_id: id, to_email: t.root.from_email, to_name: t.root.from_name || '', subject: 'Re: Appointment request', body: 'Confirmed: ' + (m.typeName || 'Appointment') + ' on ' + cnDateNice(m.date) + ' at ' + cnT12(m.time) + (m.format === 'chat' ? '. We will chat in the app.' : '. Please come to the guidance office.'), meta: { confirmed: true, date: m.date, time: m.time } });
+  if (!out) return;
+  DB.settings.bookedSlots = (DB.settings.bookedSlots || []).filter(b => b.date >= todayStr()).concat([{ date: m.date, time: m.time, id }]); saveDB();
+  await cnSetStatus(id, 'done'); toast('Appointment confirmed. The student has been notified.', 'success');
+}
 function renderInbox(which) {
   const root = document.getElementById(which === 'guidance' ? 'gd-root' : 'msg-root'); if (!root) return;
-  const me = cnMyEmail(), st = inbox[which], kinds = which === 'guidance' ? ['checkin', 'appointment', 'message'] : ['message'];
-  if (!root.dataset.built) { root.dataset.built = '1'; }
+  const me = cnMyEmail(), st = inbox[which];
   if (which === 'guidance' && !isCounselor()) { root.innerHTML = '<p class="text-sm text-slate-500">This page is only for the school counselor.</p>'; return; }
   if (!cn.loaded && !cn.loading) cnLoad();
   let th = cnThreads(me).filter(t => t.mineRoot && (which === 'guidance' ? true : t.root.kind === 'message'));
-  if (which === 'messages' && isCounselor()) th = th.filter(t => t.root.kind === 'message');
-  const counts = { new: th.filter(t => t.root.status !== 'done' && t.awaiting).length, pri: th.filter(t => t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high')).length, all: th.length };
+  const pri = t => t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high');
+  const counts = { new: th.filter(t => t.root.status !== 'done' && t.awaiting).length, pri: th.filter(pri).length, all: th.length };
   const f = st.filter;
-  th = th.filter(t => t.id === st.open || (f === 'all' ? true : f === 'pri' ? (t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high')) : (t.root.status !== 'done' && t.awaiting)));
+  th = th.filter(t => t.id === st.open || (f === 'all' ? true : f === 'pri' ? pri(t) : (t.root.status !== 'done' && t.awaiting)));
   const rank = t => { const p = t.root.meta && t.root.meta.priority; return p === 'urgent' ? 0 : p === 'high' ? 1 : 2; };
   if (which === 'guidance') th.sort((a, b) => rank(a) - rank(b) || String(b.last.created_at).localeCompare(String(a.last.created_at)));
   const chip = (k, label, n) => '<button data-in-filter="' + k + '" data-in-which="' + which + '" class="text-xs font-medium rounded-full border px-3 py-1.5 ' + (f === k ? 'bg-teal-600 text-white border-teal-600' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300') + '">' + label + ' (' + n + ')</button>';
@@ -3938,26 +4265,31 @@ function renderInbox(which) {
   if (cn.err) body = '<p class="text-xs text-rose-600">' + escapeHtml(cn.err) + '</p>';
   else if (!cn.loaded) body = '<p class="text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to read messages.') + '</p>';
   else body = th.length ? '<div class="space-y-2">' + th.map(t => inboxCard(t, me, st.open, which)).join('') + '</div>' : '<p class="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">Nothing here right now.</p>';
-  const head = which === 'guidance' ? '<div class="rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/60 dark:bg-teal-950/20 p-4 mb-4"><p class="text-sm font-semibold">Counseling inbox</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Check-ins, appointment requests and messages sent to you. Only you can read these.</p></div>'
+  const head = which === 'guidance' ? '<div class="rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/60 dark:bg-teal-950/20 p-4 mb-4 flex items-start gap-3"><div class="flex-1"><p class="text-sm font-semibold">Counseling inbox</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Surveys, check-ins, appointment requests and messages sent to you. Only you can read these.</p></div><button data-in-dlall class="' + CN_BTN2 + ' !py-1.5 text-xs shrink-0"><i data-lucide="download" class="w-3.5 h-3.5"></i>All results (Excel)</button></div>'
     : '<div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 mb-4"><p class="text-sm font-semibold">Student messages</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Messages students sent to you. Only you can read them.</p></div>';
-  const prevScroll = window.scrollY, active = document.activeElement, keep = active && active.matches && active.matches('[data-in-reply]') ? { id: active.dataset.inReply, v: active.value } : null;
+  const active = document.activeElement, keep = active && active.matches && active.matches('[data-in-reply]') ? { id: active.dataset.inReply, v: active.value } : null;
   root.innerHTML = head + ctrl + body;
   if (keep) { const i = root.querySelector('[data-in-reply="' + keep.id + '"]'); if (i) { i.value = keep.v; i.focus(); } }
   refreshIcons();
 }
 function inboxCard(t, me, openId, which) {
   const r = t.root, m = r.meta || {}, open = openId === t.id, who = r.from_name || r.from_email;
-  const kind = r.kind === 'checkin' ? 'Check-in' : r.kind === 'appointment' ? 'Appointment' : 'Message';
-  const lv = r.kind === 'checkin' ? CN_LEVELS.find(l => l.name === m.level) || CN_LEVELS[0] : null;
-  let h = '<div class="border rounded-lg ' + (m.priority === 'urgent' ? 'border-rose-400 dark:border-rose-700' : 'border-slate-200 dark:border-slate-800') + '"><button data-in-open="' + t.id + '" data-in-which="' + which + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium">' + escapeHtml(who) + '</span>' + (m.cls ? '<span class="text-[11px] text-slate-500">' + escapeHtml(m.cls) + '</span>' : '') + cnChip(kind, 'sky') + (lv ? cnChip(lv.name, lv.cls) : '') +
-    (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (r.status === 'new' ? cnChip('New', 'teal') : r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(t.last.body || t.last.subject || '') + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
+  const isRes = r.kind === 'survey' || r.kind === 'checkin', sv = isRes ? (CN_SURVEYS[m.survey] || CN_SURVEYS.quick) : null;
+  const lvCls = isRes ? ((sv.levels.find(l => l.name === m.level) || {}).cls || 'slate') : '';
+  let h = '<div class="border rounded-lg ' + (m.priority === 'urgent' ? 'border-rose-400 dark:border-rose-700' : 'border-slate-200 dark:border-slate-800') + '"><button data-in-open="' + t.id + '" data-in-which="' + which + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium">' + escapeHtml(who) + '</span>' + (m.username ? '<span class="text-[11px] text-slate-500">@' + escapeHtml(m.username) + '</span>' : '') + (m.cls ? '<span class="text-[11px] text-slate-500">' + escapeHtml(m.cls) + '</span>' : '') + cnChip(isRes ? sv.short : cnKindLabel(r), 'sky') + (isRes && m.level ? cnChip(m.level, lvCls) : '') +
+    (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (t.confirmed ? cnChip('Confirmed', 'emerald') : '') + (r.status === 'new' ? cnChip('New', 'teal') : r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(cnPreview(t.last)) + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
   if (open) {
     h += '<div class="px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2 space-y-3">';
-    if (r.kind === 'checkin') {
-      h += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' + CN_QUIZ.map(it => { const v = (m.scores || {})[it.key] || 0; return '<div class="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(it.title) + '</p><p class="text-xs font-medium">' + escapeHtml(it.opts[v]) + '</p><div class="h-1 rounded-full bg-slate-200 dark:bg-slate-700 mt-1.5"><div class="h-full rounded-full ' + (v >= 3 ? 'bg-rose-500' : v === 2 ? 'bg-orange-400' : v === 1 ? 'bg-amber-400' : 'bg-emerald-400') + '" style="width:' + (v + 1) * 25 + '%"></div></div></div>'; }).join('') + '</div>';
-      if ((m.safety || 0) >= 1) h += '<p class="text-xs font-semibold text-rose-700 dark:text-rose-300">Safety answer: ' + escapeHtml(CN_QUIZ[4].opts[m.safety]) + '. Please follow your school protocol.</p>';
+    if (isRes) {
+      const rec = cnRecFromItem(r);
+      h += '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + ' · score ' + (m.total || 0) + ' of ' + (m.max || sv.scoreIdx.length * 3) + '</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' + sv.items.map((it, i) => { const v = rec.ans[i] || 0; return '<div class="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2"><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(it.title || it.q) + '</p><p class="text-xs font-medium">' + escapeHtml(cnItemText(sv, i, v)) + '</p><div class="h-1 rounded-full bg-slate-200 dark:bg-slate-700 mt-1.5"><div class="h-full rounded-full ' + (v >= 3 ? 'bg-rose-500' : v === 2 ? 'bg-orange-400' : v === 1 ? 'bg-amber-400' : 'bg-emerald-400') + '" style="width:' + (v + 1) * 25 + '%"></div></div></div>'; }).join('') + '</div>';
+      if ((m.safety || 0) >= 1) h += '<p class="text-xs font-semibold text-rose-700 dark:text-rose-300">Safety answer: ' + escapeHtml(cnItemText(sv, sv.safetyIdx, m.safety)) + '. Please follow your school protocol.</p>';
+      h += '<button data-in-dl="' + t.id + '" class="' + CN_BTN2 + ' !py-1 text-xs"><i data-lucide="download" class="w-3.5 h-3.5"></i>Download this result (Excel)</button>';
     }
-    if (r.kind === 'appointment') h += '<p class="text-xs text-slate-500 dark:text-slate-400">Topic: ' + escapeHtml(m.topic || '') + ' · Preferred: ' + escapeHtml((m.date || 'any day') + ', ' + (m.time || '')) + '</p>';
+    if (r.kind === 'appointment') {
+      h += '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml((m.typeName || '') + ' · ' + (m.date ? cnDateNice(m.date) + ', ' + cnT12(m.time) : 'any day') + ' · ' + (m.format === 'chat' ? 'Chat in the app' : 'Guidance office') + ' · About: ' + (m.topic || '')) + '</p>';
+      if (!t.confirmed) h += '<button data-in-confirm="' + t.id + '" class="' + CN_BTN + ' !py-1.5 text-xs">Confirm this time</button>';
+    }
     t.msgs.forEach(x => { const mine = normEmail(x.from_email) === me; if (!x.body) return; h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(x.body) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You' : (x.from_name || x.from_email)) + ' · ' + cnWhen(x.created_at) + '</p></div></div>'; });
     h += '<div class="flex gap-2"><input data-in-reply="' + t.id + '" data-in-which="' + which + '" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-in-sendreply="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN + ' shrink-0">Send</button></div>' +
       '<div class="flex gap-2">' + (r.status === 'done' ? '<button data-in-status="seen" data-in-id="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN2 + ' !py-1 text-xs">Reopen</button>' : '<button data-in-status="done" data-in-id="' + t.id + '" data-in-which="' + which + '" class="' + CN_BTN2 + ' !py-1 text-xs">Mark done</button>') + '</div></div>';
@@ -3970,11 +4302,24 @@ document.addEventListener('click', async ev => {
   const g = sel => ev.target.closest(sel);
   let el;
   if ((el = g('[data-cn-tab]'))) { cnShowTab(el.dataset.cnTab); window.scrollTo(0, 0); return; }
+  if ((el = g('[data-cn-go]'))) { cnGo(el.dataset.cnGo); return; }
+  if (g('[data-cn-calm]')) { cnStartCalm(); return; }
+  if (g('[data-cn-calm-close]')) { cnStopCalm(); return; }
+  if (g('[data-cn-calm-done]')) { cnStopCalm(); toast('Glad you feel calmer.', 'success'); return; }
+  if (g('[data-cn-calm-talk]')) { cnStopCalm(); cnShowTab('talk'); return; }
+  if ((el = g('[data-cn-page]'))) { cn.page = el.dataset.cnPage; cnRenderPanel('explore'); window.scrollTo(0, 0); return; }
+  if (g('[data-cn-pageback]')) { cn.page = null; cnRenderPanel('explore'); return; }
+  if ((el = g('[data-cn-practice]'))) { const p = CN_PRACTICES[+el.dataset.cnPractice]; cnAddLog('practice', p[0], p[2]); toast('Nice. ' + p[0] + ' counted.', 'success'); return; }
   if ((el = g('[data-cn-mood]'))) { cnAddLog('mood', 'Mood', 0, +el.dataset.cnMood); toast(+el.dataset.cnMood <= 2 ? 'Thanks for telling us. Try Breathe, or talk to someone.' : 'Logged. Thanks for checking in.', 'success'); return; }
-  if ((el = g('[data-cn-ans]'))) { const q = cn.quiz; q.ans[q.step] = +el.dataset.cnAns; if (q.step >= CN_QUIZ.length - 1) q.done = true; else q.step++; cnRenderPanel('checkin'); return; }
-  if (g('[data-cn-back]')) { cn.quiz.step = Math.max(0, cn.quiz.step - 1); cnRenderPanel('checkin'); return; }
-  if (g('[data-cn-quizreset]')) { const q = cn.quiz; if (q.done && !q.sent) cnAddLog('checkin', 'Completed a check-in', 0); cn.quiz = { step: 0, ans: [], done: false, sent: false, busy: false }; cnShowTab('home'); return; }
-  if (g('[data-cn-sendq]')) { cnQuizSend(); return; }
+  if (g('[data-cn-usersave]')) { cnSaveUsername(); return; }
+  if (g('[data-cn-userchange]')) { cn.editUser = true; cnRenderUser(); return; }
+  if ((el = g('[data-cn-sv]'))) { if (cnNeedUsername()) return; cnStartSurvey(el.dataset.cnSv); return; }
+  if ((el = g('[data-cn-ans]'))) { const s = cn.sv; s.ans[s.step] = +el.dataset.cnAns; if (s.step >= CN_SURVEYS[s.id].items.length - 1) cnFinishSurvey(); else { s.step++; cnRenderPanel('surveys'); } return; }
+  if (g('[data-cn-svback]')) { const s = cn.sv; if (s.step === 0) cn.sv = null; else s.step--; cnRenderPanel('surveys'); return; }
+  if (g('[data-cn-svreset]')) { cn.sv = null; cnShowTab('surveys'); return; }
+  if (g('[data-cn-svsend]')) { cnSurveySend(); return; }
+  if ((el = g('[data-cn-copyplan]'))) { const r = cnResults().find(x => x.id === el.dataset.cnCopyplan) || (cn.sv && cn.sv.rec); if (r) cnCopy(cnPlanText(r)); return; }
+  if ((el = g('[data-cn-dl]'))) { const r = cnResults().find(x => x.id === el.dataset.cnDl) || (cn.sv && cn.sv.rec); if (r) { cnDownloadRec(cnFillRec(Object.assign({}, r, { username: cnUsername() || r.username }))); } return; }
   if (g('[data-cn-breath]')) { cn.breath.on ? cnStopBreath() : cnStartBreath(); return; }
   if ((el = g('[data-cn-track]'))) { cnPlayTrack(+el.dataset.cnTrack); return; }
   if ((el = g('[data-cn-timer]'))) { cnSetTimer(+el.dataset.cnTimer); return; }
@@ -3985,17 +4330,22 @@ document.addEventListener('click', async ev => {
     if (!to) { toast('Choose who to send it to.', 'warning'); return; }
     if (!body) { toast('Write a message first.', 'warning'); return; }
     const t = DB.teachers.find(x => normEmail(x.email) === to), me = cnAcct() || {};
-    const r = await cnSend({ kind: 'message', to_email: to, to_name: t ? t.name : '', subject: 'Message from a student', body, meta: { cls: classLabel(me.classId) } });
+    const r = await cnSend({ kind: 'message', to_email: to, to_name: t ? t.name : '', subject: 'Message from a student', body, meta: { cls: classLabel(me.classId), username: cnUsername() } });
     if (r) { document.getElementById('cn-m-body').value = ''; toast('Message sent.', 'success'); cn.openThread = r.id; cnRenderConvos(); }
     return;
   }
-  if (g('[data-cn-sendappt]')) {
-    const cs = cnCounselor(); if (!cs) return;
-    const topic = document.getElementById('cn-a-topic').value, date = document.getElementById('cn-a-date').value, time = document.getElementById('cn-a-time').value, note = document.getElementById('cn-a-note').value.trim(), me = cnAcct() || {};
-    const r = await cnSend({ kind: 'appointment', to_email: cs.email, to_name: cs.name, subject: 'Appointment request', body: note, meta: { topic, date, time, cls: classLabel(me.classId), priority: 'normal' } });
-    if (r) { document.getElementById('cn-a-note').value = ''; toast('Request sent. The counselor will reply here.', 'success'); cn.openThread = r.id; cnRenderConvos(); }
-    return;
+  // booking
+  const bk = cn.book;
+  if ((el = g('[data-cn-bk-type]'))) { bk.type = el.dataset.cnBkType; bk.step = 2; cnRenderPanel('book'); return; }
+  if ((el = g('[data-cn-bk-format]'))) { bk.format = el.dataset.cnBkFormat; cnRenderPanel('book'); return; }
+  if ((el = g('[data-cn-bk-slot]'))) { bk.time = el.dataset.cnBkSlot; cnRenderPanel('book'); return; }
+  if (g('[data-cn-bk-next]')) {
+    if (bk.step === 3 && (!bk.date || !cnIsWeekday(bk.date) || !bk.time)) { toast('Pick a weekday and a time.', 'warning'); return; }
+    bk.step = Math.min(5, bk.step + 1); cnRenderPanel('book'); return;
   }
+  if (g('[data-cn-bk-back]')) { bk.step = Math.max(1, bk.step - 1); cnRenderPanel('book'); return; }
+  if (g('[data-cn-bk-confirm]')) { cnBookConfirm(); return; }
+  if (g('[data-cn-bk-again]')) { cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false }; cnRenderPanel('book'); return; }
   if ((el = g('[data-cn-open]'))) {
     cn.openThread = cn.openThread === el.dataset.cnOpen ? null : el.dataset.cnOpen;
     const me = cnMyEmail(); cn.items.filter(i => (i.thread_id || i.id) === cn.openThread && normEmail(i.to_email) === me && i.status === 'new').forEach(i => cnSetStatus(i.id, 'seen'));
@@ -4003,12 +4353,15 @@ document.addEventListener('click', async ev => {
   }
   if ((el = g('[data-cn-sendreply]'))) {
     const inp = document.querySelector('[data-cn-reply="' + el.dataset.cnSendreply + '"]');
-    if (inp && await cnReply(el.dataset.cnSendreply, inp.value, 'cn')) { inp.value = ''; cnRenderConvos(); }
+    if (inp && await cnReply(el.dataset.cnSendreply, inp.value)) { inp.value = ''; cnRenderConvos(); }
     return;
   }
   // inboxes
   if ((el = g('[data-in-filter]'))) { inbox[el.dataset.inWhich].filter = el.dataset.inFilter; renderInbox(el.dataset.inWhich); return; }
   if ((el = g('[data-in-refresh]'))) { await cnLoad(); renderInbox(el.dataset.inWhich); return; }
+  if (g('[data-in-dlall]')) { cnExportAll(); return; }
+  if ((el = g('[data-in-dl]'))) { const it = cn.items.find(x => x.id === el.dataset.inDl); if (it) cnDownloadRec(cnRecFromItem(it)); return; }
+  if ((el = g('[data-in-confirm]'))) { await cnConfirmAppt(el.dataset.inConfirm); renderInbox('guidance'); return; }
   if ((el = g('[data-in-open]'))) {
     const w = el.dataset.inWhich, st = inbox[w], id = el.dataset.inOpen;
     st.open = st.open === id ? null : id;
@@ -4017,34 +4370,45 @@ document.addEventListener('click', async ev => {
   }
   if ((el = g('[data-in-sendreply]'))) {
     const w = el.dataset.inWhich, inp = document.querySelector('[data-in-reply="' + el.dataset.inSendreply + '"]');
-    if (inp && inp.value.trim() && await cnReply(el.dataset.inSendreply, inp.value, 'in')) { toast('Reply sent.', 'success'); renderInbox(w); }
+    if (inp && inp.value.trim() && await cnReply(el.dataset.inSendreply, inp.value)) { toast('Reply sent.', 'success'); renderInbox(w); }
     return;
   }
   if ((el = g('[data-in-status]'))) { await cnSetStatus(el.dataset.inId, el.dataset.inStatus); renderInbox(el.dataset.inWhich); return; }
 });
+document.addEventListener('change', ev => {
+  const t = ev.target; if (!t || !t.matches) return;
+  if (t.matches('[data-cn-bk-date]')) { cn.book.date = t.value; cn.book.time = ''; cnRenderPanel('book'); }
+  if (t.matches('[data-cn-bk-topic]')) cn.book.topic = t.value;
+});
+document.addEventListener('input', ev => { const t = ev.target; if (t && t.matches && t.matches('[data-cn-bk-note]')) cn.book.note = t.value; });
 document.addEventListener('keydown', ev => {
   if (ev.key !== 'Enter') return;
   const t = ev.target; if (!t || !t.matches) return;
   if (t.matches('[data-cn-reply]')) { ev.preventDefault(); const b = document.querySelector('[data-cn-sendreply="' + t.dataset.cnReply + '"]'); if (b) b.click(); }
   if (t.matches('[data-in-reply]')) { ev.preventDefault(); const b = document.querySelector('[data-in-sendreply="' + t.dataset.inReply + '"]'); if (b) b.click(); }
+  if (t.id === 'cn-username') { ev.preventDefault(); cnSaveUsername(); }
 });
 setInterval(() => {
   const a = document.querySelector('.view-section.active'); if (!a || !DB.auth) return;
   const v = a.dataset.view;
-  if ((v === 'counseling' && cn.tab === 'talk') || v === 'guidance' || v === 'messages' || (v === 'counseling' && cn.tab === 'home')) cnLoad();
+  if ((v === 'counseling' && (cn.tab === 'talk' || cn.tab === 'home' || cn.tab === 'book')) || v === 'guidance' || v === 'messages') cnLoad();
 }, 30000);
 
-/* admin: choose the guidance counselor */
+/* admin: choose the guidance counselor and appointment times */
 function renderCounselorSetting() {
   const inp = document.getElementById('adm-counselor'); if (!inp) return;
   inp.value = (DB.settings && DB.settings.counselorEmail) || '';
+  const sl = document.getElementById('adm-slots'); if (sl) sl.value = cnSlots().join(', ');
   const e = normEmail(inp.value), t = e ? DB.teachers.find(x => normEmail(x.email) === e) : null;
   document.getElementById('adm-counselor-note').textContent = !e ? 'No counselor set. Students will not see the counselor option.' : (t ? 'Counselor: ' + t.name + '. They will see the Counseling menu.' : 'No teacher account has this email yet. The counselor must sign up as a teacher with this email.');
 }
 document.addEventListener('click', ev => {
   if (!ev.target.closest('#adm-counselor-save')) return;
   const e = normEmail(document.getElementById('adm-counselor').value);
-  DB.settings.counselorEmail = e; saveDB(); renderCounselorSetting(); applyRoleNav();
+  DB.settings.counselorEmail = e;
+  const sl = document.getElementById('adm-slots');
+  if (sl) { const list = sl.value.split(/[,\s]+/).map(x => x.trim()).filter(x => /^\d{1,2}:\d{2}$/.test(x)).map(x => x.padStart(5, '0')); DB.settings.counselSlots = list.length ? Array.from(new Set(list)).sort() : CN_DEFAULT_SLOTS.slice(); }
+  saveDB(); renderCounselorSetting(); applyRoleNav();
   toast(e ? 'Counselor saved.' : 'Counselor cleared.', 'success');
 });
 
