@@ -316,7 +316,7 @@
         <i data-lucide="message-circle" class="w-4 h-4"></i><span>Messages</span>
       </button>
       <button data-view="guidance" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-        <i data-lucide="heart-handshake" class="w-4 h-4"></i><span>Counseling</span>
+        <i data-lucide="heart-handshake" class="w-4 h-4"></i><span>Counseling inbox</span>
       </button>
       <button data-view="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="settings" class="w-4 h-4"></i><span>Settings</span>
@@ -511,10 +511,19 @@
         </div>
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Teacher wellness inbox (principal)</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Messages and survey results that teachers chose to send to the principal. Only you can read them here, after typing the admin password. Nobody else, including other teachers, can see them.</p>
+          <div class="flex gap-2"><input id="adm-wi-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-wi-load" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Open inbox</button></div>
+          <div id="adm-wi-list" class="mt-4"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
           <h2 class="text-sm font-semibold">Survey email receiver</h2>
           <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">The Gmail that receives students' survey results (Excel file). Change it here when the guidance office changes. It is saved safely on the server, not in the shared school data.</p>
           <label class="block text-xs font-medium mb-1" for="adm-recv">Receiver email</label>
           <input id="adm-recv" type="email" placeholder="guidance@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-p">Principal email (receives teachers' results sent to the principal)</label>
+          <input id="adm-recv-p" type="email" placeholder="principal@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
           <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-pw">Admin password (to confirm)</label>
           <div class="flex gap-2"><input id="adm-recv-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-recv-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
           <button id="adm-recv-load" class="text-xs text-indigo-600 dark:text-indigo-400 mt-2 underline">Show current receiver</button>
@@ -803,7 +812,7 @@
         <div id="msg-root"></div>
       </section>
 
-      <!-- COUNSELING INBOX (counselor only) -->
+      <!-- COUNSELING INBOX (counselor and principal) -->
       <section data-view="guidance" class="view-section p-4 md:p-6 max-w-3xl mx-auto">
         <div id="gd-root"></div>
       </section>
@@ -1002,7 +1011,7 @@
       <i data-lucide="message-circle" class="w-5 h-5"></i>Messages
     </button>
     <button data-view="guidance" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
-      <i data-lucide="heart-handshake" class="w-5 h-5"></i>Counseling
+      <i data-lucide="heart-handshake" class="w-5 h-5"></i>Inbox
     </button>
     <button data-view="settings" class="nav-btn-m flex flex-col items-center gap-0.5 px-2 py-1 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
       <i data-lucide="settings" class="w-5 h-5"></i>Settings
@@ -1517,7 +1526,7 @@ const PAGE_TITLES = {
   admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
   studentid: 'Profile', counseling: 'Counseling', messages: 'Messages', guidance: 'Counseling', classroom: 'Classroom', learning: 'LMS', attendance: 'Attendance', subjects: 'Subjects', teachers: 'Teachers', settings: 'Settings'
 };
-const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], counseling: ['student'], messages: ['teacher'], guidance: ['teacher'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
+const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], counseling: ['student', 'teacher'], messages: ['teacher'], guidance: ['teacher'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
 function defaultViewForRole(role) {
   if (role === 'admin') return 'admin';
   if (role === 'teacher') return 'dashboard';
@@ -1526,7 +1535,7 @@ function defaultViewForRole(role) {
 function goToView(view) {
   const role = DB.auth ? DB.auth.role : null;
   const allowedRoles = NAV_ROLES[view];
-  if (!role || !allowedRoles || !allowedRoles.includes(role) || (view === 'guidance' && !isCounselor())) view = defaultViewForRole(role);
+  if (!role || !allowedRoles || !allowedRoles.includes(role) || (view === 'guidance' && !isStaffInbox())) view = defaultViewForRole(role);
   document.querySelectorAll('.view-section').forEach(s => s.classList.toggle('active', s.dataset.view === view));
   document.querySelectorAll('.nav-btn').forEach(b => {
     const active = b.dataset.view === view;
@@ -3087,7 +3096,8 @@ function applyRoleNav() {
     const allowed = NAV_ROLES[b.dataset.view] || [];
     b.classList.toggle('hidden', !(role && allowed.includes(role)));
   });
-  document.querySelectorAll('[data-view="guidance"].nav-btn, [data-view="guidance"].nav-btn-m').forEach(b => { if (!isCounselor()) b.classList.add('hidden'); });
+  document.querySelectorAll('[data-view="guidance"].nav-btn, [data-view="guidance"].nav-btn-m').forEach(b => { if (!isStaffInbox()) b.classList.add('hidden'); });
+  document.querySelectorAll('[data-view="counseling"].nav-btn, [data-view="counseling"].nav-btn-m').forEach(b => { if (role === 'teacher' && isCounselor()) b.classList.add('hidden'); });
   document.querySelectorAll('[data-view="messages"].nav-btn, [data-view="messages"].nav-btn-m').forEach(b => { if (isCounselor()) b.classList.add('hidden'); });
   document.querySelectorAll('.nav-btn[data-view="settings"], .nav-btn-m[data-view="settings"]').forEach(b => {
     const label = role === 'teacher' ? 'My Profile' : 'Settings';
@@ -4336,7 +4346,7 @@ const LANG_FIL = {
 "Description (optional)": "Paglalarawan (opsyonal)",
 "Description": "Paglalarawan",
 "Delete": "Burahin",
-"Send to": "Ipadala sa",
+"Send to": "Ipadala kay",
 "All classes": "Lahat ng klase",
 "Due date": "Due date",
 "Resource link (optional, for example a Google Drive share link)": "Link ng resource (opsyonal, halimbawa ay share link ng Google Drive)",
@@ -4765,7 +4775,143 @@ const LANG_FIL = {
 "Needs guidance": "Kailangan ng gabay",
 "Studying or planning your future feels hard right now. A talk with the counselor can help you make a plan.": "Mahirap ang pag-aaral o pagplano ng hinaharap ngayon. Makakatulong ang pakikipag-usap sa counselor para makabuo ng plano.",
 "Student and Teacher Portal": "Portal ng Mag-aaral at Guro",
-"Use your school account. Your grades, lessons and attendance are in one place.": "Gamitin ang account ng school. Nasa iisang lugar ang grades, aralin at attendance mo."
+"Use your school account. Your grades, lessons and attendance are in one place.": "Gamitin ang account ng school. Nasa iisang lugar ang grades, aralin at attendance mo.",
+"Five quick questions about work, rest, support and mood.": "Limang mabilis na tanong tungkol sa trabaho, pahinga, suporta at mood.",
+"Attendly quick check-in for teachers": "Mabilis na check-in ng Attendly para sa mga guro",
+"In the past 2 weeks, how often has your workload (lessons, papers, reports, extra duties) felt like too much?": "Sa nakaraang 2 linggo, gaano kadalas naging sobra ang trabaho mo (aralin, papeles, ulat, karagdagang tungkulin)?",
+"Workload": "Dami ng trabaho",
+"Often, I fall behind": "Madalas, nahuhuli ako",
+"Do you have someone to talk to, and do you feel supported at school?": "May makakausap ka ba, at pakiramdam mo ba ay suportado ka sa paaralan?",
+"Support": "Suporta",
+"Rarely, I often feel alone": "Bihira, madalas akong mag-isa",
+"No, I feel alone or unsupported": "Hindi, pakiramdam ko ay nag-iisa o walang suporta",
+"How often have you felt sad, anxious, irritable or empty?": "Gaano kadalas kang nalungkot, nabalisa, nairita o nawalan ng laman?",
+"A lighter workload": "Mas magaan na trabaho",
+"Time with family or friends": "Oras kasama ang pamilya o mga kaibigan",
+"Your answers look steady. Keep your routines and rest, and try a breathing exercise whenever the day feels heavy.": "Mukhang matatag ang mga sagot mo. Ipagpatuloy ang mga nakasanayan mo at ang pahinga, at subukan ang breathing exercise kapag mabigat ang araw.",
+"Something is weighing on you. A short breathing break and a chat with a colleague, the counselor or the principal can help before it grows.": "May bumibigat sa iyo. Makakatulong ang maikling pahinga sa paghinga at pakikipag-usap sa kasamahan, sa counselor o sa principal bago ito lumala.",
+"You have been carrying a lot. Please consider talking to the counselor. You do not have to handle this alone.": "Marami kang pasan. Pakisubukang kausapin ang counselor. Hindi mo kailangang harapin ito nang mag-isa.",
+"Your answers show that things are very hard right now. Please reach out to the counselor, the principal or someone you trust soon. Support is available.": "Ipinapakita ng mga sagot mo na napakahirap ng sitwasyon ngayon. Pakilapitan agad ang counselor, ang principal o taong pinagkakatiwalaan mo. May suporta para sa iyo.",
+"Teacher burnout check": "Burnout check para sa guro",
+"Questions about workload, tiredness, feeling valued and rest.": "Mga tanong tungkol sa dami ng trabaho, pagod, pakiramdam na pinahahalagahan at pahinga.",
+"Attendly teacher burnout check (screening only)": "Burnout check ng Attendly para sa guro (screening lamang)",
+"I feel overwhelmed by lessons, paperwork, reports and deadlines.": "Nalulula ako sa mga aralin, papeles, ulat at deadline.",
+"It is hard to get started on work, even things I care about.": "Mahirap magsimula sa trabaho, kahit sa mga bagay na mahalaga sa akin.",
+"I get headaches, tight shoulders or an upset stomach when I think about work.": "Sumasakit ang ulo ko, tumitigas ang balikat o sumasama ang tiyan kapag iniisip ko ang trabaho.",
+"I feel that my effort is not noticed or does not matter.": "Pakiramdam ko ay hindi napapansin o walang halaga ang pagsisikap ko.",
+"I feel alone or unsupported at school.": "Pakiramdam ko ay nag-iisa o walang suporta sa paaralan.",
+"I find it hard to take a break or to switch off at home without feeling guilty.": "Mahirap para sa akin ang magpahinga o mag-switch off sa bahay nang hindi nakokonsensya.",
+"I have lost interest in teaching or in things I used to enjoy.": "Nawalan na ako ng interes sa pagtuturo o sa mga bagay na dati kong kinagigiliwan.",
+"I feel less patient or caring with my students than I used to be.": "Mas kaunti na ang pasensya o malasakit ko sa mga estudyante kaysa dati.",
+"I take work home most evenings and weekends.": "Iniuuwi ko ang trabaho halos tuwing gabi at weekend.",
+"What adds the most strain right now?": "Ano ang pinakanagdaragdag ng bigat ngayon?",
+"Biggest strain": "Pinakamabigat",
+"Too many tasks and reports": "Sobrang daming gawain at ulat",
+"Large classes or many preparations": "Malalaking klase o maraming ihahanda",
+"Student behavior": "Asal ng mga estudyante",
+"Lack of support or recognition": "Kulang sa suporta o pagkilala",
+"Problems at home or money worries": "Problema sa bahay o pera",
+"Health": "Kalusugan",
+"Fewer or clearer tasks": "Mas kaunti o mas malinaw na gawain",
+"More time to prepare": "Mas maraming oras para maghanda",
+"Rest or leave": "Pahinga o leave",
+"Support from the principal": "Suporta mula sa principal",
+"Is there anything you want the counselor or the principal to know?": "May gusto ka bang ipaalam sa counselor o sa principal?",
+"You are carrying a heavy load. Please talk to the counselor or the principal about your workload and getting support.": "Mabigat ang pasan mo. Pakikausap ang counselor o ang principal tungkol sa trabaho mo at humingi ng suporta.",
+"Workload and stress check": "Check sa trabaho at stress",
+"Attendly teacher workload check (screening only)": "Workload check ng Attendly para sa guro (screening lamang)",
+"I have more work than I can finish in my working hours.": "Mas marami ang trabaho ko kaysa matatapos ko sa oras ng trabaho.",
+"I worry about meeting deadlines or being judged on my work.": "Nag-aalala ako sa pagtupad ng deadline o sa paghusga sa trabaho ko.",
+"I feel pressure from the school, parents or officials to do more.": "Nakakaramdam ako ng presyon mula sa paaralan, magulang o opisyal na dagdagan pa ang ginagawa.",
+"I stay up late or work on weekends to finish tasks.": "Nagpupuyat ako o nagtatrabaho tuwing weekend para matapos ang gawain.",
+"I find it hard to relax, even on rest days.": "Mahirap para sa akin ang mag-relax, kahit sa araw ng pahinga.",
+"I do not have enough time for family, friends or myself.": "Wala akong sapat na oras para sa pamilya, kaibigan o sa sarili ko.",
+"Too many tasks and deadlines": "Sobrang daming gawain at deadline",
+"Large classes or many subjects": "Malalaking klase o maraming asignatura",
+"Student behavior or attendance": "Asal o pagpasok ng mga estudyante",
+"Pressure from parents or officials": "Presyon mula sa magulang o opisyal",
+"Support from colleagues": "Suporta mula sa mga kasamahan",
+"Time to rest": "Oras para magpahinga",
+"Anything you want the counselor or the principal to know?": "May gusto ka bang ipaalam sa counselor o sa principal?",
+"Your workload stress looks manageable right now. Keep your routines and your breaks.": "Mukhang kaya mo pa ang stress sa trabaho ngayon. Ipagpatuloy ang mga nakasanayan at pahinga mo.",
+"Work is putting real pressure on you. Pacing your tasks and talking to someone you trust can help.": "Nabibigyan ka ng tunay na presyon ng trabaho. Makakatulong ang pagpapabagal ng gawain at pakikipag-usap sa pinagkakatiwalaan mo.",
+"Workload stress is very heavy right now. Please talk to the counselor or the principal about your workload and support.": "Napakabigat ng stress sa trabaho ngayon. Pakikausap ang counselor o ang principal tungkol sa trabaho mo at suporta.",
+"Based on the PHQ-9 (screening only, not a diagnosis). Wording lightly adjusted for teachers": "Batay sa PHQ-9 (screening lamang, hindi diagnosis). Bahagyang inayos ang salita para sa mga guro",
+"Trouble concentrating on things, like planning lessons, checking papers or reading": "Hirap mag-concentrate, tulad ng sa paggawa ng lesson plan, pagche-check ng papel o pagbabasa",
+"Based on the GAD-7 (screening only, not a diagnosis). Wording lightly adjusted for teachers": "Batay sa GAD-7 (screening lamang, hindi diagnosis). Bahagyang inayos ang salita para sa mga guro",
+"Write your top 3 tasks for tomorrow and let the rest wait. If a deadline is not realistic, tell the principal early and ask what can move.": "Isulat ang 3 pangunahing gawain mo bukas at hayaang maghintay ang iba. Kung hindi makatotohanan ang deadline, sabihin agad sa principal at itanong kung ano ang puwedeng ilipat.",
+"Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders between classes.": "Pumili ng oras ng tulog at ilayo ang telepono 30 minuto bago. Uminom ng tubig, kumain nang regular, at i-stretch ang leeg at balikat sa pagitan ng mga klase.",
+"Message one person you trust today, like a colleague, the counselor or the principal. You do not have to carry this alone.": "Magmensahe ngayon sa isang taong pinagkakatiwalaan mo, tulad ng kasamahan, counselor o principal. Hindi mo kailangang pasanin ito nang mag-isa.",
+"Plan one guilt-free break each day: a walk, music or a hobby, with no screen and no checking papers.": "Magplano ng isang pahinga araw-araw na walang konsensya: paglalakad, musika o libangan, walang screen at walang pagche-check ng papel.",
+"Write down three things that went well this week, however small. Be as kind to yourself as you would be to a colleague.": "Isulat ang tatlong bagay na maayos ngayong linggo, gaano man kaliit. Maging mabait sa sarili tulad ng pagiging mabait mo sa kasamahan.",
+"When the day gets heavy, your body reacts first: a fast heartbeat, tight shoulders, shallow breathing. Grounding helps your body settle so your mind can follow.": "Kapag bumibigat ang araw, unang tumutugon ang katawan: mabilis na tibok ng puso, matigas na balikat, mababaw na paghinga. Tinutulungan ng grounding na kumalma ang katawan para sumunod ang isip.",
+"Shoulder drop and jaw release before class or a meeting": "Ibaba ang balikat at luwagan ang panga bago ang klase o pulong",
+"Calming music for the commute and for sleep": "Nakakakalmang musika sa biyahe at sa pagtulog",
+"Staff Circles": "Mga Staff Circle",
+"Peer support": "Suporta ng kapwa",
+"Small, guided groups of teachers who talk about how the work really feels. You hear that you are not the only one, and you practice simple coping skills together.": "Maliliit na grupo ng mga guro na ginagabayan, na nag-uusap kung ano talaga ang pakiramdam ng trabaho. Maririnig mong hindi ka nag-iisa, at magsasanay kayo ng simpleng paraan ng pagharap.",
+"Share what is weighing on you, or just listen": "Ibahagi ang bumibigat sa iyo, o making lang",
+"Practice calming and workload-pacing skills with colleagues": "Magsanay ng pagpapakalma at pagpapabagal ng trabaho kasama ang mga kasamahan",
+"Book a staff circle": "Mag-book ng staff circle",
+"Message the counselor or principal": "Magmensahe sa counselor o principal",
+"A steady place to go when things feel too big: counseling at school, someone to talk to about workload, and information about outside support when you need it.": "Isang tahimik na lugar kapag sobrang bigat na ng lahat: counseling sa paaralan, makakausap tungkol sa trabaho, at impormasyon tungkol sa tulong sa labas kapag kailangan.",
+"A private message to the counselor or the principal about workload or support": "Pribadong mensahe sa counselor o sa principal tungkol sa trabaho o suporta",
+"Colleague Circles": "Mga Colleague Circle",
+"Group sessions where teachers support each other, guided by the counselor. A good fit if work feels lonely or heavy.": "Mga sesyon ng grupo kung saan nagtutulungan ang mga guro, ginagabayan ng counselor. Bagay kung malungkot o mabigat ang trabaho.",
+"Learn simple skills for stress and workload pacing": "Matuto ng simpleng kasanayan sa stress at pagpapabagal ng trabaho",
+"Burnout Check": "Burnout Check",
+"A kind check on workload, tiredness and rest. You get a personal plan with small steps, and you can send the result to the counselor or the principal.": "Magaan na pagsusuri sa trabaho, pagod at pahinga. Makakakuha ka ng personal na plano na may maliliit na hakbang, at maipapadala mo ang resulta sa counselor o sa principal.",
+"Short questions, plus a few you can answer in your own words": "Maiikling tanong, at ilan na masasagot mo sa sarili mong salita",
+"An Excel file you can download or send to the person you choose": "Excel file na maaari mong i-download o ipadala sa piniling tao",
+"Book workload support": "Mag-book ng suporta sa trabaho",
+"Support and Referral": "Suporta at Referral",
+"Direct access to counseling support, a way to raise workload concerns with the principal, and information about community resources.": "Direktang access sa counseling, paraan para ipaalam sa principal ang alalahanin sa trabaho, at impormasyon tungkol sa mga mapagkukunan sa komunidad.",
+"Talk to the counselor or the principal in private": "Kausapin nang pribado ang counselor o ang principal",
+"Raise a workload concern that is affecting you": "Ipaalam ang alalahanin sa trabahong nakakaapekto sa iyo",
+"Work stress or workload": "Stress sa trabaho o dami ng gawain",
+"Burnout or tiredness": "Burnout o pagod",
+"Family or personal": "Pamilya o personal",
+"One-on-one time with the counselor about stress, family, work or anything on your mind.": "Isa-sa-isang oras kasama ang counselor tungkol sa stress, pamilya, trabaho o anumang nasa isip mo.",
+"Burnout and workload support": "Suporta sa burnout at dami ng trabaho",
+"Talk through your workload, pacing and rest so work feels more manageable.": "Pag-usapan ang trabaho, bilis at pahinga para mas kayanin ang trabaho.",
+"Staff support circle": "Staff support circle",
+"A small group session with other teachers, guided by the counselor.": "Maliit na sesyon ng grupo kasama ang ibang guro, ginagabayan ng counselor.",
+"Referral and information": "Referral at impormasyon",
+"Information about outside services and help with concerns that affect your wellbeing.": "Impormasyon tungkol sa mga serbisyo sa labas at tulong sa mga alalahaning nakakaapekto sa kapakanan mo.",
+"Teacher wellness and counseling at San Juan Baño High School. A calm, private space to rest, check in with yourself, and reach the counselor or the principal. Only the person you choose can read what you send.": "Wellness at counseling para sa mga guro ng San Juan Baño High School. Tahimik at pribadong lugar para magpahinga, kumustahin ang sarili, at maabot ang counselor o ang principal. Ang piniling tao lang ang makakabasa ng ipapadala mo.",
+"Rest and recharge": "Magpahinga at magpalakas",
+"Message the counselor or the principal": "Magmensahe sa counselor o sa principal",
+"Four ways we support teachers": "Apat na paraan ng pagsuporta sa mga guro",
+"Only the counselor or the principal, whichever you choose, can read what you send from here. Other teachers and students cannot.": "Ang counselor o ang principal lang, alinman ang piliin mo, ang makakabasa ng ipapadala mo rito. Hindi ito mababasa ng ibang guro at estudyante.",
+"Only you and the person you choose can read it. Other teachers and students cannot. If your safety is at risk, they may need to involve others to keep you safe.": "Ikaw at ang piniling tao lang ang makakabasa nito. Hindi ito mababasa ng ibang guro at estudyante. Kung nanganganib ang kaligtasan mo, maaaring kailanganin nilang isali ang iba para mapanatili kang ligtas.",
+"Your school has not set up a counselor or principal in Attendly yet. Ask the admin to add them.": "Wala pang itinatalagang counselor o principal sa Attendly ang paaralan mo. Hilingin sa admin na idagdag sila.",
+"Choose the counselor or the principal.": "Piliin ang counselor o ang principal.",
+"Share this with the counselor or the principal?": "Ibahagi ito sa counselor o sa principal?",
+"Your answers and name go only to the person you pick below, and an Excel file is emailed to them. Nobody else can read it. ": "Ang mga sagot at pangalan mo ay mapupunta lamang sa taong pipiliin mo sa ibaba, at ipapadala sa kanila ang Excel file sa email. Walang ibang makakabasa. ",
+"Anything you want them to know? (optional)": "May gusto ka bang ipaalam sa kanila? (hindi kailangan)",
+"I agree to share these answers and my name with the person I picked.": "Pumapayag akong ibahagi ang mga sagot na ito at ang pangalan ko sa taong pinili ko.",
+"Your school has not set up a counselor or principal in Attendly yet, or you are the only one set. You can still download your result.": "Wala pang itinatalagang counselor o principal sa Attendly ang paaralan mo, o ikaw lang ang naitalaga. Maida-download mo pa rin ang resulta mo.",
+"You can still send a message under Talk.": "Maaari ka pa ring magpadala ng mensahe sa Talk.",
+"Inbox": "Inbox",
+"This page is only for the school counselor and the principal.": "Ang pahinang ito ay para lamang sa counselor ng paaralan at sa principal.",
+"Principal (for teacher wellness)": "Principal (para sa wellness ng guro)",
+"Enter the email of the principal's teacher account. Teachers can then choose to send their wellness messages and survey results to the counselor or to the principal. Only the one they pick can read them. The principal sees them under Counseling inbox.": "Ilagay ang email ng teacher account ng principal. Maaari nang piliin ng mga guro kung ipapadala ang kanilang wellness messages at resulta ng survey sa counselor o sa principal. Ang pinili lang nila ang makakabasa. Makikita ito ng principal sa Inbox ng Counseling.",
+"Principal email (receives teachers' results sent to the principal)": "Email ng principal (tumatanggap ng resulta ng mga guro na ipinadala sa principal)",
+"No principal set. Teachers can only send wellness items to the counselor.": "Walang principal na nakatakda. Sa counselor lang makakapagpadala ng wellness ang mga guro.",
+"No teacher account has this email yet. The principal must sign up as a teacher with this email.": "Wala pang teacher account na may ganitong email. Dapat mag-sign up ang principal bilang guro gamit ang email na ito.",
+"Enter a valid principal email.": "Maglagay ng wastong email ng principal.",
+"Principal saved.": "Nai-save ang principal.",
+"Principal cleared.": "Nabura ang principal.",
+"Message from a teacher": "Mensahe mula sa guro",
+"Teacher wellness inbox (principal)": "Wellness inbox ng mga guro (principal)",
+"Messages and survey results that teachers chose to send to the principal. Only you can read them here, after typing the admin password. Nobody else, including other teachers, can see them.": "Mga mensahe at resulta ng survey na piniling ipadala ng mga guro sa principal. Ikaw lang ang makakabasa rito, pagkatapos mong ilagay ang admin password. Walang ibang makakakita, kasama ang ibang guro.",
+"Open inbox": "Buksan ang inbox",
+"Nothing here yet.": "Wala pa rito.",
+"Could not send the reply.": "Hindi maipadala ang sagot.",
+"Could not update.": "Hindi ma-update.",
+"Mark as done": "Markahang tapos na",
+"You (principal)": "Ikaw (principal)",
+"Could not reach the server. Redeploy the send-survey function and run the latest counseling_setup.sql.": "Hindi maabot ang server. I-deploy muli ang send-survey function at patakbuhin ang pinakabagong counseling_setup.sql."
 };
 const LANG_PATS = [
 [
@@ -5171,6 +5317,45 @@ const CN_SURVEYS = {
     levels: [{ max: 4, name: 'Clear and steady', cls: 'emerald', tip: 'Your study habits and plans look steady. Keep going.' }, { max: 9, name: 'Some uncertainty', cls: 'amber', tip: 'You are unsure about a few things. The counselor can help you plan your study habits and your next steps.' },
       { max: 15, name: 'Needs guidance', cls: 'orange', tip: 'Studying or planning your future feels hard right now. A talk with the counselor can help you make a plan.' }] }
 };
+/* ---- teacher versions of the surveys (aud: 't'), shown only to teachers ---- */
+function cnCloneT(base, id, over) { const c = JSON.parse(JSON.stringify(CN_SURVEYS[base])); c.id = id; c.aud = 't'; return Object.assign(c, over || {}); }
+CN_SURVEYS.tquick = { id: 'tquick', aud: 't', kind: 'checkin', name: 'Quick check-in', short: 'Check-in', minutes: 2, blurb: 'Five quick questions about work, rest, support and mood.', source: 'Attendly quick check-in for teachers',
+  items: [
+    { q: 'In the past 2 weeks, how often has your workload (lessons, papers, reports, extra duties) felt like too much?', title: 'Workload', opts: ['Rarely, I can manage', 'Sometimes, but I catch up', 'Often, I fall behind', 'Almost always, it feels impossible'], area: 'load' },
+    { q: 'How have your sleep, appetite and energy been?', title: 'Body and sleep', opts: ['Pretty normal', 'A bit off some days', 'Often tired, headaches, trouble sleeping', 'Exhausted most days, hard to get up'], area: 'body' },
+    { q: 'Do you have someone to talk to, and do you feel supported at school?', title: 'Support', opts: ['Yes, I feel supported', 'Somewhat, a few people', 'Rarely, I often feel alone', 'No, I feel alone or unsupported'], area: 'belong' },
+    { q: 'How often have you felt sad, anxious, irritable or empty?', title: 'Mood', opts: ['Rarely', 'Some days', 'Most days', 'Nearly every day'], area: 'mood' },
+    { q: 'Have you had thoughts of hurting yourself, or that life is not worth living?', title: 'Safety', opts: ['No, never', 'Once or twice, they passed', 'Sometimes', 'Often, or right now'], area: 'safety' },
+    cnChoice('What would help you most right now?', ['Someone to talk to', 'A lighter workload', 'More rest', 'Time with family or friends', 'Quiet time alone'], 'Help wanted'), cnOpen('Anything else you want to share?', 'Anything else')],
+  scoreIdx: [0, 1, 2, 3, 4], safetyIdx: 4,
+  levels: [{ max: 3, name: 'Doing okay', cls: 'emerald', tip: 'Your answers look steady. Keep your routines and rest, and try a breathing exercise whenever the day feels heavy.' }, { max: 6, name: 'Some strain', cls: 'amber', tip: 'Something is weighing on you. A short breathing break and a chat with a colleague, the counselor or the principal can help before it grows.' }, { max: 9, name: 'High strain', cls: 'orange', high: true, tip: 'You have been carrying a lot. Please consider talking to the counselor. You do not have to handle this alone.' }, { max: 12, name: 'Needs support', cls: 'rose', high: true, tip: 'Your answers show that things are very hard right now. Please reach out to the counselor, the principal or someone you trust soon. Support is available.' }] };
+CN_SURVEYS.tburn = { id: 'tburn', aud: 't', kind: 'survey', name: 'Teacher burnout check', short: 'Burnout', minutes: 4, blurb: 'Questions about workload, tiredness, feeling valued and rest.', source: 'Attendly teacher burnout check (screening only)',
+  lead: 'Thinking about the past 2 weeks, how true is each statement?', scale: CN_SCALE_B, scoreIdx: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], safetyIdx: null,
+  items: [['I feel overwhelmed by lessons, paperwork, reports and deadlines.', 'load'], ['I feel tired or drained even after I rest.', 'body'], ['It is hard to get started on work, even things I care about.', 'load'], ['I get headaches, tight shoulders or an upset stomach when I think about work.', 'body'], ['I feel that my effort is not noticed or does not matter.', 'belong'],
+    ['I feel alone or unsupported at school.', 'belong'], ['I find it hard to take a break or to switch off at home without feeling guilty.', 'rest'], ['I have lost interest in teaching or in things I used to enjoy.', 'mood'], ['I feel less patient or caring with my students than I used to be.', 'mood'], ['I take work home most evenings and weekends.', 'rest']].map(a => ({ q: a[0], area: a[1] }))
+    .concat([cnChoice('What adds the most strain right now?', ['Too many tasks and reports', 'Large classes or many preparations', 'Student behavior', 'Lack of support or recognition', 'Problems at home or money worries', 'Health'], 'Biggest strain'), cnChoice('What would help you most?', ['Fewer or clearer tasks', 'More time to prepare', 'Someone to talk to', 'Rest or leave', 'Support from the principal'], 'Help wanted'), cnOpen('Is there anything you want the counselor or the principal to know?', 'Anything else')]),
+  levels: [{ max: 9, name: 'Low strain', cls: 'emerald', tip: 'Your workload and energy look manageable. Keep your routines and rest.' }, { max: 19, name: 'Moderate burnout risk', cls: 'orange', tip: 'You are carrying noticeable strain. Pacing your work and resting on purpose can help before it builds.' },
+    { max: 30, name: 'High burnout risk', cls: 'rose', high: true, tip: 'You are carrying a heavy load. Please talk to the counselor or the principal about your workload and getting support.' }] };
+CN_SURVEYS.tstress = { id: 'tstress', aud: 't', kind: 'survey', name: 'Workload and stress check', short: 'Stress', minutes: 3, blurb: 'Questions about workload, pressure and what would help you most.', source: 'Attendly teacher workload check (screening only)',
+  lead: 'Thinking about the past 2 weeks, how true is each statement?', scale: CN_SCALE_B, scoreIdx: [0, 1, 2, 3, 4, 5], safetyIdx: null,
+  items: [['I have more work than I can finish in my working hours.', 'load'], ['I worry about meeting deadlines or being judged on my work.', 'worry'], ['I feel pressure from the school, parents or officials to do more.', 'load'], ['I stay up late or work on weekends to finish tasks.', 'body'], ['I find it hard to relax, even on rest days.', 'rest'], ['I do not have enough time for family, friends or myself.', 'rest']].map(a => ({ q: a[0], area: a[1] }))
+    .concat([cnChoice('What stresses you the most right now?', ['Too many tasks and deadlines', 'Large classes or many subjects', 'Student behavior or attendance', 'Pressure from parents or officials', 'Problems at home', 'Money or personal needs'], 'Biggest stress'), cnChoice('What would help you most?', ['Fewer or clearer tasks', 'More time to prepare', 'Support from colleagues', 'Someone to talk to', 'Time to rest'], 'Help wanted'), cnOpen('Anything you want the counselor or the principal to know?', 'Anything else')]),
+  levels: [{ max: 5, name: 'Low stress', cls: 'emerald', tip: 'Your workload stress looks manageable right now. Keep your routines and your breaks.' }, { max: 11, name: 'Moderate stress', cls: 'amber', tip: 'Work is putting real pressure on you. Pacing your tasks and talking to someone you trust can help.' },
+    { max: 18, name: 'High stress', cls: 'rose', high: true, tip: 'Workload stress is very heavy right now. Please talk to the counselor or the principal about your workload and support.' }] };
+CN_SURVEYS.tphq = cnCloneT('phq', 'tphq', { source: 'Based on the PHQ-9 (screening only, not a diagnosis). Wording lightly adjusted for teachers' });
+CN_SURVEYS.tphq.items[6].q = 'Trouble concentrating on things, like planning lessons, checking papers or reading';
+CN_SURVEYS.tgad = cnCloneT('gad', 'tgad', { source: 'Based on the GAD-7 (screening only, not a diagnosis). Wording lightly adjusted for teachers' });
+const CN_STEPS_T = {
+  load: 'Write your top 3 tasks for tomorrow and let the rest wait. If a deadline is not realistic, tell the principal early and ask what can move.',
+  body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders between classes.',
+  belong: 'Message one person you trust today, like a colleague, the counselor or the principal. You do not have to carry this alone.',
+  rest: 'Plan one guilt-free break each day: a walk, music or a hobby, with no screen and no checking papers.',
+  mood: 'Do one small thing you usually enjoy for 10 minutes today, even if you do not feel like it.',
+  self: 'Write down three things that went well this week, however small. Be as kind to yourself as you would be to a colleague.',
+  worry: 'When worry spikes, try 5-4-3-2-1 grounding: name 5 things you see, 4 you feel, 3 you hear, 2 you smell and 1 you taste. Then pick one small action for the worry.'
+};
+function cnAud() { return cnIsT() ? 't' : 's'; }
+function cnSvList() { return Object.keys(CN_SURVEYS).filter(k => (CN_SURVEYS[k].aud || 's') === cnAud()); }
 const CN_STEPS = {
   load: 'Break schoolwork into 25-minute blocks with 5-minute breaks, and write your top 3 tasks for tomorrow.',
   body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders.',
@@ -5198,6 +5383,15 @@ const CN_APPT_TYPES = [
   { id: 'group', name: 'Peer circle', minutes: 45, icon: 'users', desc: 'A small group session with classmates, guided by the counselor.' },
   { id: 'advocacy', name: 'Advocacy and referral', minutes: 30, icon: 'hand-helping', desc: 'Help with school concerns or accommodations, and information about outside services.' }
 ];
+const CN_TOPICS_T = ['Work stress or workload', 'Burnout or tiredness', 'Family or personal', 'Feeling sad or anxious', 'Something else'];
+const CN_APPT_TYPES_T = [
+  { id: 'counsel', name: 'Individual counseling', minutes: 30, icon: 'user', desc: 'One-on-one time with the counselor about stress, family, work or anything on your mind.' },
+  { id: 'burnout', name: 'Burnout and workload support', minutes: 30, icon: 'battery-low', desc: 'Talk through your workload, pacing and rest so work feels more manageable.' },
+  { id: 'group', name: 'Staff support circle', minutes: 45, icon: 'users', desc: 'A small group session with other teachers, guided by the counselor.' },
+  { id: 'advocacy', name: 'Referral and information', minutes: 30, icon: 'hand-helping', desc: 'Information about outside services and help with concerns that affect your wellbeing.' }
+];
+function cnTopics() { return cnIsT() ? CN_TOPICS_T : CN_TOPICS; }
+function cnApptTypes() { return cnIsT() ? CN_APPT_TYPES_T : CN_APPT_TYPES; }
 const CN_FORMATS = [['person', 'In person at the guidance office', 'map-pin'], ['chat', 'Chat in this app', 'message-circle']];
 const CN_DEFAULT_SLOTS = ['08:30', '09:30', '10:30', '13:30', '14:30', '15:30'];
 const CN_PRACTICES = [['Three good things', 'Think of or write 3 things that went okay today.', 1], ['Body scan', 'Close your eyes and relax slowly from your forehead down to your toes.', 2], ['20-20-20 screen break', 'Look at something 20 feet away for 20 seconds.', 1], ['Stretch break', 'Roll your shoulders and stretch your neck and wrists.', 1], ['Water and breathe', 'Drink some water and take 5 slow breaths.', 1]];
@@ -5222,8 +5416,30 @@ const CN_PAGES = {
   advocacy: { group: 'Offering', title: 'Community Advocacy', tag: 'Support and referrals', icon: 'hand-helping', grad: 'from-teal-100 to-emerald-100 dark:from-teal-950/60 dark:to-emerald-950/60',
     intro: 'Direct access to counseling support, help with school concerns, and information about community resources.', points: ['Talk to the counselor, your adviser or any teacher', 'Ask for help with school accommodations', 'Find hotlines and outside services'], actions: [['Message someone', 'tab:talk'], ['Book an appointment', 'tab:book']] }
 };
+const CN_PAGES_T = {
+  grounding: { group: 'Pillar', title: 'Coastal Grounding', tag: 'Somatic regulation', icon: 'waves', grad: CN_PAGES.grounding.grad,
+    intro: 'When the day gets heavy, your body reacts first: a fast heartbeat, tight shoulders, shallow breathing. Grounding helps your body settle so your mind can follow.',
+    points: ['4-7-8 breathing in the Breathe tab', '5-4-3-2-1 senses grounding in Quick calm', 'Shoulder drop and jaw release before class or a meeting', 'Calming music for the commute and for sleep'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Calming music', 'tab:music']] },
+  circles: { group: 'Pillar', title: 'Staff Circles', tag: 'Peer support', icon: 'users', grad: CN_PAGES.circles.grad,
+    intro: 'Small, guided groups of teachers who talk about how the work really feels. You hear that you are not the only one, and you practice simple coping skills together.',
+    points: ['Guided by the school counselor', 'Share what is weighing on you, or just listen', 'Practice calming and workload-pacing skills with colleagues'], actions: [['Book a staff circle', 'tab:book'], ['Message the counselor or principal', 'tab:talk']] },
+  anchor: { group: 'Pillar', title: 'Community Anchor', tag: 'Accessible care', icon: 'anchor', grad: CN_PAGES.anchor.grad,
+    intro: 'A steady place to go when things feel too big: counseling at school, someone to talk to about workload, and information about outside support when you need it.',
+    points: ['One-on-one counseling with the school counselor', 'A private message to the counselor or the principal about workload or support', 'Information about outside services and hotlines'], actions: [['Book an appointment', 'tab:book'], ['Send a message', 'tab:talk']] },
+  journal: { group: 'Pillar', title: 'Rest Journal', tag: 'Micro-practices', icon: 'notebook-pen', grad: CN_PAGES.journal.grad,
+    intro: 'One-minute practices you can do between classes. Tap one when you finish it and it counts toward your progress.', points: [], practices: true, actions: [['See my progress', 'tab:progress']] },
+  circles2: { group: 'Offering', title: 'Colleague Circles', tag: 'Group support', icon: 'users', grad: CN_PAGES.circles2.grad,
+    intro: 'Group sessions where teachers support each other, guided by the counselor. A good fit if work feels lonely or heavy.', points: ['Small groups, guided by the counselor', 'Share and listen at your own pace', 'Learn simple skills for stress and workload pacing'], actions: [['Book a staff circle', 'tab:book']] },
+  burnout: { group: 'Offering', title: 'Burnout Check', tag: 'Self-check and pacing', icon: 'battery-low', grad: CN_PAGES.burnout.grad,
+    intro: 'A kind check on workload, tiredness and rest. You get a personal plan with small steps, and you can send the result to the counselor or the principal.', points: ['Short questions, plus a few you can answer in your own words', 'A plan matched to your answers, which you can copy', 'An Excel file you can download or send to the person you choose'], actions: [['Take the burnout check', 'survey:tburn'], ['Book workload support', 'tab:book']] },
+  somatic: { group: 'Offering', title: 'Somatic Regulation', tag: 'Breath and body calm', icon: 'wind', grad: CN_PAGES.somatic.grad,
+    intro: 'Guided breathing and grounding that tell your body it is safe, so your heart rate slows and your thoughts settle.', points: ['4-7-8 breathing', 'A 60-second Quick calm', 'Calming music with a sleep timer'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Calming music', 'tab:music']] },
+  advocacy: { group: 'Offering', title: 'Support and Referral', tag: 'Support and referrals', icon: 'hand-helping', grad: CN_PAGES.advocacy.grad,
+    intro: 'Direct access to counseling support, a way to raise workload concerns with the principal, and information about community resources.', points: ['Talk to the counselor or the principal in private', 'Raise a workload concern that is affecting you', 'Find hotlines and outside services'], actions: [['Send a message', 'tab:talk'], ['Book an appointment', 'tab:book']] }
+};
+function cnPages() { return cnIsT() ? CN_PAGES_T : CN_PAGES; }
 const cn = { tab: 'home', built: false, uid: null, items: [], loaded: false, loading: false, err: '', sv: null, page: null, breath: { on: false, phase: 0, left: 0, cycles: 0, timer: null }, music: { id: null, timer: null }, openThread: null,
-  book: { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false }, calm: { timer: null, left: 0 }, results: [] };
+  book: { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false }, calm: { timer: null, left: 0 }, results: [] };
 const inbox = { guidance: { filter: 'new', open: null, busy: false }, messages: { filter: 'new', open: null, busy: false } };
 const CN_CARD = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5';
 const CN_INP = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
@@ -5242,6 +5458,19 @@ function isCounselor() {
   const a = DB.auth && DB.auth.role === 'teacher' ? cnAcct() : null;
   return !!(a && DB.settings && DB.settings.counselorEmail && normEmail(a.email) === normEmail(DB.settings.counselorEmail));
 }
+function cnIsT() { return !!(typeof DB !== 'undefined' && DB && DB.auth && DB.auth.role === 'teacher'); }
+const CN_PRINCIPAL_BOX = 'principal@attendly.invalid';
+function isPrincipal() { return false; }
+function isStaffInbox() { return isCounselor(); }
+function cnPrincipal() { return { name: 'Principal', email: CN_PRINCIPAL_BOX }; }
+// Where a teacher can send things: only the counselor or the principal (the principal reads it in Admin).
+function cnTRecipients() {
+  const me = cnMyEmail(), out = [], cs = cnCounselor(), pr = cnPrincipal();
+  if (cs && normEmail(cs.email) !== me) out.push({ key: 'counselor', label: 'Guidance counselor', p: cs });
+  if (pr && normEmail(pr.email) !== me) out.push({ key: 'principal', label: 'Principal', p: pr });
+  return out;
+}
+function cnTSelect(id, cur) { return '<select id="' + id + '" class="' + CN_INP + '">' + cnTRecipients().map(x => '<option value="' + x.key + '"' + (cur === x.key ? ' selected' : '') + '>' + escapeHtml(x.label + ': ' + (x.p.name || x.p.email)) + '</option>').join('') + '</select>'; }
 function cnCounselor() { const e = normEmail(DB.settings && DB.settings.counselorEmail); return e ? (DB.teachers.find(t => normEmail(t.email) === e) || { name: 'Guidance counselor', email: e }) : null; }
 function cnWhen(iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
 function cnFirst() { const a = cnAcct(); return a && a.name ? a.name.split(/\s+/)[0] : 'there'; }
@@ -5261,7 +5490,7 @@ function cnCopyOld(text, done) {
 }
 
 /* ---- username: a label for results, no password. The student is already signed in to Attendly. ---- */
-function cnUsername() { const a = cnAcct(); return (a && a.counselUsername) || ''; }
+function cnUsername() { if (cnIsT()) return ''; const a = cnAcct(); return (a && a.counselUsername) || ''; }
 function cnSuggestUsername() { const a = cnAcct() || {}; const f = String(a.name || 'student').split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'student'; const d = String(a.studentId || '').replace(/\D/g, '').slice(-3); return f + (d ? '.' + d : ''); }
 function cnUsernameOk(u) {
   if (!/^[a-z0-9._]{3,20}$/.test(u)) return 'Use 3 to 20 letters, numbers, dots or underscores.';
@@ -5270,6 +5499,7 @@ function cnUsernameOk(u) {
 }
 function cnRenderUser() {
   const el = document.getElementById('cn-user'); if (!el) return;
+  if (cnIsT()) { el.innerHTML = '<p class="text-[11px] text-slate-500 dark:text-slate-400">Only the counselor or the principal, whichever you choose, can read what you send from here. Other teachers and students cannot.</p>'; return; }
   const u = cnUsername();
   el.innerHTML = u && !cn.editUser ? '<p class="text-[11px] text-slate-500 dark:text-slate-400">Your username: <span class="font-semibold text-slate-700 dark:text-slate-200">@' + escapeHtml(u) + '</span> · it labels your results · <button data-cn-userchange class="underline">change</button></p>' :
     '<div class="rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50/60 dark:bg-teal-950/20 p-4"><p class="text-sm font-semibold">Pick a username</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-2">It labels your survey results so they stay organized. You are already signed in, so there is no extra password. You can choose a nickname instead of your real name.</p>' +
@@ -5280,7 +5510,7 @@ function cnSaveUsername() {
   if (err) { document.getElementById('cn-user-err').textContent = err; return; }
   const a = cnAcct(); if (!a) return; a.counselUsername = u; cn.editUser = false; saveDB(); cnRenderUser(); toast('Username saved.', 'success');
 }
-function cnNeedUsername() { if (cnUsername()) return false; toast('Pick a username first.', 'warning'); const i = document.getElementById('cn-username'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } return true; }
+function cnNeedUsername() { if (cnIsT() || cnUsername()) return false; toast('Pick a username first.', 'warning'); const i = document.getElementById('cn-username'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } return true; }
 
 /* ---- local wellness log + saved results (stay on this device) ---- */
 function cnKey() { return 'attendly_well_' + (DB.auth ? DB.auth.userId : 'x'); }
@@ -5372,10 +5602,11 @@ function cnSurveyResult(sv, ans) {
 function cnPlanFor(sv, ans, res) {
   const sums = {}, cnts = {};
   sv.items.forEach((it, i) => { if (!it.area || it.area === 'safety') return; sums[it.area] = (sums[it.area] || 0) + (ans[i] || 0); cnts[it.area] = (cnts[it.area] || 0) + 1; });
-  const areas = Object.keys(sums).filter(a => CN_STEPS[a]).sort((a, b) => (sums[b] / cnts[b]) - (sums[a] / cnts[a]));
+  const STEPS = sv.aud === 't' ? CN_STEPS_T : CN_STEPS;
+  const areas = Object.keys(sums).filter(a => STEPS[a]).sort((a, b) => (sums[b] / cnts[b]) - (sums[a] / cnts[a]));
   const steps = [];
   if (res.li === 0) { steps.push('Keep the routines that are working for you: sleep, meals, breaks and time with people you like.'); steps.push('Check in again in a couple of weeks, or any time things feel heavier.'); }
-  else { areas.filter(a => sums[a] > 0).slice(0, 3).forEach(a => steps.push(CN_STEPS[a])); steps.push('Try the Breathe tab for 2 minutes of 4-7-8 breathing, once in the morning and once at night.'); }
+  else { areas.filter(a => sums[a] > 0).slice(0, 3).forEach(a => steps.push(STEPS[a])); steps.push('Try the Breathe tab for 2 minutes of 4-7-8 breathing, once in the morning and once at night.'); }
   if (res.level.high) steps.push('Talk to the counselor or an adult you trust soon. You can book a time in the Book tab or send a message in the Talk tab.');
   if (res.safety >= 1) steps.push('Please tell a trusted adult today. You can also call the NCMH crisis line at 1553 at any time.');
   return steps;
@@ -5387,7 +5618,7 @@ function cnPlanText(rec) {
 function cnMakeRecord(sv, ans0, txt0) {
   const ans = sv.items.map((x, i) => ans0[i] == null ? -1 : ans0[i]), txt = sv.items.map((x, i) => String((txt0 || [])[i] || '').trim().slice(0, 500));
   const res = cnSurveyResult(sv, ans), plan = cnPlanFor(sv, ans, res);
-  return { id: uid('wr'), survey: sv.id, t: Date.now(), ans, txt, total: res.total, max: res.max, level: res.level.name, cls: res.level.cls, safety: res.safety, priority: res.priority, plan, username: cnUsername(), sent: false };
+  return { id: uid('wr'), survey: sv.id, t: Date.now(), ans, txt, total: res.total, max: res.max, level: res.level.name, cls: res.level.cls, safety: res.safety, priority: res.priority, plan, username: cnUsername(), role: cnIsT() ? 'teacher' : 'student', sent: false };
 }
 function cnItemText(sv, i, a) { const it = sv.items[i]; const opts = it.opts || sv.scale; return opts[a] != null ? opts[a] : ''; }
 // What the student answered for question i: the chosen option, anything they wrote, and the score (rating questions only).
@@ -5403,8 +5634,8 @@ function cnAnsCell(sv, r, i) {
 function cnWorkbookFrom(r) {
   const sv = CN_SURVEYS[r.survey] || CN_SURVEYS.quick;
   const when = new Date(r.t), pr = { normal: 'Normal', high: 'Priority', urgent: 'Urgent' }[r.priority] || 'Normal';
-  const sum = [['Field', 'Value'], ['Student', r.name || ''], ['Username', r.username || ''], ['ID / LRN', r.sid || ''], ['Class', r.cls || ''], ['School year', r.sy || ''], ['Term', r.term || ''], ['Survey', sv.name], ['Date', when.toLocaleDateString()], ['Time', when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })],
-    ['Score', r.total], ['Out of', r.max], ['Result', r.level], ['Priority', pr], ['Safety question answer', sv.safetyIdx == null ? 'Not asked' : cnItemText(sv, sv.safetyIdx, r.safety)], ['Note from student', r.note || ''], ['Source', sv.source], ['Reminder', 'This is a screening result, not a diagnosis.']];
+  const sum = [['Field', 'Value'], [r.role === 'teacher' ? 'Teacher' : 'Student', r.name || ''], ['Username', r.username || ''], ['ID / LRN', r.sid || ''], ['Class', r.cls || ''], ['School year', r.sy || ''], ['Term', r.term || ''], ['Survey', sv.name], ['Date', when.toLocaleDateString()], ['Time', when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })],
+    ['Score', r.total], ['Out of', r.max], ['Result', r.level], ['Priority', pr], ['Safety question answer', sv.safetyIdx == null ? 'Not asked' : cnItemText(sv, sv.safetyIdx, r.safety)], ['Note', r.note || ''], ['Source', sv.source], ['Reminder', 'This is a screening result, not a diagnosis.']];
   const ans = [['No.', 'Question', 'Type', 'Response', 'In their own words', 'Score']].concat(sv.items.map((it, i) => { const c = cnAnsCell(sv, r, i); return [i + 1, it.q, c.type, c.resp, c.own, c.score]; }));
   const plan = [['Step', 'Suggested action']].concat((r.plan || []).map((s, i) => [i + 1, s]));
   return [{ name: 'Summary', rows: sum, widths: [24, 60] }, { name: 'Answers', rows: ans, widths: [6, 70, 16, 34, 60, 8] }, { name: 'Plan', rows: plan, widths: [6, 110] }];
@@ -5420,33 +5651,43 @@ function cnInboxAnsHtml(sv, rec) {
 function cnRecFromItem(it) {
   const m = it.meta || {}, sv = CN_SURVEYS[m.survey] || CN_SURVEYS.quick;
   const ans = Array.isArray(m.answers) ? m.answers : sv.items.map(x => (m.scores || {})[x.area] || 0);
-  return { survey: sv.id, t: Date.parse(it.created_at) || Date.now(), ans, txt: Array.isArray(m.texts) ? m.texts : [], total: m.total || 0, max: m.max || sv.scoreIdx.length * 3, level: m.level || '', safety: m.safety || 0, priority: m.priority || 'normal', plan: m.plan || [], username: m.username || '', name: it.from_name || '', sid: m.sid || '', cls: m.cls || '', sy: m.sy || '', term: m.term || '', note: it.body || '' };
+  return { survey: sv.id, t: Date.parse(it.created_at) || Date.now(), ans, txt: Array.isArray(m.texts) ? m.texts : [], total: m.total || 0, max: m.max || sv.scoreIdx.length * 3, level: m.level || '', safety: m.safety || 0, priority: m.priority || 'normal', plan: m.plan || [], username: m.username || '', name: it.from_name || '', role: it.from_role || 'student', sid: m.sid || '', cls: m.cls || '', sy: m.sy || '', term: m.term || '', note: it.body || '' };
 }
 function cnFileStamp(t) { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-function cnDownloadRec(r) { downloadBlob(makeXlsxBook(cnWorkbookFrom(r)), 'wellness-' + (r.username || 'student') + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
-function cnFillRec(r) { const a = cnAcct() || {}; r.name = a.name || ''; r.sid = a.studentId || ''; r.cls = classLabel(a.classId); r.sy = DB.settings.schoolYear || ''; r.term = 'Term ' + DB.settings.currentTerm; return r; }
+function cnDownloadRec(r) { downloadBlob(makeXlsxBook(cnWorkbookFrom(r)), 'wellness-' + (r.username || (r.role === 'teacher' ? 'teacher' : 'student')) + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
+function cnFillRec(r) { const a = cnAcct() || {}; r.name = a.name || ''; r.sid = a.studentId || ''; r.cls = cnIsT() ? 'Teacher' : classLabel(a.classId); r.sy = DB.settings.schoolYear || ''; r.term = 'Term ' + DB.settings.currentTerm; return r; }
 function cnBlobB64(blob) { return new Promise(res => { const f = new FileReader(); f.onload = () => res(String(f.result).split(',')[1] || ''); f.onerror = () => res(''); f.readAsDataURL(blob); }); }
-async function cnEmailRec(r) {
+async function cnEmailRec(r, to) {
   if (!sb || !sb.functions) return 'unavailable';
   try {
     const b64 = await cnBlobB64(makeXlsxBook(cnWorkbookFrom(r)));
-    const x = await sb.functions.invoke('send-survey', { body: { filename: 'wellness-' + (r.username || 'student') + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', base64: b64, username: r.username, survey: (CN_SURVEYS[r.survey] || {}).name, cls: r.cls, priority: r.priority } });
+    const x = await sb.functions.invoke('send-survey', { body: { filename: 'wellness-' + (r.username || (r.role === 'teacher' ? 'teacher' : 'student')) + '-' + r.survey + '-' + cnFileStamp(r.t) + '.xlsx', base64: b64, username: r.username || r.name, role: r.role || 'student', to: to || 'counselor', survey: (CN_SURVEYS[r.survey] || {}).name, cls: r.cls, priority: r.priority } });
     return x && x.error ? 'error' : 'ok';
   } catch (e) { return 'error'; }
 }
+function cn_share_ok(cs) { return !!cs; }
+function cnShareHtml(s, cs, urgent) {
+  const T = cnIsT();
+  return '<p class="text-sm font-semibold">Share this with ' + (T ? 'the counselor or the principal' : 'the counselor') + '?</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Sending is your choice. ' + (T ? 'Your answers and name go only to the person you pick below, and an Excel file is emailed to them. Nobody else can read it. ' : 'Your answers, name and username go to ' + escapeHtml(cs.name) + ', and an Excel file is emailed to them. ') + (urgent ? 'Because of your answer about safety, we really encourage you to send it.' : '') + '</p>' +
+    (T ? '<label class="block text-xs font-medium mb-1" for="cn-q-to">Send to</label><div class="mb-2">' + cnTSelect('cn-q-to') + '</div>' : '') +
+    '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">This includes anything you typed in your own words.</p><textarea id="cn-q-note" rows="3" maxlength="1000" placeholder="Anything you want ' + (T ? 'them' : 'the counselor') + ' to know? (optional)" class="' + CN_INP + '"></textarea>' +
+    '<label class="flex items-start gap-2 text-xs mt-2"><input id="cn-q-consent" type="checkbox" class="mt-0.5 rounded"' + (urgent ? ' checked' : '') + '><span>I agree to share these answers and my name with ' + (T ? 'the person I picked' : escapeHtml(cs.name)) + '.</span></label>' +
+    '<div class="flex gap-2 mt-3"><button data-cn-svsend class="' + CN_BTN + '">' + (T ? 'Send' : 'Send to counselor') + '</button></div>';
+}
 async function cnSurveySend() {
   const s = cn.sv; if (!s || s.busy || !s.rec) return;
-  const cs = cnCounselor(); if (!cs) return;
+  const tkey = cnIsT() ? ((document.getElementById('cn-q-to') || {}).value || '') : 'counselor', pick = cnIsT() ? cnTRecipients().find(x => x.key === tkey) : null;
+  const cs = cnIsT() ? (pick && pick.p) : cnCounselor(); if (!cs) return;
   if (cnNeedUsername()) return;
   if (!document.getElementById('cn-q-consent').checked) { toast('Tick the box to agree to share your answers.', 'warning'); return; }
   const sv = CN_SURVEYS[s.id], r = s.rec; r.note = document.getElementById('cn-q-note').value.trim(); r.username = cnUsername(); cnFillRec(r);
   s.busy = true;
   const out = await cnSend({ kind: sv.kind, to_email: cs.email, to_name: cs.name, subject: sv.name, body: r.note, meta: { survey: sv.id, answers: r.ans, texts: r.txt || [], total: r.total, max: r.max, level: r.level, safety: r.safety, priority: r.priority, plan: r.plan, username: r.username, sid: r.sid, cls: r.cls, sy: r.sy, term: r.term } });
   if (!out) { s.busy = false; return; }
-  const em = await cnEmailRec(r);
-  s.busy = false; s.sent = true; s.email = em; r.sent = true;
+  const em = await cnEmailRec(r, tkey);
+  s.busy = false; s.sent = true; s.email = em; s.toLabel = cnIsT() ? pick.label.toLowerCase() === 'principal' ? 'the principal' : 'the counselor' : 'the counselor'; r.sent = true;
   const l = cnResults().map(x => x.id === r.id ? r : x); cnSaveResults(l);
-  toast(em === 'ok' ? 'Sent to the counselor and emailed as an Excel file.' : 'Sent to the counselor. The email could not be sent yet.', em === 'ok' ? 'success' : 'warning');
+  toast(em === 'ok' ? 'Sent to ' + s.toLabel + ' and emailed as an Excel file.' : 'Sent to ' + s.toLabel + '. The email could not be sent yet.', em === 'ok' ? 'success' : 'warning');
   cnRenderPanel('surveys');
 }
 
@@ -5457,7 +5698,7 @@ function renderCounseling() {
   const root = document.getElementById('cn-root'); if (!root) return;
   if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
     cnStopBreath(); cnStopCalm(); cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
-    cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false };
+    cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false };
     root.innerHTML = '<div class="space-y-4">' +
       '<div class="flex items-center gap-2"><div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 flex-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
       '<button data-cn-calm class="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold rounded-full bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 px-3 py-1.5"><i data-lucide="life-buoy" class="w-3.5 h-3.5"></i>Quick calm</button></div>' +
@@ -5514,30 +5755,30 @@ function cnPanelHome() {
   return '<div class="rounded-2xl p-6 bg-gradient-to-br from-teal-50 via-sky-50 to-indigo-50 dark:from-teal-950/50 dark:via-slate-900 dark:to-indigo-950/40 border border-teal-100 dark:border-teal-900/60">' +
     '<p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">A gentle place</p>' +
     '<h2 class="text-2xl font-semibold mt-1 leading-tight">Hi, ' + escapeHtml(cnFirst()) + '.<br>How are you today?</h2>' +
-    '<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-md">Student wellness and counseling at San Juan Baño High School. A calm, private space to breathe, check in with yourself, and reach someone who can help.</p>' +
-    '<div class="flex flex-wrap gap-1.5 mt-3">' + ['Private and safe', 'Counseling', 'Community support'].map(t => '<span class="text-[11px] rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300">' + t + '</span>').join('') + '</div>' +
+    '<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-md">' + (cnIsT() ? 'Teacher wellness and counseling at San Juan Baño High School. A calm, private space to rest, check in with yourself, and reach the counselor or the principal. Only the person you choose can read what you send.' : 'Student wellness and counseling at San Juan Baño High School. A calm, private space to breathe, check in with yourself, and reach someone who can help.') + '</p>' +
+    '<div class="flex flex-wrap gap-1.5 mt-3">' + (cnIsT() ? ['Private and safe', 'Counseling', 'Rest and recharge'] : ['Private and safe', 'Counseling', 'Community support']).map(t => '<span class="text-[11px] rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300">' + t + '</span>').join('') + '</div>' +
     '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-tab="explore" class="' + CN_BTN + '">Explore pathways</button><button data-cn-tab="music" class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Calming music</button><button data-cn-calm class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Quick calm</button></div>' +
     '<div class="flex gap-2 mt-5 flex-wrap">' + moods.map(m => '<button data-cn-mood="' + m[1] + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-teal-400"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div></div>' +
     (unread ? '<button data-cn-tab="talk" class="w-full text-left rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 px-4 py-3 text-sm font-medium text-teal-800 dark:text-teal-200">You have ' + unread + ' new repl' + (unread === 1 ? 'y' : 'ies') + '. Tap to read.</button>' : '') +
-    '<div class="grid grid-cols-2 gap-3">' + [['surveys', 'Surveys', 'Check how you are doing and get a plan', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['book', 'Book a time', 'Ask to meet the counselor', 'calendar-check'], ['talk', 'Talk to someone', 'Message the counselor, your adviser or a teacher', 'message-circle']].map(c =>
+    '<div class="grid grid-cols-2 gap-3">' + [['surveys', 'Surveys', 'Check how you are doing and get a plan', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['book', 'Book a time', 'Ask to meet the counselor', 'calendar-check'], ['talk', 'Talk to someone', (cnIsT() ? 'Message the counselor or the principal' : 'Message the counselor, your adviser or a teacher'), 'message-circle']].map(c =>
       '<button data-cn-tab="' + c[0] + '" class="' + CN_CARD + ' !p-4 text-left hover:border-teal-400 dark:hover:border-teal-700"><i data-lucide="' + c[3] + '" class="w-5 h-5 text-teal-600 dark:text-teal-400"></i><p class="text-sm font-semibold mt-2">' + c[1] + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">' + c[2] + '</p></button>').join('') + '</div>' +
     '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Need help right now?</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">You are not alone. These lines are free to call. Tell a trusted adult too.</p>' + cnHotlinesHtml() + '</div>';
 }
 
 /* ---- Explore: pillars and offerings ---- */
 function cnPanelExplore() {
-  if (cn.page && CN_PAGES[cn.page]) {
-    const p = CN_PAGES[cn.page];
+  if (cn.page && cnPages()[cn.page]) {
+    const p = cnPages()[cn.page];
     return '<button data-cn-pageback class="text-xs text-teal-700 dark:text-teal-400 hover:underline mb-3">← Back to Explore</button>' +
       '<div class="rounded-2xl p-6 bg-gradient-to-br ' + p.grad + ' border border-slate-200 dark:border-slate-800"><div class="flex items-center gap-2 mb-2">' + cnChip(p.group, 'teal') + '<span class="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</span></div><div class="flex items-center gap-3"><i data-lucide="' + p.icon + '" class="w-7 h-7 text-teal-700 dark:text-teal-300"></i><h2 class="text-xl font-semibold">' + escapeHtml(p.title) + '</h2></div><p class="text-sm text-slate-700 dark:text-slate-300 mt-3 max-w-lg">' + escapeHtml(p.intro) + '</p></div>' +
       (p.points.length ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">What you can do</p><ul class="space-y-1.5">' + p.points.map(x => '<li class="flex gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-teal-600 shrink-0 mt-0.5"></i><span>' + escapeHtml(x) + '</span></li>').join('') + '</ul></div>' : '') +
       (p.practices ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">Micro-practices</p><div class="space-y-2">' + CN_PRACTICES.map((x, i) => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="min-w-0 flex-1"><p class="text-sm font-medium">' + escapeHtml(x[0]) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(x[1]) + '</p></div><button data-cn-practice="' + i + '" class="' + CN_BTN2 + ' !py-1 text-xs shrink-0">I did it</button></div>').join('') + '</div></div>' : '') +
       '<div class="flex flex-wrap gap-2 mt-4">' + p.actions.map((a, i) => '<button data-cn-go="' + a[1] + '" class="' + (i ? CN_BTN2 : CN_BTN) + '">' + escapeHtml(a[0]) + '</button>').join('') + '</div>';
   }
-  const card = (id, i) => { const p = CN_PAGES[id]; return '<button data-cn-page="' + id + '" class="text-left rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-teal-400"><div class="h-20 bg-gradient-to-br ' + p.grad + ' flex items-center justify-center"><i data-lucide="' + p.icon + '" class="w-8 h-8 text-teal-700 dark:text-teal-300"></i></div><div class="p-3"><p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</p><p class="text-sm font-semibold">' + escapeHtml(p.title) + '</p><p class="text-[11px] text-teal-700 dark:text-teal-400 mt-1">View details →</p></div></button>'; };
-  return '<div class="' + CN_CARD + '"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Pillars</p><h3 class="text-base font-semibold mb-3">Four ways we support you</h3><div class="grid grid-cols-2 gap-3">' + ['grounding', 'circles', 'anchor', 'journal'].map(card).join('') + '</div></div>' +
+  const card = (id, i) => { const p = cnPages()[id]; return '<button data-cn-page="' + id + '" class="text-left rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-teal-400"><div class="h-20 bg-gradient-to-br ' + p.grad + ' flex items-center justify-center"><i data-lucide="' + p.icon + '" class="w-8 h-8 text-teal-700 dark:text-teal-300"></i></div><div class="p-3"><p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</p><p class="text-sm font-semibold">' + escapeHtml(p.title) + '</p><p class="text-[11px] text-teal-700 dark:text-teal-400 mt-1">View details →</p></div></button>'; };
+  return '<div class="' + CN_CARD + '"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Pillars</p><h3 class="text-base font-semibold mb-3">Four ways we support ' + (cnIsT() ? 'teachers' : 'you') + '</h3><div class="grid grid-cols-2 gap-3">' + ['grounding', 'circles', 'anchor', 'journal'].map(card).join('') + '</div></div>' +
     '<div class="' + CN_CARD + ' mt-4"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Offerings</p><h3 class="text-base font-semibold mb-3">Care that moves with you</h3><div class="space-y-2">' +
-    ['circles2', 'burnout', 'somatic', 'advocacy'].map(id => { const p = CN_PAGES[id]; return '<button data-cn-page="' + id + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ' + p.grad + ' flex items-center justify-center shrink-0"><i data-lucide="' + p.icon + '" class="w-5 h-5 text-teal-700 dark:text-teal-300"></i></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(p.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p.intro.split('. ')[0]) + '.</span></span><span class="text-[11px] text-teal-700 dark:text-teal-400 shrink-0">Learn more →</span></button>'; }).join('') + '</div>' +
+    ['circles2', 'burnout', 'somatic', 'advocacy'].map(id => { const p = cnPages()[id]; return '<button data-cn-page="' + id + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ' + p.grad + ' flex items-center justify-center shrink-0"><i data-lucide="' + p.icon + '" class="w-5 h-5 text-teal-700 dark:text-teal-300"></i></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(p.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p.intro.split('. ')[0]) + '.</span></span><span class="text-[11px] text-teal-700 dark:text-teal-400 shrink-0">Learn more →</span></button>'; }).join('') + '</div>' +
     '<p class="text-[11px] text-slate-400 mt-3">Ask the counselor which of these are running at school right now.</p></div>';
 }
 
@@ -5551,8 +5792,8 @@ function cnPanelSurveys() {
   const s = cn.sv;
   if (!s) {
     return '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">Surveys</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-4">Pick one. You get a result and a plan with small next steps. These are screening questions, not a diagnosis, and nothing is sent unless you choose to send it. Most surveys also have questions where you can choose an answer or write your own. Writing is always optional.</p><div class="space-y-2">' +
-      Object.keys(CN_SURVEYS).map(k => { const v = CN_SURVEYS[k]; return '<button data-cn-sv="' + k + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(v.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(v.blurb) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">~' + v.minutes + ' min</span></button>'; }).join('') + '</div>' +
-      '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for students.</p></div>';
+      cnSvList().map(k => { const v = CN_SURVEYS[k]; return '<button data-cn-sv="' + k + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(v.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(v.blurb) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">~' + v.minutes + ' min</span></button>'; }).join('') + '</div>' +
+      '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for ' + (cnIsT() ? 'teachers' : 'students') + '.</p></div>';
   }
   const sv = CN_SURVEYS[s.id];
   if (!s.done) {
@@ -5570,19 +5811,16 @@ function cnPanelSurveys() {
       '<textarea id="cn-ans-txt" rows="' + (type === 'text' ? 4 : 2) + '" maxlength="500" placeholder="Write here..." class="' + CN_INP + '">' + escapeHtml(txt) + '</textarea>' +
       '<div class="flex gap-2 mt-4"><button data-cn-next class="' + CN_BTN + '">' + (last ? 'Finish' : (type === 'text' && !txt.trim() ? 'Skip' : 'Next')) + '</button></div></div>';
   }
-  const r = s.rec, res = cnSurveyResult(sv, s.ans), cs = cnCounselor(), urgent = res.safety >= 1;
+  const r = s.rec, res = cnSurveyResult(sv, s.ans), cs = cnIsT() ? (cnTRecipients()[0] || {}).p : cnCounselor(), urgent = res.safety >= 1;
   return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + '</p>' +
     '<div class="flex items-center gap-2 mt-1">' + cnChip(res.level.name, res.level.cls) + '<span class="text-xs text-slate-400 tabular-nums">' + res.total + ' / ' + res.max + '</span></div>' +
     '<p class="text-sm mt-2">' + escapeHtml(res.level.tip) + '</p>' +
     (urgent ? '<div class="mt-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>' : '') +
     '<div class="mt-4"><p class="text-sm font-semibold mb-2">Your plan</p><ol class="space-y-2">' + r.plan.map((x, i) => '<li class="flex gap-2 text-sm"><span class="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[11px] font-semibold flex items-center justify-center shrink-0 mt-0.5">' + (i + 1) + '</span><span>' + escapeHtml(x) + '</span></li>').join('') + '</ol></div>' +
     '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-copyplan="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="copy" class="w-4 h-4"></i>Copy plan</button><button data-cn-dl="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="download" class="w-4 h-4"></i>Download Excel</button></div>' +
-    '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (s.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to the counselor' + (s.email === 'ok' ? ' and emailed as an Excel file' : '') + '. You will see their reply under Talk.</p>' + (s.email !== 'ok' ? '<p class="text-[11px] text-slate-500 mt-1">The email could not be sent yet. The counselor can still read your result in the app.</p>' : '') :
-      (cs ? '<p class="text-sm font-semibold">Share this with the counselor?</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Sending is your choice. Your answers, name and username go to ' + escapeHtml(cs.name) + ', and an Excel file is emailed to them. ' + (urgent ? 'Because of your answer about safety, we really encourage you to send it.' : '') + '</p>' +
-        '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">This includes anything you typed in your own words.</p><textarea id="cn-q-note" rows="3" maxlength="1000" placeholder="Anything you want the counselor to know? (optional)" class="' + CN_INP + '"></textarea>' +
-        '<label class="flex items-start gap-2 text-xs mt-2"><input id="cn-q-consent" type="checkbox" class="mt-0.5 rounded"' + (urgent ? ' checked' : '') + '><span>I agree to share these answers and my name with ' + escapeHtml(cs.name) + '.</span></label>' +
-        '<div class="flex gap-2 mt-3"><button data-cn-svsend class="' + CN_BTN + '">Send to counselor</button></div>'
-        : '<p class="text-xs text-slate-500 dark:text-slate-400">Your school has not set up a guidance counselor in Attendly yet. You can still download your result and message a teacher under Talk.</p>')) +
+    '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (s.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to ' + escapeHtml(s.toLabel || 'the counselor') + (s.email === 'ok' ? ' and emailed as an Excel file' : '') + '. You will see their reply under Talk.</p>' + (s.email !== 'ok' ? '<p class="text-[11px] text-slate-500 mt-1">The email could not be sent yet. ' + (cnIsT() ? 'They' : 'The counselor') + ' can still read your result in the app.</p>' : '') :
+      (cn_share_ok(cs) ? cnShareHtml(s, cs, urgent) 
+        : '<p class="text-xs text-slate-500 dark:text-slate-400">' + (cnIsT() ? 'Your school has not set up a counselor or principal in Attendly yet, or you are the only one set. You can still download your result.' : 'Your school has not set up a guidance counselor in Attendly yet. You can still download your result and message a teacher under Talk.') + '</p>')) +
     '<button data-cn-svreset class="' + CN_BTN2 + ' mt-3">' + (s.sent ? 'Done' : 'Not now') + '</button></div></div>';
 }
 function cnSurveyNext() {
@@ -5736,7 +5974,17 @@ function cnRecipients() {
   const rest = DB.teachers.filter(t => t.email && !out.some(o => normEmail(o[1].email) === normEmail(t.email))).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   return { first: out, rest };
 }
+function cnPanelTalkT() {
+  const rc = cnTRecipients();
+  if (!rc.length) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Send a message</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Your school has not set up a counselor or principal in Attendly yet. Ask the admin to add them.</p></div><div class="' + CN_CARD + ' mt-4"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">My conversations</h3><button data-cn-refresh class="text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div><div id="cn-convos"></div></div>';
+  return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Send a message</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Only you and the person you choose can read it. Other teachers and students cannot. If your safety is at risk, they may need to involve others to keep you safe.</p>' +
+    '<label class="block text-xs font-medium mb-1" for="cn-m-to">To</label><div class="mb-3">' + cnTSelect('cn-m-to') + '</div>' +
+    '<label class="block text-xs font-medium mb-1">Message</label><textarea id="cn-m-body" rows="4" maxlength="1000" placeholder="Write what you want them to know..." class="' + CN_INP + '"></textarea>' +
+    '<div class="mt-3"><button data-cn-sendmsg class="' + CN_BTN + '">Send message</button></div></div>' +
+    '<div class="' + CN_CARD + ' mt-4"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold">My conversations</h3><button data-cn-refresh class="text-xs text-teal-700 dark:text-teal-400 hover:underline">Refresh</button></div><div id="cn-convos"></div></div>';
+}
 function cnPanelTalk() {
+  if (cnIsT()) return cnPanelTalkT();
   const r = cnRecipients(), opt = (t, tag) => '<option value="' + escapeHtml(normEmail(t.email)) + '">' + escapeHtml((t.name || t.email) + (tag ? ' (' + tag + ')' : '')) + '</option>';
   return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Send a message</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Only you and the person you choose can read it. If your safety is at risk, they may need to involve other adults to keep you safe.</p>' +
     '<label class="block text-xs font-medium mb-1">To</label><select id="cn-m-to" class="' + CN_INP + ' mb-3">' + r.first.map(o => opt(o[1], o[0])).join('') + (r.rest.length ? '<optgroup label="Teachers at San Juan Baño High School">' + r.rest.map(t => opt(t)).join('') + '</optgroup>' : '') + '</select>' +
@@ -5786,15 +6034,15 @@ function cnApptList() {
 }
 function cnPanelBook() {
   const b = cn.book, cs = cnCounselor();
-  if (!cs) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Book a time</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Your school has not set up a guidance counselor in Attendly yet. You can still message a teacher under Talk.</p></div>';
+  if (!cs) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Book a time</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Your school has not set up a guidance counselor in Attendly yet. ' + (cnIsT() ? 'You can still send a message under Talk.' : 'You can still message a teacher under Talk.') + '</p></div>';
   const steps = ['Type', 'Format', 'Date and time', 'Details', 'Confirm'];
   const bar = '<div class="flex items-center gap-1 mb-4">' + steps.map((s, i) => '<div class="flex-1"><div class="h-1.5 rounded-full ' + (i + 1 <= b.step ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-800') + '"></div><p class="text-[10px] mt-1 ' + (i + 1 === b.step ? 'text-teal-700 dark:text-teal-300 font-medium' : 'text-slate-400') + '">' + s + '</p></div>').join('') + '</div>';
-  const type = CN_APPT_TYPES.find(t => t.id === b.type);
+  const type = cnApptTypes().find(t => t.id === b.type);
   let body = '';
   if (b.sent) {
     body = '<div class="text-center py-4"><div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center mx-auto mb-3"><i data-lucide="check" class="w-6 h-6"></i></div><p class="text-base font-semibold">Request sent</p><p class="text-sm text-slate-600 dark:text-slate-300 mt-1">' + escapeHtml(type ? type.name : 'Appointment') + '<br>' + escapeHtml(cnDateNice(b.date) + ', ' + cnT12(b.time)) + '</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-3 max-w-xs mx-auto">The counselor will confirm this time or suggest another one. You will see the reply under Talk, and the status below.</p><button data-cn-bk-again class="' + CN_BTN2 + ' mt-4">Book another</button></div>';
   } else if (b.step === 1) {
-    body = '<h3 class="text-base font-semibold mb-3">What would you like?</h3><div class="space-y-2">' + CN_APPT_TYPES.map(t => '<button data-cn-bk-type="' + t.id + '" class="w-full flex items-start gap-3 text-left rounded-lg border px-3 py-3 ' + (b.type === t.id ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400') + '"><i data-lucide="' + t.icon + '" class="w-5 h-5 text-teal-600 shrink-0 mt-0.5"></i><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(t.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.desc) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">' + t.minutes + ' min</span></button>').join('') + '</div>';
+    body = '<h3 class="text-base font-semibold mb-3">What would you like?</h3><div class="space-y-2">' + cnApptTypes().map(t => '<button data-cn-bk-type="' + t.id + '" class="w-full flex items-start gap-3 text-left rounded-lg border px-3 py-3 ' + (b.type === t.id ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400') + '"><i data-lucide="' + t.icon + '" class="w-5 h-5 text-teal-600 shrink-0 mt-0.5"></i><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(t.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.desc) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">' + t.minutes + ' min</span></button>').join('') + '</div>';
   } else if (b.step === 2) {
     body = '<h3 class="text-base font-semibold mb-3">How would you like to meet?</h3><div class="space-y-2">' + CN_FORMATS.map(f => '<button data-cn-bk-format="' + f[0] + '" class="w-full flex items-center gap-3 text-left rounded-lg border px-3 py-3 ' + (b.format === f[0] ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-800 hover:border-teal-400') + '"><i data-lucide="' + f[2] + '" class="w-5 h-5 text-teal-600 shrink-0"></i><span class="text-sm font-medium">' + escapeHtml(f[1]) + '</span></button>').join('') + '</div>' +
       '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Next</button></div>';
@@ -5805,7 +6053,7 @@ function cnPanelBook() {
       (b.date && wk ? '<p class="text-xs font-medium mt-4 mb-2">' + escapeHtml(cnDateNice(b.date)) + '</p><div class="grid grid-cols-3 gap-2">' + cnSlots().map(t => { const taken = cnSlotTaken(b.date, t), past = b.date === today && (minOf(t) <= now), off = taken || past; return '<button ' + (off ? 'disabled' : 'data-cn-bk-slot="' + t + '"') + ' class="text-sm rounded-lg border px-2 py-2 ' + (b.time === t ? 'border-teal-500 bg-teal-600 text-white' : off ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 line-through' : 'border-slate-300 dark:border-slate-700 hover:border-teal-400') + '">' + cnT12(t) + '</button>'; }).join('') + '</div><p class="text-[11px] text-slate-400 mt-2">Crossed-out times are already taken or have passed.</p>' : '') +
       '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Next</button></div>';
   } else if (b.step === 4) {
-    body = '<h3 class="text-base font-semibold mb-3">A few details</h3><label class="block text-xs font-medium mb-1">What is it about?</label><select data-cn-bk-topic class="' + CN_INP + ' mb-3">' + CN_TOPICS.map(t => '<option' + (b.topic === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
+    body = '<h3 class="text-base font-semibold mb-3">A few details</h3><label class="block text-xs font-medium mb-1">What is it about?</label><select data-cn-bk-topic class="' + CN_INP + ' mb-3">' + cnTopics().map(t => '<option' + (b.topic === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
       '<label class="block text-xs font-medium mb-1">Anything else the counselor should know? (optional)</label><textarea data-cn-bk-note rows="3" maxlength="500" class="' + CN_INP + '">' + escapeHtml(b.note) + '</textarea>' +
       '<div class="flex gap-2 mt-4"><button data-cn-bk-back class="' + CN_BTN2 + '">Back</button><button data-cn-bk-next class="' + CN_BTN + '">Review</button></div>';
   } else {
@@ -5821,9 +6069,9 @@ async function cnBookConfirm() {
   const b = cn.book, cs = cnCounselor(); if (!cs || b.busy) return;
   if (cnNeedUsername()) return;
   if (cnSlotTaken(b.date, b.time)) { toast('That time was just taken. Please pick another.', 'warning'); b.step = 3; b.time = ''; cnRenderPanel('book'); return; }
-  const type = CN_APPT_TYPES.find(t => t.id === b.type), me = cnAcct() || {};
+  const type = cnApptTypes().find(t => t.id === b.type), me = cnAcct() || {};
   b.busy = true;
-  const r = await cnSend({ kind: 'appointment', to_email: cs.email, to_name: cs.name, subject: 'Appointment request', body: b.note, meta: { type: b.type, typeName: type.name, minutes: type.minutes, format: b.format, topic: b.topic, date: b.date, time: b.time, username: cnUsername(), sid: me.studentId || '', cls: classLabel(me.classId), priority: 'normal' } });
+  const r = await cnSend({ kind: 'appointment', to_email: cs.email, to_name: cs.name, subject: 'Appointment request', body: b.note, meta: { type: b.type, typeName: type.name, minutes: type.minutes, format: b.format, topic: b.topic, date: b.date, time: b.time, username: cnUsername(), sid: me.studentId || '', cls: cnIsT() ? 'Teacher' : classLabel(me.classId), priority: 'normal' } });
   b.busy = false;
   if (r) { b.sent = true; cnAddLog('booking', 'Requested an appointment', 0); toast('Request sent.', 'success'); cnRenderPanel('book'); }
 }
@@ -5851,9 +6099,9 @@ async function cnConfirmAppt(id) {
 function renderInbox(which) {
   const root = document.getElementById(which === 'guidance' ? 'gd-root' : 'msg-root'); if (!root) return;
   const me = cnMyEmail(), st = inbox[which];
-  if (which === 'guidance' && !isCounselor()) { root.innerHTML = '<p class="text-sm text-slate-500">This page is only for the school counselor.</p>'; return; }
+  if (which === 'guidance' && !isStaffInbox()) { root.innerHTML = '<p class="text-sm text-slate-500">This page is only for the school counselor and the principal.</p>'; return; }
   if (!cn.loaded && !cn.loading) cnLoad();
-  let th = cnThreads(me).filter(t => t.mineRoot && (which === 'guidance' ? true : t.root.kind === 'message'));
+  let th = cnThreads(me).filter(t => t.mineRoot && (which === 'guidance' ? true : (t.root.kind === 'message' && t.root.from_role !== 'teacher')));
   const pri = t => t.root.status !== 'done' && t.root.meta && (t.root.meta.priority === 'urgent' || t.root.meta.priority === 'high');
   const counts = { new: th.filter(t => t.root.status !== 'done' && t.awaiting).length, pri: th.filter(pri).length, all: th.length };
   const f = st.filter;
@@ -5878,7 +6126,7 @@ function inboxCard(t, me, openId, which) {
   const isRes = r.kind === 'survey' || r.kind === 'checkin', sv = isRes ? (CN_SURVEYS[m.survey] || CN_SURVEYS.quick) : null;
   const lvCls = isRes ? ((sv.levels.find(l => l.name === m.level) || {}).cls || 'slate') : '';
   let h = '<div class="border rounded-lg ' + (m.priority === 'urgent' ? 'border-rose-400 dark:border-rose-700' : 'border-slate-200 dark:border-slate-800') + '"><button data-in-open="' + t.id + '" data-in-which="' + which + '" class="w-full text-left px-3 py-2.5 flex items-start gap-3"><span class="min-w-0 flex-1"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium">' + escapeHtml(who) + '</span>' + (m.username ? '<span class="text-[11px] text-slate-500">@' + escapeHtml(m.username) + '</span>' : '') + (m.cls ? '<span class="text-[11px] text-slate-500">' + escapeHtml(m.cls) + '</span>' : '') + cnChip(isRes ? sv.short : cnKindLabel(r), 'sky') + (isRes && m.level ? cnChip(m.level, lvCls) : '') +
-    (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (t.confirmed ? cnChip('Confirmed', 'emerald') : '') + (r.status === 'new' ? cnChip('New', 'teal') : r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(cnPreview(t.last)) + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
+    (r.from_role === 'teacher' ? cnChip('Teacher', 'sky') : '') + (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (t.confirmed ? cnChip('Confirmed', 'emerald') : '') + (r.status === 'new' ? cnChip('New', 'teal') : r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(cnPreview(t.last)) + '</span></span><span class="text-[10px] text-slate-400 shrink-0">' + cnWhen(t.last.created_at) + '</span></button>';
   if (open) {
     h += '<div class="px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2 space-y-3">';
     if (isRes) {
@@ -5930,9 +6178,11 @@ document.addEventListener('click', async ev => {
   if (g('[data-cn-sendmsg]')) {
     const to = document.getElementById('cn-m-to').value, body = document.getElementById('cn-m-body').value.trim();
     if (!to) { toast('Choose who to send it to.', 'warning'); return; }
+    const T = cnIsT(), trc = T ? cnTRecipients().find(x => x.key === to) : null;
+    if (T && !trc) { toast('Choose the counselor or the principal.', 'warning'); return; }
     if (!body) { toast('Write a message first.', 'warning'); return; }
-    const t = DB.teachers.find(x => normEmail(x.email) === to), me = cnAcct() || {};
-    const r = await cnSend({ kind: 'message', to_email: to, to_name: t ? t.name : '', subject: 'Message from a student', body, meta: { cls: classLabel(me.classId), username: cnUsername() } });
+    const t = T ? trc.p : DB.teachers.find(x => normEmail(x.email) === to), me = cnAcct() || {};
+    const r = await cnSend({ kind: 'message', to_email: T ? normEmail(t.email) : to, to_name: t ? t.name : '', subject: T ? 'Message from a teacher' : 'Message from a student', body, meta: T ? { cls: 'Teacher' } : { cls: classLabel(me.classId), username: cnUsername() } });
     if (r) { document.getElementById('cn-m-body').value = ''; toast('Message sent.', 'success'); cn.openThread = r.id; cnRenderConvos(); }
     return;
   }
@@ -5947,7 +6197,7 @@ document.addEventListener('click', async ev => {
   }
   if (g('[data-cn-bk-back]')) { bk.step = Math.max(1, bk.step - 1); cnRenderPanel('book'); return; }
   if (g('[data-cn-bk-confirm]')) { cnBookConfirm(); return; }
-  if (g('[data-cn-bk-again]')) { cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: CN_TOPICS[0], note: '', sent: false, busy: false }; cnRenderPanel('book'); return; }
+  if (g('[data-cn-bk-again]')) { cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false }; cnRenderPanel('book'); return; }
   if ((el = g('[data-cn-rm]'))) { cnRemoveChat(el.dataset.cnRm, cnRenderConvos); return; }
   if ((el = g('[data-in-rm]'))) { const w = el.dataset.inWhich; cnRemoveChat(el.dataset.inRm, () => { inbox[w].open = null; renderInbox(w); }); return; }
   if ((el = g('[data-cn-open]'))) {
@@ -6016,6 +6266,63 @@ document.addEventListener('click', ev => {
   toast(e ? 'Counselor saved.' : 'Counselor cleared.', 'success');
 });
 
+/* admin (principal): read and answer what teachers sent to the principal. Goes through the send-survey function with the admin password. */
+const admWi = { pw: '', items: [], open: null, loaded: false, err: '' };
+async function wiCall(body) { return recvCall(Object.assign({ password: admWi.pw }, body)); }
+async function wiLoad() {
+  try { const d = await wiCall({ action: 'p_list' }); admWi.items = d.items || []; admWi.loaded = true; admWi.err = ''; }
+  catch (e) { admWi.err = /password/.test(e.message) ? 'Incorrect admin password.' : 'Could not reach the server. Redeploy the send-survey function and run the latest counseling_setup.sql.'; admWi.loaded = false; }
+  wiRender();
+}
+function wiThreads() {
+  const by = {}; admWi.items.forEach(i => { const k = i.thread_id || i.id; (by[k] = by[k] || []).push(i); });
+  return Object.keys(by).map(k => { const msgs = by[k].slice().sort((a, b) => String(a.created_at).localeCompare(String(b.created_at))); const root = msgs.find(x => x.id === k) || msgs[0]; return { id: k, root, msgs, last: msgs[msgs.length - 1] }; }).sort((a, b) => String(b.last.created_at).localeCompare(String(a.last.created_at)));
+}
+function wiRender() {
+  const el = document.getElementById('adm-wi-list'); if (!el) return;
+  if (admWi.err) { el.innerHTML = '<p class="text-xs text-rose-600">' + escapeHtml(admWi.err) + '</p>'; return; }
+  if (!admWi.loaded) { el.innerHTML = ''; return; }
+  const th = wiThreads();
+  el.innerHTML = '<div class="flex items-center justify-between mb-2"><p class="text-xs font-medium">' + th.length + ' conversation' + (th.length === 1 ? '' : 's') + '</p><button id="adm-wi-refresh" class="text-xs text-indigo-600 dark:text-indigo-400 underline">Refresh</button></div>' +
+    (th.length ? '<div class="space-y-2">' + th.map(t => {
+      const r = t.root, m = r.meta || {}, open = admWi.open === t.id, isRes = r.kind === 'survey' || r.kind === 'checkin', sv = isRes ? (CN_SURVEYS[m.survey] || CN_SURVEYS.quick) : null;
+      const waiting = t.last.from_email !== CN_PRINCIPAL_BOX && r.status !== 'done';
+      let h = '<div class="border border-slate-200 dark:border-slate-800 rounded-lg ' + (m.priority === 'urgent' ? 'border-rose-400' : '') + '"><button data-wi-open="' + t.id + '" class="w-full text-left px-3 py-2.5"><span class="flex items-center gap-2 flex-wrap"><span class="text-sm font-medium">' + escapeHtml(r.from_name || r.from_email) + '</span>' + cnChip(cnKindLabel(r), 'sky') + (m.priority === 'urgent' ? cnChip('Urgent', 'rose') : m.priority === 'high' ? cnChip('Priority', 'orange') : '') + (waiting ? cnChip('Needs reply', 'teal') : '') + (r.status === 'done' ? cnChip('Done', 'slate') : '') + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">' + escapeHtml(cnPreview(r)) + '</span><span class="block text-[10px] text-slate-400 mt-0.5">' + cnWhen(t.last.created_at) + '</span></button>';
+      if (open) {
+        h += '<div class="px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-2 space-y-3">';
+        if (isRes) {
+          const rec = cnRecFromItem(r);
+          h += '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + ' · score ' + (m.total || 0) + ' of ' + (m.max || sv.scoreIdx.length * 3) + '</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' + cnInboxAnsHtml(sv, rec) + '</div>';
+          if ((m.safety || 0) >= 1) h += '<p class="text-xs font-semibold text-rose-700 dark:text-rose-300">Safety answer: ' + escapeHtml(cnItemText(sv, sv.safetyIdx, m.safety)) + '. Please follow your school protocol.</p>';
+          h += '<button data-wi-dl="' + t.id + '" class="text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1">Download this result (Excel)</button>';
+        }
+        t.msgs.forEach(x => { if (!x.body) return; const mine = x.from_email === CN_PRINCIPAL_BOX; h += '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-xl px-3 py-2 text-sm ' + (mine ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(x.body) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-indigo-100' : 'text-slate-400') + '">' + escapeHtml(mine ? 'You (principal)' : (x.from_name || x.from_email)) + ' · ' + cnWhen(x.created_at) + '</p></div></div>'; });
+        h += '<div class="flex gap-2"><input data-wi-reply="' + t.id + '" type="text" maxlength="1000" placeholder="Write a reply..." class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button data-wi-send="' + t.id + '" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Send</button></div>' +
+          '<button data-wi-done="' + t.id + '" data-wi-st="' + (r.status === 'done' ? 'seen' : 'done') + '" class="text-xs text-slate-600 dark:text-slate-300 underline">' + (r.status === 'done' ? 'Reopen' : 'Mark as done') + '</button></div>';
+      }
+      return h + '</div>';
+    }).join('') + '</div>' : '<p class="text-sm text-slate-500 dark:text-slate-400 py-3">Nothing here yet.</p>');
+}
+document.addEventListener('click', async ev => {
+  const g = sel => ev.target.closest(sel);
+  if (g('#adm-wi-load')) { const pw = document.getElementById('adm-wi-pw'); if (!pw.value) { toast('Enter the admin password.', 'warning'); return; } admWi.pw = pw.value; pw.value = ''; await wiLoad(); return; }
+  if (g('#adm-wi-refresh')) { await wiLoad(); return; }
+  let el;
+  if ((el = g('[data-wi-open]'))) { admWi.open = admWi.open === el.dataset.wiOpen ? null : el.dataset.wiOpen; wiRender(); return; }
+  if ((el = g('[data-wi-dl]'))) { const t = wiThreads().find(x => x.id === el.dataset.wiDl); if (t) cnDownloadRec(cnRecFromItem(t.root)); return; }
+  if ((el = g('[data-wi-send]'))) {
+    const id = el.dataset.wiSend, inp = document.querySelector('[data-wi-reply="' + id + '"]'), t = wiThreads().find(x => x.id === id);
+    if (!t || !inp || !inp.value.trim()) return;
+    try { const d = await wiCall({ action: 'p_reply', thread_id: id, to_email: t.root.from_email, to_name: t.root.from_name || '', subject: 'Re: ' + (t.root.subject || ''), body: inp.value.trim().slice(0, 1000) }); if (d.item) admWi.items.push(d.item); toast('Reply sent.', 'success'); wiRender(); }
+    catch (e) { toast('Could not send the reply.', 'error'); }
+    return;
+  }
+  if ((el = g('[data-wi-done]'))) {
+    const id = el.dataset.wiDone, st = el.dataset.wiSt;
+    try { await wiCall({ action: 'p_status', id, status: st }); const it = admWi.items.find(x => x.id === id); if (it) it.status = st; wiRender(); } catch (e) { toast('Could not update.', 'error'); }
+  }
+});
+
 /* admin: survey email receiver (stored server-side; changed through the send-survey function with the admin password) */
 async function recvCall(body) {
   if (!sb || !sb.functions) throw new Error('offline');
@@ -6028,13 +6335,14 @@ document.addEventListener('click', async ev => {
   if (!save && !load) return;
   const em = document.getElementById('adm-recv'), pw = document.getElementById('adm-recv-pw'), note = document.getElementById('adm-recv-note');
   if (!pw.value) { toast('Enter the admin password.', 'warning'); return; }
-  const email = normEmail(em.value);
+  const email = normEmail(em.value), pem = normEmail(document.getElementById('adm-recv-p').value);
+  if (save && pem && !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(pem)) { toast('Enter a valid principal email.', 'warning'); return; }
   if (save && email && !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email)) { toast('Enter a valid email.', 'warning'); return; }
   try {
-    const d = await recvCall(save ? { action: 'set_receiver', password: pw.value, email } : { action: 'get_receiver', password: pw.value });
-    em.value = d.email || ''; pw.value = '';
+    const d = await recvCall(save ? { action: 'set_receiver', password: pw.value, email, principal_email: pem } : { action: 'get_receiver', password: pw.value });
+    em.value = d.email || ''; document.getElementById('adm-recv-p').value = d.principal_email || ''; pw.value = '';
     if (save) toast(d.email ? 'Receiver saved.' : 'Receiver cleared.', 'success');
-    note.textContent = d.email ? 'Survey emails go to: ' + d.email : 'No receiver set yet.';
+    note.textContent = (d.email ? 'Student survey emails go to: ' + d.email : 'No counselor receiver set yet.') + (d.principal_email ? ' Teacher results sent to the principal go to: ' + d.principal_email : ' No principal receiver set yet.');
   } catch (e) {
     toast(/password/.test(e.message) ? 'Incorrect admin password.' : 'Could not reach the server. Check the send-survey function was updated.', 'error');
   }
