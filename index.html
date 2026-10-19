@@ -368,11 +368,8 @@
             <button type="button" id="dash-follow" class="hidden mt-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Follow my schedule</button>
           </div>
           <div class="flex gap-2">
-            <button id="dash-export-csv" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <i data-lucide="download" class="w-4 h-4"></i>Export Excel
-            </button>
             <button data-goto="scanner" class="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2 transition-colors">
-              <i data-lucide="scan-line" class="w-4 h-4"></i>Open Live Scanner
+              <i data-lucide="scan-line" class="w-4 h-4"></i>Open Attendance
             </button>
           </div>
         </div>
@@ -411,62 +408,14 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
-            <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-              <div class="flex items-center justify-between gap-2 mb-3">
-                <h2 class="text-sm font-semibold">Today's session code</h2>
-                <span id="session-status" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"></span>
+          <div class="space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <div class="flex flex-wrap items-end justify-between gap-2 mb-4">
+                <div><h2 class="text-sm font-semibold">Students</h2><p id="stu-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Everyone in this class and their status for this session.</p></div>
               </div>
-              <div class="mb-4">
-                <p id="session-title" class="text-lg font-semibold leading-tight truncate"></p>
-                <p id="session-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
-                <div id="session-progress-wrap" class="hidden mt-3">
-                  <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div id="session-progress" class="h-full rounded-full bg-emerald-500 transition-all" style="width:0%"></div></div>
-                </div>
-                <p id="session-countdown" class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2"></p>
-              </div>
-              <div id="session-upcoming" class="hidden border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 text-center">
-                <i data-lucide="alarm-clock" class="w-7 h-7 mx-auto text-indigo-500 mb-2"></i>
-                <p class="text-sm font-medium">Code is created automatically</p>
-                <p id="session-upcoming-text" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
-                <button id="session-start-early" type="button" class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">Start this session now</button>
-              </div>
-              <div id="session-live" class="flex flex-col items-center gap-3">
-                <button id="session-qr-btn" type="button" title="Tap to enlarge" class="p-3 bg-white rounded-lg border border-slate-200"><div id="session-qr"></div></button>
-                <p class="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Tap the code to show it full screen</p>
-                <div class="flex items-center gap-2 w-full">
-                  <div class="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-2">
-                    <span class="text-[10px] uppercase tracking-wider text-slate-400 mr-1">Code</span><span id="session-code" class="text-base font-semibold tracking-[0.2em] tabular-nums"></span>
-                  </div>
-                  <button id="session-copy" type="button" class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i>Copy</button>
-                </div>
-                <p id="session-late-note" class="text-xs text-slate-500 dark:text-slate-400 text-center"></p>
-                <details class="w-full">
-                  <summary class="text-xs text-slate-500 dark:text-slate-400 cursor-pointer text-center">Adjust start time</summary>
-                  <div class="flex items-center gap-2 w-full mt-2">
-                    <label class="text-xs text-slate-500 dark:text-slate-400 shrink-0">Start time</label>
-                    <input type="time" id="session-start-time" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-2 py-1.5">
-                  </div>
-                </details>
-                <button id="dash-regen-qr" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh code
-                </button>
-                <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center leading-relaxed">A new code is made for every class period automatically. Refreshing invalidates screenshots of the previous code.</p>
-              </div>
-              <div id="qr-full" class="hidden fixed inset-0 z-[70] bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center" style="display:none">
-                <p id="qr-full-title" class="text-xl font-semibold"></p>
-                <p id="qr-full-sub" class="text-sm text-slate-500 dark:text-slate-400 mb-5"></p>
-                <div class="p-4 bg-white rounded-xl border border-slate-200"><div id="qr-full-box"></div></div>
-                <p id="qr-full-code" class="mt-5 text-2xl font-semibold tracking-[0.3em] tabular-nums"></p>
-                <p class="mt-6 text-xs text-slate-400">Tap anywhere to close</p>
-              </div>
-            </div>
-
-            <div class="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-              <h2 class="text-sm font-semibold mb-4">Today's activity</h2>
               <div id="activity-empty" class="hidden py-10 text-center text-slate-500 dark:text-slate-400">
-                <i data-lucide="clipboard-list" class="w-7 h-7 mx-auto mb-2 text-slate-400"></i>
-                <p class="text-sm">No check-ins recorded yet today.</p>
+                <i data-lucide="users" class="w-7 h-7 mx-auto mb-2 text-slate-400"></i>
+                <p class="text-sm">No students are enrolled in this class yet.</p>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm" id="activity-table">
@@ -474,8 +423,8 @@
                     <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                       <th class="py-2 font-medium">Student</th>
                       <th class="py-2 font-medium">ID</th>
-                      <th class="py-2 font-medium">Time</th>
                       <th class="py-2 font-medium">Status</th>
+                      <th class="py-2 font-medium">Time</th>
                     </tr>
                   </thead>
                   <tbody id="activity-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -483,7 +432,12 @@
               </div>
             </div>
           </div>
-          <div id="attend-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <h2 class="text-sm font-semibold">Class report</h2>
+            <p id="report-summary" class="text-sm text-slate-600 dark:text-slate-300 mt-1"></p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">The Excel file has the same students and statuses as the table above.</p>
+            <div class="mt-3"><button id="dash-export-csv" type="button" class="inline-flex items-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><i data-lucide="download" class="w-4 h-4"></i>Download Excel</button></div>
+          </div>
         </div>
       </section>
 
@@ -588,6 +542,58 @@
           </div>
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <h2 class="text-sm font-semibold">Today's session code</h2>
+                <span id="session-status" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"></span>
+              </div>
+              <div class="mb-4">
+                <p id="session-title" class="text-lg font-semibold leading-tight truncate"></p>
+                <p id="session-sub" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+                <div id="session-progress-wrap" class="hidden mt-3">
+                  <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div id="session-progress" class="h-full rounded-full bg-emerald-500 transition-all" style="width:0%"></div></div>
+                </div>
+                <p id="session-countdown" class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-2"></p>
+              </div>
+              <div id="session-upcoming" class="hidden border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 text-center">
+                <i data-lucide="alarm-clock" class="w-7 h-7 mx-auto text-indigo-500 mb-2"></i>
+                <p class="text-sm font-medium">Code is created automatically</p>
+                <p id="session-upcoming-text" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+                <button id="session-start-early" type="button" class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800">Start this session now</button>
+              </div>
+              <div id="session-live" class="flex flex-col items-center gap-3">
+                <button id="session-qr-btn" type="button" title="Tap to enlarge" class="p-3 bg-white rounded-lg border border-slate-200"><div id="session-qr"></div></button>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Tap the code to show it full screen</p>
+                <div class="flex items-center gap-2 w-full">
+                  <div class="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-2">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 mr-1">Code</span><span id="session-code" class="text-base font-semibold tracking-[0.2em] tabular-nums"></span>
+                  </div>
+                  <button id="session-copy" type="button" class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i>Copy</button>
+                </div>
+                <p id="session-late-note" class="text-xs text-slate-500 dark:text-slate-400 text-center"></p>
+                <details class="w-full">
+                  <summary class="text-xs text-slate-500 dark:text-slate-400 cursor-pointer text-center">Adjust start time</summary>
+                  <div class="flex items-center gap-2 w-full mt-2">
+                    <label class="text-xs text-slate-500 dark:text-slate-400 shrink-0">Start time</label>
+                    <input type="time" id="session-start-time" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-2 py-1.5">
+                  </div>
+                </details>
+                <button id="dash-regen-qr" class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh code
+                </button>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center leading-relaxed">A new code is made for every class period automatically. Refreshing invalidates screenshots of the previous code.</p>
+              </div>
+              <div id="qr-full" class="hidden fixed inset-0 z-[70] bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center" style="display:none">
+                <p id="qr-full-title" class="text-xl font-semibold"></p>
+                <p id="qr-full-sub" class="text-sm text-slate-500 dark:text-slate-400 mb-5"></p>
+                <div class="p-4 bg-white rounded-xl border border-slate-200"><div id="qr-full-box"></div></div>
+                <p id="qr-full-code" class="mt-5 text-2xl font-semibold tracking-[0.3em] tabular-nums"></p>
+                <p class="mt-6 text-xs text-slate-400">Tap anywhere to close</p>
+              </div>
+            </div>
+        </div>
+
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Point the camera at a student's Digital ID QR code to record attendance instantly.</p>
           <div id="qr-reader" class="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-square max-w-sm mx-auto flex items-center justify-center">
@@ -607,6 +613,11 @@
           <h2 class="text-sm font-semibold mb-3">Just scanned</h2>
           <ul id="scanner-feed" class="space-y-2"></ul>
           <p id="scanner-feed-empty" class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">Scanned students will appear here.</p>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-xs text-slate-500 dark:text-slate-400">Class list for this session: mark students by hand, record cutting, and confirm classmate check-ins.</p>
+          <div id="attend-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         </div>
       </section>
 
@@ -765,8 +776,6 @@
 
       <!-- STUDENT: SUBJECTS -->
       <section data-view="subjects" class="view-section p-4 md:p-6 max-w-3xl mx-auto space-y-6">
-        <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
-        <div id="subjects-all-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
         <div id="my-subjects-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
           <h2 class="text-sm font-semibold">My subjects</h2>
           <p id="ms-sub" class="text-xs text-slate-500 dark:text-slate-400"></p>
@@ -790,6 +799,8 @@
           <div id="tt-full" class="fixed inset-0 z-[70] bg-black/90 overflow-auto p-3" style="display:none"><img id="tt-full-img" class="max-w-none w-[900px] mx-auto bg-white rounded" alt="My timetable"><p class="text-center text-xs text-white/70 mt-3">Tap anywhere to close</p></div>
         </div>
 
+        <div id="sched-card-s" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
+        <div id="subjects-all-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5"></div>
       </section>
 
       <!-- STUDENT: TEACHERS -->
@@ -1965,15 +1976,21 @@ function renderDashboardStats() {
   document.getElementById('stat-cutting').textContent = cutting;
   document.getElementById('stat-rate').textContent = rate + '%';
 
-  const sorted = logs.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const body = document.getElementById('activity-body');
-  document.getElementById('activity-empty').classList.toggle('hidden', sorted.length > 0);
-  document.getElementById('activity-table').classList.toggle('hidden', sorted.length === 0);
-  body.innerHTML = sorted.map(l => {
-    const st = DB.students.find(s => s.id === l.studentId);
-    return '<tr><td class="py-2.5">' + escapeHtml(st ? st.name : 'Unknown') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(st ? st.studentId : '—') +
-      '</td><td class="py-2.5 tabular-nums text-slate-500 dark:text-slate-400">' + formatTime(l.timestamp) + '</td><td class="py-2.5">' + statusBadge(l.status) + (l.vouchedBy ? '<span class="block text-[10px] text-slate-400 mt-0.5">vouched by ' + escapeHtml((DB.students.find(s => s.id === l.vouchedBy) || {}).name || 'a classmate') + '</span>' : '') + '</td></tr>';
+  const students = roster.slice().sort((x, y) => (x.name || '').localeCompare(y.name || ''));
+  document.getElementById('activity-empty').classList.toggle('hidden', students.length > 0);
+  document.getElementById('activity-table').classList.toggle('hidden', students.length === 0);
+  body.innerHTML = students.map(st => {
+    const log = session ? activeLog(session.id, st.id) : null;
+    const cur = log ? log.status : 'absent';
+    return '<tr><td class="py-2.5">' + escapeHtml(st.name || '') + (st.noPhone ? ' <span class="text-[10px] text-sky-600 dark:text-sky-400">no phone</span>' : '') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(st.studentId || '—') +
+      '</td><td class="py-2.5">' + statusBadge(cur) + (log && log.vouchedBy ? '<span class="block text-[10px] text-slate-400 mt-0.5">vouched by ' + escapeHtml(studentName(log.vouchedBy)) + '</span>' : '') +
+      '</td><td class="py-2.5 tabular-nums text-slate-500 dark:text-slate-400">' + (log ? formatTime(log.timestamp) : '—') + '</td></tr>';
   }).join('');
+  const subj = session && session.subject ? session.subject : '';
+  const cls = DB.classes.find(c => c.id === classId);
+  document.getElementById('stu-sub').textContent = (cls ? classLabel(classId) : '') + (subj ? ' · ' + subj : '') + ' · ' + todayStr();
+  document.getElementById('report-summary').textContent = 'Present ' + present + ' · Late ' + late + ' · Cutting ' + cutting + ' · Absent ' + Math.max(0, enrolled - present - late - cutting) + ' · Attendance rate ' + rate + '% (' + enrolled + ' students)';
   refreshIcons();
 }
 
@@ -3681,7 +3698,7 @@ const LANG_FIL = {
 "Roster Manager": "Listahan ng mga Mag-aaral",
 "Classroom": "Classroom",
 "Attendance": "Pagdalo",
-"Subjects": "Mga Subject",
+"Subjects": "Mga asignatura",
 "Teachers": "Mga Guro",
 "Messages": "Mga Mensahe",
 "Settings": "Mga Setting",
@@ -3780,7 +3797,7 @@ const LANG_FIL = {
 "No check-ins recorded yet today.": "Wala pang check-in na naitala ngayong araw.",
 "Time": "Oras",
 "Status": "Katayuan",
-"Students": "Mga Mag-aaral",
+"Students": "Mga estudyante",
 "Guidance counselor": "Guidance counselor",
 "Enter the email of the counselor's teacher account. Only this teacher sees the Counseling menu, and students can send check-ins and appointment requests to them.": "Ilagay ang email ng teacher account ng counselor. Siya lang ang makakakita ng Counseling menu, at makakapagpadala sa kanya ang mga mag-aaral ng check-in at hiling na appointment.",
 "Appointment times (24-hour, separated by commas)": "Mga oras ng appointment (24-oras, hiwalay ng kuwit)",
@@ -3840,7 +3857,7 @@ const LANG_FIL = {
 "My subjects": "Aking mga subject",
 "All my subjects": "Lahat ng subject ko",
 "No subjects added for this term yet.": "Wala pang subject para sa terminong ito.",
-"Your teacher": "Guro mo",
+"Your teacher": "Ang iyong guro",
 "Teaches": "Nagtuturo ng",
 "No grade or section added yet": "Wala pang naidagdag na grade o section",
 "None yet": "Wala pa",
@@ -4297,10 +4314,10 @@ const LANG_FIL = {
 "Scored 8 of 10": "Nakakuha ng 8 sa 10",
 "Available": "Available",
 "Submitted": "Naipasa",
-"Not submitted": "Hindi pa naipasa",
+"Not submitted": "Hindi naisumite",
 "Quizzes taken": "Mga quiz na nasagutan",
 "Finished": "Tapos na",
-"Quiz average": "Average sa quiz",
+"Quiz average": "Average ng quiz",
 "Across all quizzes": "Sa lahat ng quiz",
 "Result": "Resulta",
 "Open resource": "Buksan ang resource",
@@ -4546,7 +4563,7 @@ const LANG_FIL = {
 "Subject (e.g. Mathematics)": "Subject (hal. Mathematics)",
 "e.g. Grade 9 — Mathematics": "hal. Grade 9 — Mathematics",
 "e.g. Section A": "hal. Section A",
-"Teacher ID": "Teacher ID",
+"Teacher ID": "ID ng guro",
 "Hello, I would like to join a peer circle.": "Kumusta po, gusto ko pong sumali sa grupo ng kaklase.",
 "Quick check-in:": "Mabilis na check-in:",
 "Survey email receiver": "Tatanggap ng survey email",
@@ -4911,7 +4928,24 @@ const LANG_FIL = {
 "Could not update.": "Hindi ma-update.",
 "Mark as done": "Markahang tapos na",
 "You (principal)": "Ikaw (principal)",
-"Could not reach the server. Redeploy the send-survey function and run the latest counseling_setup.sql.": "Hindi maabot ang server. I-deploy muli ang send-survey function at patakbuhin ang pinakabagong counseling_setup.sql."
+"Could not reach the server. Redeploy the send-survey function and run the latest counseling_setup.sql.": "Hindi maabot ang server. I-deploy muli ang send-survey function at patakbuhin ang pinakabagong counseling_setup.sql.",
+"← All subjects": "← Lahat ng asignatura",
+"View full history →": "Tingnan ang buong kasaysayan →",
+"Choose a subject to see everything in it: lessons, reviewers, homework and quizzes, with your scores.": "Pumili ng asignatura para makita ang lahat ng nasa loob nito: aralin, reviewer, takdang-aralin at quiz, kasama ang iyong mga iskor.",
+"In this subject": "Sa asignaturang ito",
+"Subject grade": "Grado sa asignatura",
+"Average of your terms": "Average ng iyong mga termino",
+"Nothing in this subject yet. Lessons, reviewers, homework and quizzes will show here.": "Wala pang laman ang asignaturang ito. Lalabas dito ang mga aralin, reviewer, takdang-aralin at quiz.",
+"Submitted, awaiting score": "Naisumite, naghihintay ng iskor",
+"Sections": "Mga seksyon",
+"Advisory class": "Advisory na klase",
+"tap a teacher to see the full profile": "pindutin ang guro para makita ang buong profile",
+"Everyone in this class and their status for this session.": "Lahat ng nasa klase at ang kanilang status para sa sesyong ito.",
+"Class report": "Ulat ng klase",
+"The Excel file has the same students and statuses as the table above.": "Pareho ang mga estudyante at status sa Excel file at sa talahanayan sa itaas.",
+"Open Attendance": "Buksan ang Attendance",
+"Class list for this session: mark students by hand, record cutting, and confirm classmate check-ins.": "Listahan ng klase para sa sesyong ito: markahan ang mga estudyante nang mano-mano, itala ang pag-cutting, at kumpirmahin ang mga check-in ng kaklase.",
+"No students are enrolled in this class yet.": "Wala pang naka-enroll sa klaseng ito."
 };
 const LANG_PATS = [
 [
@@ -6392,30 +6426,53 @@ function renderSubjectsAll() {
   });
   el.innerHTML = '<h2 class="text-sm font-semibold mb-1">All my subjects</h2><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">' + list.length + ' subject' + (list.length === 1 ? '' : 's') + ' this term, from your teachers and what you added.</p><div class="space-y-2">' + list.join('') + '</div>';
 }
-function teacherGradeLines(t) {
-  const map = {};
-  (t.schedule || []).filter(termOk).forEach(e => (e.classIds || []).forEach(id => { const c = DB.classes.find(x => x.id === id); if (c) (map[c.name] = map[c.name] || new Set()).add(c.section); }));
-  return Object.keys(map).sort((a, b) => parseInt(a.replace(/\D/g, '')) - parseInt(b.replace(/\D/g, ''))).map(g => g + ' — ' + Array.from(map[g]).join(', '));
+// Every subject and section a teacher is linked to, across all terms (subjects they own in the Classroom plus their schedule).
+function teacherAllInfo(t) {
+  const secs = new Map(), subj = new Set();
+  (t.schedule || []).forEach(e => { if (e.subject) subj.add(e.subject); (e.classIds || []).forEach(id => { const c = DB.classes.find(x => x.id === id); if (c) secs.set(c.id, c); }); });
+  if (t.advisoryClassId) { const c = DB.classes.find(x => x.id === t.advisoryClassId); if (c) secs.set(c.id, c); }
+  (DB.subjects || []).filter(sb => (sb.ownerIds || []).includes(t.id)).forEach(sb => subj.add(sb.name));
+  const sections = Array.from(secs.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }) || (a.section || '').localeCompare(b.section || ''));
+  return { subjects: Array.from(subj).sort(), sections, advisory: t.advisoryClassId ? classLabel(t.advisoryClassId) : '' };
 }
 function renderTeachersView() {
   const list = document.getElementById('tch-list'), st = meStudent();
   if (!list) return;
-  document.getElementById('tch-sub').textContent = DB.teachers.length + ' teacher' + (DB.teachers.length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '');
+  document.getElementById('tch-sub').textContent = DB.teachers.length + ' teacher' + (DB.teachers.length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '') + ' · tap a teacher to see the full profile';
   const q = (document.getElementById('tch-search').value || '').trim().toLowerCase();
-  const mine = t => !!(st && st.classId && ((t.schedule || []).some(e => termOk(e) && entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
-  const rows = DB.teachers.map(t => ({ t, lines: teacherGradeLines(t), subjects: Array.from(new Set((t.schedule || []).filter(termOk).map(e => e.subject).filter(Boolean))), mine: mine(t) }))
-    .filter(r => !q || (r.t.name + ' ' + r.subjects.join(' ') + ' ' + r.lines.join(' ') + ' ' + (r.t.advisoryClassId ? classLabel(r.t.advisoryClassId) : '')).toLowerCase().includes(q))
+  const mine = t => !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
+  const rows = DB.teachers.map(t => { const info = teacherAllInfo(t); return { t, info, mine: mine(t) }; })
+    .filter(r => !q || (r.t.name + ' ' + r.info.subjects.join(' ') + ' ' + r.info.sections.map(c => classLabel(c.id)).join(' ') + ' ' + r.info.advisory).toLowerCase().includes(q))
     .sort((a, b) => (b.mine - a.mine) || (a.t.name || '').localeCompare(b.t.name || ''));
   list.innerHTML = rows.length ? rows.map(r => {
-    const t = r.t, adv = t.advisoryClassId ? classLabel(t.advisoryClassId) : '';
-    return '<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><div class="flex items-start gap-3">' +
+    const t = r.t, info = r.info;
+    return '<button type="button" onclick="tchProfile(\'' + t.id + '\')" class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 rounded-xl p-4"><div class="flex items-start gap-3">' +
       '<img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-12 h-12 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" alt="">' +
       '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + escapeHtml(t.name) + (r.mine ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 align-middle">Your teacher</span>' : '') + '</p>' +
-      '<p class="text-xs text-slate-500 dark:text-slate-400">' + [t.teacherId ? 'ID ' + escapeHtml(t.teacherId) : '', t.email ? escapeHtml(t.email) : ''].filter(Boolean).join(' · ') + '</p></div></div>' +
-      '<dl class="mt-3 space-y-1.5 text-xs"><div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Advisory</dt><dd class="text-slate-700 dark:text-slate-200">' + (adv ? escapeHtml(adv) : 'None') + '</dd></div>' +
-      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Teaches</dt><dd class="text-slate-700 dark:text-slate-200">' + (r.lines.length ? r.lines.map(escapeHtml).join('<br>') : 'No grade or section added yet') + '</dd></div>' +
-      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Subjects</dt><dd class="flex flex-wrap gap-1">' + (r.subjects.length ? r.subjects.map(s => '<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + escapeHtml(s) + '</span>').join('') : '<span class="text-slate-700 dark:text-slate-200">None yet</span>') + '</dd></div></dl></div>';
+      '<p class="text-xs text-slate-500 dark:text-slate-400">' + [t.teacherId ? 'ID ' + escapeHtml(t.teacherId) : '', info.advisory ? 'Advisory: ' + escapeHtml(info.advisory) : ''].filter(Boolean).join(' · ') + '</p></div></div>' +
+      '<dl class="mt-3 space-y-1.5 text-xs"><div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Subjects</dt><dd class="flex flex-wrap gap-1">' + (info.subjects.length ? info.subjects.map(x => '<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + escapeHtml(x) + '</span>').join('') : '<span class="text-slate-700 dark:text-slate-200">None yet</span>') + '</dd></div>' +
+      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Sections</dt><dd class="text-slate-700 dark:text-slate-200">' + (info.sections.length ? info.sections.map(c => escapeHtml(classLabel(c.id))).join('<br>') : 'None yet') + '</dd></div></dl></button>';
   }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">' + (q ? 'No teacher matches your search.' : 'No teachers have registered yet.') + '</p>';
+}
+function tchProfile(id) {
+  const t = DB.teachers.find(x => x.id === id); if (!t) return;
+  const st = meStudent(), info = teacherAllInfo(t), mine = !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
+  const old = document.getElementById('tch-prof'); if (old) old.remove();
+  const row = (k, v) => '<div class="py-2 border-b border-slate-100 dark:border-slate-800"><p class="text-[11px] uppercase tracking-wide text-slate-400">' + k + '</p><div class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">' + v + '</div></div>';
+  const d = document.createElement('div'); d.id = 'tch-prof';
+  d.className = 'fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4';
+  d.innerHTML = '<div class="w-full sm:max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl p-5">' +
+    '<div class="flex items-center gap-3"><img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-800" alt=""><div class="min-w-0 flex-1"><p class="text-base font-semibold">' + escapeHtml(t.name) + '</p>' + (mine ? '<span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">Your teacher</span>' : '') + '</div>' +
+    '<button type="button" id="tch-prof-x" class="text-sm text-slate-500 underline shrink-0">Close</button></div>' +
+    '<div class="mt-4">' +
+    row('Teacher ID', t.teacherId ? escapeHtml(t.teacherId) : '-') +
+    row('Email', t.email ? escapeHtml(t.email) : '-') +
+    row('Advisory class', info.advisory ? escapeHtml(info.advisory) : 'None') +
+    row('Subjects', info.subjects.length ? info.subjects.map(x => '<span class="inline-block mr-1 mb-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">' + escapeHtml(x) + '</span>').join('') : 'None yet') +
+    row('Sections', info.sections.length ? info.sections.map(c => escapeHtml(classLabel(c.id))).join('<br>') : 'None yet') +
+    '</div></div>';
+  d.addEventListener('click', ev => { if (ev.target === d || ev.target.closest('#tch-prof-x')) d.remove(); });
+  document.body.appendChild(d);
 }
 document.getElementById('tch-search').addEventListener('input', renderTeachersView);
 
@@ -6784,22 +6841,38 @@ function lcStudentGrades(stu) {
     '<tr class="bg-slate-50 dark:bg-slate-800/50"><td class="' + lcTd + ' font-bold" colspan="4">General average</td><td class="' + lcTd + ' font-bold tabular-nums">' + lcF(ga) + '</td><td class="' + lcTd + ' font-bold">' + lcStanding(ga) + '</td></tr></table></div>' +
     '<p class="' + lcMuted + '">Passing grade is 75. The school has 3 terms, and the average is taken from the terms your teacher has graded so far. Grades are entered by your teacher.</p>';
 }
+let lcHistSub = '';
+function lcOpenHist(id) { lcHistSub = id || ''; renderLearning(true); }
+function lcHistRow(p, stu) {
+  const x = lcMySub(p.id, stu.id), gradable = p.type === 'homework' || p.type === 'quiz';
+  let status;
+  if (!gradable) status = lcChip('Available', 'slate');
+  else if (!x) status = lcChip('Not submitted', 'amber');
+  else if (x.type === 'quiz' || (p.type === 'quiz' && x.total)) { const pct = x.total ? Math.round(x.score / x.total * 100) : null; status = lcChip(x.score + ' / ' + x.total + (pct === null ? '' : ' (' + pct + '%)'), pct !== null && pct >= 75 ? 'green' : 'red'); }
+  else if (x.score !== null && x.score !== undefined) status = lcChip('Score ' + x.score, 'green');
+  else status = lcChip('Submitted, awaiting score', 'amber');
+  return '<tr><td class="' + lcTd + ' font-medium">' + lcE(p.title) + (x && x.feedback ? '<br><span class="' + lcMuted + '">Feedback: ' + lcE(x.feedback) + '</span>' : '') + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[p.type]) + '</td><td class="' + lcTd + '">' + (gradable ? lcFmtDate(p.due) : '-') + '</td><td class="' + lcTd + '">' + (x && x.submittedAt ? lcE(lcFmtTs(x.submittedAt)) : '-') + '</td><td class="' + lcTd + '">' + status + '</td></tr>';
+}
 function lcStudentHistory(stu) {
-  const items = DB.submissions.filter(x => x.studentId === stu.id).map(x => ({ s: x, p: DB.posts.find(y => y.id === x.postId) })).filter(x => x.p)
-    .sort((a, b) => (b.s.submittedAt || '').localeCompare(a.s.submittedAt || ''));
-  const quizzes = items.filter(x => x.p.type === 'quiz' && x.s.total);
-  const avg = quizzes.length ? quizzes.reduce((a, x) => a + x.s.score / x.s.total * 100, 0) / quizzes.length : null;
-  const tone = avg === null ? 'text-slate-400' : avg >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
-  const result = x => {
-    const s = x.s;
-    if (x.p.type === 'quiz' && s.total) { const pct = Math.round(s.score / s.total * 100); return lcChip(s.score + ' / ' + s.total + ' (' + pct + '%)', pct >= 75 ? 'green' : 'red'); }
-    if (s.score !== null && s.score !== undefined) return lcChip('Score ' + s.score, 'green');
-    return lcChip('Awaiting score', 'amber');
-  };
-  return lcH('History') + '<div class="grid grid-cols-2 gap-3 max-w-md">' + lcStat('Quizzes taken', quizzes.length, 'Finished') + lcStat('Quiz average', avg === null ? '-' : Math.round(avg) + '%', 'Across all quizzes', tone) + '</div>' +
-    (items.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Finished</th><th class="' + lcTh + '">Result</th><th class="' + lcTh + '"></th></tr>' +
-      items.map(x => '<tr><td class="' + lcTd + ' font-medium">' + lcE(x.p.title) + (x.s.feedback ? '<br><span class="' + lcMuted + '">Feedback: ' + lcE(x.s.feedback) + '</span>' : '') + '</td><td class="' + lcTd + '">' + lcE(lcSubName(x.p.subjectId)) + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[x.p.type]) + '</td><td class="' + lcTd + '">' + lcE(lcFmtTs(x.s.submittedAt)) + '</td><td class="' + lcTd + '">' + result(x) + '</td><td class="' + lcTd + '"><button type="button" class="' + lcBtn2 + ' !py-1.5" onclick="lcOpen(\'' + x.p.id + '\')">View</button></td></tr>').join('') + '</table></div>'
-      : lcEmpty('Nothing finished yet. Quizzes and homework you submit will show up here with your score.'));
+  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  if (lcHistSub && !subs.some(x => x.id === lcHistSub)) lcHistSub = '';
+  if (!lcHistSub) {
+    if (!subs.length) return lcH('History') + lcEmpty('No subjects yet. Your teacher will add them.');
+    return lcH('History') + '<p class="' + lcMuted + '">Choose a subject to see everything in it: lessons, reviewers, homework and quizzes, with your scores.</p>' +
+      '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' + subs.map(sb => {
+        const posts = DB.posts.filter(p => p.subjectId === sb.id && lcVisible(p, stu)), done = posts.filter(p => (p.type === 'quiz' || p.type === 'homework') && lcMySub(p.id, stu.id)).length, gr = posts.filter(p => p.type === 'quiz' || p.type === 'homework').length;
+        return '<button type="button" onclick="lcOpenHist(\'' + sb.id + '\')" class="' + lcCard + ' !p-4 text-left hover:border-indigo-400"><p class="font-semibold text-sm">' + lcE(sb.name) + '</p><p class="' + lcMuted + ' mt-1">' + posts.length + ' item' + (posts.length === 1 ? '' : 's') + ' · ' + done + ' of ' + gr + ' homework and quizzes done</p><p class="text-xs text-indigo-600 dark:text-indigo-400 mt-2">View full history →</p></button>';
+      }).join('') + '</div>';
+  }
+  const sb = subs.find(x => x.id === lcHistSub);
+  const items = DB.posts.filter(p => p.subjectId === lcHistSub && lcVisible(p, stu)).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '') || (a.title || '').localeCompare(b.title || ''));
+  const quizzes = items.filter(p => p.type === 'quiz' && lcMySub(p.id, stu.id) && lcMySub(p.id, stu.id).total);
+  const avg = quizzes.length ? quizzes.reduce((t, p) => { const x = lcMySub(p.id, stu.id); return t + x.score / x.total * 100; }, 0) / quizzes.length : null;
+  const g = lcGrade(lcHistSub, stu.id), ga = lcAvg(g);
+  return '<div class="flex items-center justify-between gap-3 flex-wrap"><button type="button" onclick="lcOpenHist(\'\')" class="' + lcBtn2 + ' !py-1.5">← All subjects</button><p class="text-sm font-semibold">' + lcE(sb.name) + '</p></div>' +
+    '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">' + lcStat('Quizzes taken', quizzes.length, 'In this subject') + lcStat('Quiz average', avg === null ? '-' : Math.round(avg) + '%', 'In this subject', avg !== null && avg < 75 ? 'text-rose-600 dark:text-rose-400' : '') + lcStat('Subject grade', lcF(ga), 'Average of your terms') + '</div>' +
+    (items.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Due</th><th class="' + lcTh + '">Submitted</th><th class="' + lcTh + '">Result</th></tr>' + items.map(p => lcHistRow(p, stu)).join('') + '</table></div>'
+      : lcEmpty('Nothing in this subject yet. Lessons, reviewers, homework and quizzes will show here.'));
 }
 function lcOpenSubject(id) { lcFilterSub = id; lcFilterType = 'all'; lcStudentTab = 'materials'; renderLearning(true); }
 function lcStudentMaterials(stu) {
