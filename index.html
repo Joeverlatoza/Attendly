@@ -3210,7 +3210,7 @@ function applyRoleNav() {
     b.classList.toggle('hidden', !(role && allowed.includes(role)));
   });
   document.querySelectorAll('[data-view="guidance"].nav-btn, [data-view="guidance"].nav-btn-m').forEach(b => { if (!isStaffInbox()) b.classList.add('hidden'); });
-  document.querySelectorAll('[data-view="counseling"].nav-btn, [data-view="counseling"].nav-btn-m').forEach(b => { if (role === 'teacher' && isCounselor()) b.classList.add('hidden'); });
+  document.querySelectorAll('[data-view="counseling"].nav-btn').forEach(b => { const sp = b.querySelector('span'); if (sp) sp.textContent = (role === 'teacher' && isCounselor()) ? 'My wellness' : 'Counseling'; });
   document.querySelectorAll('[data-view="messages"].nav-btn, [data-view="messages"].nav-btn-m').forEach(b => { if (isCounselor()) b.classList.add('hidden'); });
   document.querySelectorAll('.nav-btn[data-view="settings"], .nav-btn-m[data-view="settings"]').forEach(b => {
     const label = role === 'teacher' ? 'My Profile' : 'Settings';
@@ -5104,7 +5104,63 @@ const LANG_FIL = {
 "No teacher programs were found. The file should be the school's Individual Teacher's Program workbook.": "Walang nakitang program ng guro. Dapat ang file ay ang workbook ng Individual Teacher's Program ng paaralan.",
 "Remove the school schedule": "Alisin ang schedule ng paaralan",
 "This removes every period that came from an upload or that you added or edited here, for all teachers. Periods that teachers added themselves stay. This cannot be undone.": "Aalisin nito ang bawat period na galing sa upload o idinagdag o ine-edit mo rito, para sa lahat ng guro. Mananatili ang mga period na idinagdag mismo ng mga guro. Hindi na ito maibabalik.",
-"No school schedule has been uploaded yet.": "Wala pang na-upload na schedule ng paaralan."
+"No school schedule has been uploaded yet.": "Wala pang na-upload na schedule ng paaralan.",
+"Questions about sleep, screens, meals and focus on school days.": "Mga tanong tungkol sa tulog, gadget, pagkain at pokus tuwing may pasok.",
+"Attendly teacher sleep and habits check (screening only)": "Attendly na check sa tulog at gawi ng guro (screening lang)",
+"It takes me a long time to fall asleep because I am thinking about work.": "Matagal akong makatulog dahil iniisip ko ang trabaho.",
+"I use my phone or gadget in bed until late, often for school work.": "Gumagamit ako ng cellphone o gadget sa kama hanggang gabi, madalas para sa school work.",
+"I feel sleepy or cannot focus during the day.": "Inaantok ako o hindi makapag-focus sa araw.",
+"Lesson planning or checking papers": "Paggawa ng lesson plan o pagche-check ng papel",
+"Family duties at home": "Mga gawain sa pamilya sa bahay",
+"A few small changes to your sleep and routine could make school days easier on you.": "Ang ilang maliliit na pagbabago sa tulog at routine mo ay makakapagpagaan ng mga araw na may pasok.",
+"Respect and safety at work": "Respeto at kaligtasan sa trabaho",
+"Questions about feeling safe and respected at school, including online.": "Mga tanong tungkol sa pakiramdam na ligtas at nirerespeto sa paaralan, pati online.",
+"Attendly workplace respect and safety check (screening only)": "Attendly na check sa respeto at kaligtasan sa trabaho (screening lang)",
+"Someone spoke to me in a disrespectful or insulting way.": "May nagsalita sa akin nang walang galang o nang nang-iinsulto.",
+"A student, parent or colleague threatened me or made me feel unsafe.": "Tinakot ako o pinaramdam na hindi ligtas ng estudyante, magulang o katrabaho.",
+"Faculty room or office": "Faculty room o opisina",
+"A meeting or school event": "Pulong o event ng paaralan",
+"A colleague": "Isang katrabaho",
+"The principal or head teacher": "Ang principal o head teacher",
+"A family member": "Isang kapamilya",
+"Your answers show few safety concerns. Tell someone you trust if anything changes.": "Kaunti ang alalahanin sa kaligtasan sa mga sagot mo. Sabihin sa taong pinagkakatiwalaan mo kung may magbago.",
+"Some things have been happening that are not okay. You deserve to feel safe and respected. Please talk to the counselor, the principal or someone you trust.": "May mga nangyayari na hindi tama. Karapat-dapat kang maging ligtas at nirerespeto. Makipag-usap sa counselor, sa principal o sa taong pinagkakatiwalaan mo.",
+"What you described is serious, and it is not your fault. Please tell the counselor or the principal as soon as you can.": "Seryoso ang inilarawan mo, at hindi mo ito kasalanan. Sabihin agad sa counselor o sa principal hangga't maaari.",
+"Attendly home and relationships check for teachers (screening only)": "Attendly na check sa tahanan at relasyon para sa guro (screening lang)",
+"I feel pulled between family duties and my work at school.": "Pakiramdam ko ay nahahati ako sa mga gawain sa pamilya at trabaho sa paaralan.",
+"Worries about money or family problems affect my work.": "Naaapektuhan ng alalahanin sa pera o problema sa pamilya ang trabaho ko.",
+"Spouse or partner": "Asawa o partner",
+"Parent or sibling": "Magulang o kapatid",
+"Advice on balancing work and family": "Payo sa pagbabalanse ng trabaho at pamilya",
+"Help with money or family needs": "Tulong sa pera o pangangailangan ng pamilya",
+"A lighter load for a while": "Mas magaang trabaho sa ngayon",
+"Is there anything about home or relationships you want the counselor or principal to know?": "May gusto ka bang ipaalam sa counselor o principal tungkol sa bahay o relasyon?",
+"Things at home or with people close to you feel heavy. Please talk to the counselor, the principal or someone you trust.": "Mabigat ang pakiramdam sa bahay o sa mga malalapit sa iyo. Makipag-usap sa counselor, sa principal o sa taong pinagkakatiwalaan mo.",
+"Work-life balance and plans": "Balanse ng trabaho at buhay, at mga plano",
+"Plans": "Mga plano",
+"Questions about how you plan your time, how you recharge and what you want next.": "Mga tanong tungkol sa pagpaplano ng oras, pagpapahinga at sa susunod mong gusto.",
+"Attendly work-life balance and plans check (screening only)": "Attendly na check sa balanse ng trabaho at buhay, at mga plano (screening lang)",
+"I put off tasks like checking papers or reports until the last minute.": "Ipinagpapaliban ko ang mga gawain gaya ng pagche-check ng papel o report hanggang huling minuto.",
+"I get distracted easily when I plan lessons or do paperwork.": "Madali akong ma-distract kapag gumagawa ng lesson plan o paperwork.",
+"I do not have a good place or time to rest or work.": "Wala akong maayos na lugar o oras para magpahinga o magtrabaho.",
+"I feel unsure about my career path or next steps.": "Hindi ako sigurado sa landas ng karera ko o sa susunod na hakbang.",
+"What do you want next in your career?": "Ano ang gusto mo sa susunod sa karera mo?",
+"Next step": "Susunod na hakbang",
+"Stay and grow in my current role": "Manatili at umunlad sa kasalukuyang posisyon",
+"A leadership or master teacher path": "Landas ng pamumuno o master teacher",
+"Study for a graduate degree": "Mag-aral ng graduate degree",
+"Try another field": "Sumubok ng ibang larangan",
+"How do you recharge best?": "Paano ka pinakamahusay na nagpapahinga?",
+"How you recharge": "Paano ka nagpapahinga",
+"Rest or sleep": "Pahinga o tulog",
+"Hobbies, music or exercise": "Hilig, musika o ehersisyo",
+"Prayer or quiet time": "Panalangin o tahimik na sandali",
+"Talking with a colleague": "Pakikipag-usap sa katrabaho",
+"What do you hope for in the next five years? Write anything.": "Ano ang inaasam mo sa susunod na limang taon? Isulat ang anuman.",
+"Five-year hope": "Pag-asa sa loob ng limang taon",
+"Your planning and balance look steady. Keep going.": "Mukhang matatag ang pagpaplano at balanse mo. Ituloy mo lang.",
+"You are unsure about a few things. The counselor can help you plan your workload and your next steps.": "May ilang bagay kang hindi sigurado. Matutulungan ka ng counselor na planuhin ang workload at susunod na hakbang mo.",
+"Planning your time or your future feels hard right now. A talk with the counselor can help you make a plan.": "Mahirap ngayon ang pagpaplano ng oras o ng kinabukasan mo. Makakatulong ang pakikipag-usap sa counselor para makabuo ng plano."
 };
 const LANG_PATS = [
 [
@@ -5598,6 +5654,29 @@ CN_SURVEYS.tstress = { id: 'tstress', aud: 't', kind: 'survey', name: 'Workload 
 CN_SURVEYS.tphq = cnCloneT('phq', 'tphq', { source: 'Based on the PHQ-9 (screening only, not a diagnosis). Wording lightly adjusted for teachers' });
 CN_SURVEYS.tphq.items[6].q = 'Trouble concentrating on things, like planning lessons, checking papers or reading';
 CN_SURVEYS.tgad = cnCloneT('gad', 'tgad', { source: 'Based on the GAD-7 (screening only, not a diagnosis). Wording lightly adjusted for teachers' });
+// The other four student surveys, worded for teachers, so the teacher side has the same set.
+function cnLikert(list) { return list.map(a => ({ q: a[0], area: a[1] })); }
+CN_SURVEYS.tsleep = cnCloneT('sleep', 'tsleep', { blurb: 'Questions about sleep, screens, meals and focus on school days.', source: 'Attendly teacher sleep and habits check (screening only)' });
+CN_SURVEYS.tsleep.items = cnLikert([['It takes me a long time to fall asleep because I am thinking about work.', 'body'], ['I use my phone or gadget in bed until late, often for school work.', 'body'], ['I wake up tired, even after sleeping.', 'body'], ['I skip meals or eat very little on school days.', 'body'], ['I feel sleepy or cannot focus during the day.', 'load']])
+  .concat([cnChoice('How many hours do you usually sleep on school nights?', ['Less than 5 hours', '5 to 6 hours', '7 to 8 hours', '9 hours or more'], 'Hours of sleep', false), cnChoice('What keeps you from sleeping well?', ['Phone, games or social media', 'Lesson planning or checking papers', 'Worrying or overthinking', 'Noise or a hard place to sleep', 'Family duties at home'], 'What affects sleep'), cnOpen('What is one habit you want to improve?', 'Habit to improve')]);
+CN_SURVEYS.tsleep.levels[1].tip = 'A few small changes to your sleep and routine could make school days easier on you.';
+CN_SURVEYS.tsafe = cnCloneT('safe', 'tsafe', { name: 'Respect and safety at work', short: 'Safety', blurb: 'Questions about feeling safe and respected at school, including online.', source: 'Attendly workplace respect and safety check (screening only)',
+  lead: 'Thinking about school and the way to and from school, how often has this happened in the past month?' });
+CN_SURVEYS.tsafe.items = cnLikert([['Someone spoke to me in a disrespectful or insulting way.', 'belong'], ['Someone left me out or spread rumors about me on purpose.', 'belong'], ['A student, parent or colleague threatened me or made me feel unsafe.', 'belong'], ['Someone said hurtful things about me online or in group chats.', 'belong'], ['I felt unsafe at school or on the way to or from school.', 'belong']])
+  .concat([cnChoice('Where does it usually happen?', ['Classroom', 'Faculty room or office', 'A meeting or school event', 'Online or in a group chat', 'On the way to or from school'], 'Where it happens'), cnChoice('Have you told anyone?', ['No one yet', 'A colleague', 'The principal or head teacher', 'A family member', 'The counselor'], 'Told anyone'), cnOpen('Would you like to tell us more? Only share what you want to.', 'More details')]);
+CN_SURVEYS.tsafe.levels[0].tip = 'Your answers show few safety concerns. Tell someone you trust if anything changes.';
+CN_SURVEYS.tsafe.levels[1].tip = 'Some things have been happening that are not okay. You deserve to feel safe and respected. Please talk to the counselor, the principal or someone you trust.';
+CN_SURVEYS.tsafe.levels[2].tip = 'What you described is serious, and it is not your fault. Please tell the counselor or the principal as soon as you can.';
+CN_SURVEYS.tfamily = cnCloneT('family', 'tfamily', { blurb: 'Questions about family, friends and who you can talk to.', source: 'Attendly home and relationships check for teachers (screening only)' });
+CN_SURVEYS.tfamily.items = cnLikert([['There is a lot of arguing or tension at home.', 'mood'], ['It is hard to talk to my family about my problems.', 'belong'], ['I feel pulled between family duties and my work at school.', 'load'], ['Worries about money or family problems affect my work.', 'load'], ['I feel alone with my problems.', 'belong']])
+  .concat([cnChoice('Who do you usually talk to when you have a problem?', ['Spouse or partner', 'Parent or sibling', 'A friend', 'A colleague', 'The counselor', 'No one'], 'Who you talk to'), cnChoice('What kind of help would you like?', ['Someone to listen', 'Advice on balancing work and family', 'Help with money or family needs', 'A lighter load for a while', 'Not sure'], 'Help wanted'), cnOpen('Is there anything about home or relationships you want the counselor or principal to know?', 'Anything else')]);
+CN_SURVEYS.tfamily.levels[2].tip = 'Things at home or with people close to you feel heavy. Please talk to the counselor, the principal or someone you trust.';
+CN_SURVEYS.tfuture = cnCloneT('future', 'tfuture', { name: 'Work-life balance and plans', short: 'Plans', blurb: 'Questions about how you plan your time, how you recharge and what you want next.', source: 'Attendly work-life balance and plans check (screening only)', lead: 'How true is each statement for you?' });
+CN_SURVEYS.tfuture.items = cnLikert([['I put off tasks like checking papers or reports until the last minute.', 'load'], ['I get distracted easily when I plan lessons or do paperwork.', 'load'], ['I do not have a good place or time to rest or work.', 'load'], ['I feel unsure about my career path or next steps.', 'worry'], ['I worry that I cannot reach my goals.', 'worry']])
+  .concat([cnChoice('What do you want next in your career?', ['Stay and grow in my current role', 'A leadership or master teacher path', 'Study for a graduate degree', 'Try another field', 'Not sure yet'], 'Next step'), cnChoice('How do you recharge best?', ['Rest or sleep', 'Time with family or friends', 'Hobbies, music or exercise', 'Prayer or quiet time', 'Talking with a colleague'], 'How you recharge'), cnOpen('What do you hope for in the next five years? Write anything.', 'Five-year hope')]);
+CN_SURVEYS.tfuture.levels[0].tip = 'Your planning and balance look steady. Keep going.';
+CN_SURVEYS.tfuture.levels[1].tip = 'You are unsure about a few things. The counselor can help you plan your workload and your next steps.';
+CN_SURVEYS.tfuture.levels[2].tip = 'Planning your time or your future feels hard right now. A talk with the counselor can help you make a plan.';
 const CN_STEPS_T = {
   load: 'Write your top 3 tasks for tomorrow and let the rest wait. If a deadline is not realistic, tell the principal early and ask what can move.',
   body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders between classes.',
@@ -6287,6 +6366,7 @@ function cnApptList() {
 }
 function cnPanelBook() {
   const b = cn.book, cs = cnCounselor();
+  if (cs && cnIsT() && normEmail(cs.email) === cnMyEmail()) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Book a time</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">You are the guidance counselor, so there is nobody to book here. You can still message the principal under Talk.</p></div>';
   if (!cs) return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Book a time</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Your school has not set up a guidance counselor in Attendly yet. ' + (cnIsT() ? 'You can still send a message under Talk.' : 'You can still message a teacher under Talk.') + '</p></div>';
   const steps = ['Type', 'Format', 'Date and time', 'Details', 'Confirm'];
   const bar = '<div class="flex items-center gap-1 mb-4">' + steps.map((s, i) => '<div class="flex-1"><div class="h-1.5 rounded-full ' + (i + 1 <= b.step ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-800') + '"></div><p class="text-[10px] mt-1 ' + (i + 1 === b.step ? 'text-teal-700 dark:text-teal-300 font-medium' : 'text-slate-400') + '">' + s + '</p></div>').join('') + '</div>';
