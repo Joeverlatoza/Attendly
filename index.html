@@ -279,7 +279,16 @@
     </div>
     <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
       <button data-view="admin" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-        <i data-lucide="shield" class="w-4 h-4"></i><span>Admin Console</span>
+        <i data-lucide="shield" class="w-4 h-4"></i><span>Overview</span>
+      </button>
+      <button data-view="admin-schedule" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="calendar-range" class="w-4 h-4"></i><span>Schedule</span>
+      </button>
+      <button data-view="admin-people" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="users" class="w-4 h-4"></i><span>Accounts</span>
+      </button>
+      <button data-view="admin-counsel" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="heart-handshake" class="w-4 h-4"></i><span>Counseling</span>
       </button>
       <button data-view="dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Teacher Dashboard</span>
@@ -437,48 +446,36 @@
 
       <!-- ADMIN CONSOLE -->
       <section data-view="admin" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-6">
-        <div class="grid grid-cols-2 gap-3 md:gap-4 max-w-md">
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-            <p class="text-xs text-slate-500 dark:text-slate-400">Teachers</p>
-            <p id="admin-stat-teachers" class="text-2xl font-semibold tabular-nums mt-1">0</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">Teachers</p><p id="admin-stat-teachers" class="text-2xl font-semibold tabular-nums mt-1">0</p></div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">Students</p><p id="admin-stat-students" class="text-2xl font-semibold tabular-nums mt-1">0</p></div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">Sections</p><p id="admin-stat-classes" class="text-2xl font-semibold tabular-nums mt-1">0</p></div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-500 dark:text-slate-400">Teachers with a schedule</p><p id="admin-stat-sched" class="text-2xl font-semibold tabular-nums mt-1">0</p></div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-wrap items-center justify-between gap-3">
+          <div><p class="text-xs text-slate-500 dark:text-slate-400">Now running</p><p id="admin-term-chip" class="text-lg font-semibold"></p></div>
+          <button type="button" data-goto="admin-schedule" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Change term or upload the schedule</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button type="button" data-goto="admin-schedule" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-left hover:border-indigo-400"><div class="flex items-center gap-2"><i data-lucide="calendar-range" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i><span class="text-sm font-semibold">School schedule</span></div><p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Upload the whole school schedule, choose the term, edit any teacher or section timetable, and see who is in class right now.</p></button>
+          <button type="button" data-goto="admin-people" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-left hover:border-indigo-400"><div class="flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i><span class="text-sm font-semibold">Accounts</span></div><p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Teacher and student directories. Delete an account when someone leaves.</p></button>
+          <button type="button" data-goto="admin-counsel" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-left hover:border-indigo-400"><div class="flex items-center gap-2"><i data-lucide="heart-handshake" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i><span class="text-sm font-semibold">Counseling and wellness</span></div><p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Guidance counselor, appointment times, survey email, and the teacher wellness inbox.</p></button>
+        </div>
+      </section>
+
+      <section data-view="admin-schedule" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-5">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">School year and term</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Grades 7 to 10 keep the same schedule all year. Grades 11 and 12 follow the term you pick here. Teachers and students see the change right away.</p>
+          <div class="flex flex-wrap items-end gap-3 mt-3">
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-term">Current term</label><select id="ad-term" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3">Term 3</option></select></div>
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-year">School year</label><input id="ad-year" type="text" placeholder="2026-2027" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+            <button type="button" id="ad-term-save" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button>
           </div>
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-            <p class="text-xs text-slate-500 dark:text-slate-400">Students</p>
-            <p id="admin-stat-students" class="text-2xl font-semibold tabular-nums mt-1">0</p>
-          </div>
         </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
-          <h2 class="text-sm font-semibold">Guidance counselor</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Enter the email of the counselor's teacher account. Only this teacher sees the Counseling menu, and students can send check-ins and appointment requests to them.</p>
-          <div class="flex gap-2"><input id="adm-counselor" type="email" placeholder="counselor@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-counselor-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
-          <p id="adm-counselor-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
-          <label class="block text-xs font-medium mt-4 mb-1" for="adm-slots">Appointment times (24-hour, separated by commas)</label>
-          <input id="adm-slots" type="text" placeholder="08:30, 09:30, 10:30, 13:30, 14:30, 15:30" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Saved with the Save button above. Students pick from these on weekdays.</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
-          <h2 class="text-sm font-semibold">Teacher wellness inbox (principal)</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Messages and survey results that teachers chose to send to the principal. Only you can read them here, after typing the admin password. Nobody else, including other teachers, can see them.</p>
-          <div class="flex gap-2"><input id="adm-wi-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-wi-load" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Open inbox</button></div>
-          <div id="adm-wi-list" class="mt-4"></div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
-          <h2 class="text-sm font-semibold">Survey email receiver</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">The Gmail that receives students' survey results (Excel file). Change it here when the guidance office changes. It is saved safely on the server, not in the shared school data.</p>
-          <label class="block text-xs font-medium mb-1" for="adm-recv">Receiver email</label>
-          <input id="adm-recv" type="email" placeholder="guidance@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-p">Principal email (receives teachers' results sent to the principal)</label>
-          <input id="adm-recv-p" type="email" placeholder="principal@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
-          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-pw">Admin password (to confirm)</label>
-          <div class="flex gap-2"><input id="adm-recv-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-recv-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
-          <button id="adm-recv-load" class="text-xs text-indigo-600 dark:text-indigo-400 mt-2 underline">Show current receiver</button>
-          <p id="adm-recv-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Emails are sent through Brevo from the verified sender. Email is not a fully private channel, so use a Gmail the guidance office controls.</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 mb-4 md:mb-6" id="live-board-card">
+        <div class="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800" id="ad-tabs"><button type="button" data-ad-tab="live" class="shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Live now</button><button type="button" data-ad-tab="teachers" class="shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">By teacher</button><button type="button" data-ad-tab="sections" class="shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">By section</button><button type="button" data-ad-tab="upload" class="shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Upload</button></div>
+        <div id="ad-p-live">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 mb-4 md:mb-6" id="live-board-card">
           <div class="flex flex-wrap items-start justify-between gap-2 mb-1">
             <div><h2 class="text-sm font-semibold">Live teacher schedule</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">Where each teacher should be right now, from their saved schedule. Updates every 30 seconds and works offline.</p></div>
@@ -489,7 +486,35 @@
           <div id="live-list" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
           <p id="live-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-3"></p>
         </div>
+        </div>
+        <div id="ad-p-teachers" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-t-sel">Teacher</label><select id="ad-t-sel" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select></div>
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-t-term">Show</label><select id="ad-t-term" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select></div>
+            <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-t-adv">Advisory class</label><select id="ad-t-adv" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select></div>
+            <div class="flex items-end"><button type="button" id="ad-t-add" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2 w-full">Add a period</button></div>
+          </div>
+          <div id="ad-t-list"></div>
+        </div>
+        <div id="ad-p-sections" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-s-sel">Section</label><select id="ad-s-sel" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select></div>
+            <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-s-term">Show</label><select id="ad-s-term" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select></div>
+          </div>
+          <div class="mb-3"><button type="button" id="ad-s-add" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Add a period to this section</button></div>
+          <div id="ad-s-list"></div>
+        </div>
+        <div id="ad-p-upload" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">Upload the school schedule</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Choose the school's Individual Teacher's Program workbook (.xlsx). Every teacher's program is read, with Term 1, 2 and 3 sheets. You see a preview first, and nothing is saved until you press Import.</p>
+          <input id="ad-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
+          <div id="ad-prev"></div>
+          <p id="ad-upload-info" class="text-xs text-slate-500 dark:text-slate-400 mt-4"></p>
+          <button type="button" id="ad-clear-all" class="text-xs font-medium text-rose-500 mt-2 underline">Remove the whole school schedule</button>
+        </div>
+      </section>
 
+      <section data-view="admin-people" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-3">Teacher directory</h2>
@@ -519,6 +544,38 @@
             </div>
             <p id="admin-students-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No students registered yet.</p>
           </div>
+        </div>
+      </section>
+
+      <section data-view="admin-counsel" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Guidance counselor</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Enter the email of the counselor's teacher account. Only this teacher sees the Counseling menu, and students can send check-ins and appointment requests to them.</p>
+          <div class="flex gap-2"><input id="adm-counselor" type="email" placeholder="counselor@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-counselor-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
+          <p id="adm-counselor-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
+          <label class="block text-xs font-medium mt-4 mb-1" for="adm-slots">Appointment times (24-hour, separated by commas)</label>
+          <input id="adm-slots" type="text" placeholder="08:30, 09:30, 10:30, 13:30, 14:30, 15:30" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Saved with the Save button above. Students pick from these on weekdays.</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Teacher wellness inbox (principal)</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Messages and survey results that teachers chose to send to the principal. Only you can read them here, after typing the admin password. Nobody else, including other teachers, can see them.</p>
+          <div class="flex gap-2"><input id="adm-wi-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-wi-load" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Open inbox</button></div>
+          <div id="adm-wi-list" class="mt-4"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 max-w-xl">
+          <h2 class="text-sm font-semibold">Survey email receiver</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">The Gmail that receives students' survey results (Excel file). Change it here when the guidance office changes. It is saved safely on the server, not in the shared school data.</p>
+          <label class="block text-xs font-medium mb-1" for="adm-recv">Receiver email</label>
+          <input id="adm-recv" type="email" placeholder="guidance@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-p">Principal email (receives teachers' results sent to the principal)</label>
+          <input id="adm-recv-p" type="email" placeholder="principal@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+          <label class="block text-xs font-medium mt-3 mb-1" for="adm-recv-pw">Admin password (to confirm)</label>
+          <div class="flex gap-2"><input id="adm-recv-pw" type="password" autocomplete="off" placeholder="Admin password" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><button id="adm-recv-save" class="shrink-0 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button></div>
+          <button id="adm-recv-load" class="text-xs text-indigo-600 dark:text-indigo-400 mt-2 underline">Show current receiver</button>
+          <p id="adm-recv-note" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Emails are sent through Brevo from the verified sender. Email is not a fully private channel, so use a Gmail the guidance office controls.</p>
         </div>
       </section>
 
@@ -1390,7 +1447,7 @@ async function xlsxInflate(u8) {
   const out = new Blob([u8]).stream().pipeThrough(ds);
   return new Uint8Array(await new Response(out).arrayBuffer());
 }
-async function readXlsxBook(buf) {
+async function readXlsxBook(buf, opts) {
   const u8 = new Uint8Array(buf), dv = new DataView(buf), dec = new TextDecoder();
   let eocd = -1;
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65600); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
@@ -1424,8 +1481,8 @@ async function readXlsxBook(buf) {
   for (const sh of sheetList) {
     const sheetXml = await text(sh.path);
     if (!sheetXml) continue;
-    const rows = [];
-    Array.from(parse(sheetXml).getElementsByTagName('row')).forEach(row => {
+    const rows = [], byNum = {}, sheetDoc = parse(sheetXml);
+    Array.from(sheetDoc.getElementsByTagName('row')).forEach(row => {
       const r = [];
       Array.from(row.getElementsByTagName('c')).forEach(c => {
         const m = /^([A-Z]+)/.exec(c.getAttribute('r') || ''); if (!m) return;
@@ -1439,7 +1496,14 @@ async function readXlsxBook(buf) {
         r[ci] = String(val).trim();
       });
       for (let i = 0; i < r.length; i++) if (r[i] == null) r[i] = '';
+      byNum[row.getAttribute('r')] = r;
       rows.push(r);
+    });
+    if (opts && opts.fillDown) Array.from(sheetDoc.getElementsByTagName('mergeCell')).forEach(mc => {
+      const m = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(mc.getAttribute('ref') || ''); if (!m || m[1] !== m[3]) return;
+      let ci = 0; for (const ch of m[1]) ci = ci * 26 + ch.charCodeAt(0) - 64; ci--;
+      const top = byNum[m[2]], v = top && top[ci]; if (!v) return;
+      for (let rr = +m[2] + 1; rr <= +m[4]; rr++) { const row = byNum[rr]; if (!row) continue; while (row.length <= ci) row.push(''); row[ci] = v; }
     });
     out.push({ name: sh.name, rows: rows.filter(r => r.some(x => x !== '')) });
   }
@@ -1505,10 +1569,10 @@ function tickClock() {
 
 /* ==================== NAVIGATION ==================== */
 const PAGE_TITLES = {
-  admin: 'Admin Console', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
+  admin: 'Admin Console', 'admin-schedule': 'School Schedule', 'admin-people': 'Accounts', 'admin-counsel': 'Counseling and Wellness', dashboard: 'Teacher Dashboard', scanner: 'Live Scanner', roster: 'Roster Manager',
   studentid: 'Profile', counseling: 'Counseling', messages: 'Messages', guidance: 'Counseling', classroom: 'Classroom', learning: 'LMS', attendance: 'Attendance', subjects: 'Subjects', teachers: 'Teachers', settings: 'Settings'
 };
-const NAV_ROLES = { admin: ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], counseling: ['student', 'teacher'], messages: ['teacher'], guidance: ['teacher'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
+const NAV_ROLES = { admin: ['admin'], 'admin-schedule': ['admin'], 'admin-people': ['admin'], 'admin-counsel': ['admin'], dashboard: ['teacher'], scanner: ['teacher'], roster: ['teacher'], studentid: ['student'], attendance: ['student'], subjects: ['student'], teachers: ['student'], counseling: ['student', 'teacher'], messages: ['teacher'], guidance: ['teacher'], classroom: ['teacher'], learning: ['student'], settings: ['admin', 'teacher'] };
 function defaultViewForRole(role) {
   if (role === 'admin') return 'admin';
   if (role === 'teacher') return 'dashboard';
@@ -1552,7 +1616,7 @@ function goToView(view) {
   if (view === 'classroom') renderClassroom();
   if (view === 'learning') renderLearning();
   if (view === 'settings') renderSettings();
-  if (view === 'admin') renderAdminView();
+  if (view === 'admin' || view.indexOf('admin-') === 0) renderAdminView();
 }
 document.querySelectorAll('.nav-btn, .nav-btn-m').forEach(b => b.addEventListener('click', () => goToView(b.dataset.view)));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goToView(b.dataset.goto)));
@@ -1773,7 +1837,7 @@ function scheduleEntries() {
     const cls = st ? DB.classes.find(c => c.id === st.classId) : null;
     if (!cls && !mySubjectsNow().length) return null;
     const out = [];
-    if (cls) DB.teachers.forEach(t => (t.schedule || []).forEach(e => {
+    if (cls) adAllTeachers().forEach(t => (t.schedule || []).forEach(e => {
       if (!termOk(e) || !entryHasClass(e, cls.id)) return;
       const others = (e.classIds || []).filter(id => id !== cls.id).map(id => (DB.classes.find(c => c.id === id) || {}).section).filter(Boolean);
       out.push({ e, sub: t.name + (others.length ? ' · with ' + others.join(', ') : ''), pick: '' });
@@ -3278,6 +3342,7 @@ function finishLogin(email, name, idNumber) {
     list.push(account);
   }
   if (!account.email) account.email = email;
+  if (loginRole === 'teacher') adAutoLink(account);
   DB.auth = { role: loginRole, userId: account.id, name: account.name, loginAt: new Date().toISOString() };
   rememberLogin({ email, role: loginRole, method: loginMethod, name: account.name });
   saveDB();
@@ -3528,7 +3593,7 @@ function renderScheduleList() {
       '<div class="min-w-0"><p class="text-sm font-medium truncate">' + escapeHtml(e.subject) + '</p>' +
       '<p class="text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(classesLabel(e.classIds) || 'No section set') + (when ? ' · ' + escapeHtml(when) : '') + '</p>' +
       ((e.classIds || []).length > 1 ? '<span class="inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">Combined class</span>' : '') + '</div>' +
-      '<button data-del-sched="' + e.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500 text-xs font-medium">Remove</button></div>';
+      (e.src === 'admin' ? '<span class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">Set by school</span>' : '<button data-del-sched="' + e.id + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500 text-xs font-medium">Remove</button>') + '</div>';
   }).join('');
   document.querySelectorAll('[data-del-sched]').forEach(b => b.addEventListener('click', () => {
     const gone = (t.schedule || []).find(x => x.id === b.dataset.delSched);
@@ -3545,6 +3610,7 @@ document.getElementById('t-profile-form').addEventListener('submit', e => {
   if (!name) return;
   const finish = photoUrl => {
     t.name = name;
+    adAutoLink(t);
     t.teacherId = document.getElementById('t-teacherid').value.trim();
     t.advisoryClassId = document.getElementById('t-advisory').value;
     if (photoUrl) t.photo = photoUrl;
@@ -3577,7 +3643,8 @@ document.getElementById('t-sched-form').addEventListener('submit', e => {
 document.getElementById('t-sched-clear').addEventListener('click', () => {
   const t = getMyTeacher();
   if (!t || !(t.schedule || []).length) return;
-  askConfirm('Remove all subjects', 'This clears every subject in your schedule.', () => { const names = (t.schedule || []).map(e => e.subject); t.schedule = []; names.forEach(n => unlinkSubjectIfUnused(t, n)); saveDB(); renderScheduleList(); });
+  if (!(t.schedule || []).some(e => e.src !== 'admin')) { toast('Your schedule was set by the school. Ask the principal to change it.', 'info'); return; }
+  askConfirm('Remove all subjects', 'This clears the subjects you added. Periods set by the school stay.', () => { const gone = (t.schedule || []).filter(e => e.src !== 'admin'); t.schedule = (t.schedule || []).filter(e => e.src === 'admin'); gone.forEach(e => unlinkSubjectIfUnused(t, e.subject)); saveDB(); renderScheduleList(); });
 });
 document.getElementById('t-sched-template').addEventListener('click', () => {
   downloadXlsx([['Subject', 'Grade', 'Section', 'Day', 'Start', 'End'], ['Mathematics', 'Grade 12', 'Beethoven', 'Mon', '08:00', '09:00'], ['English', 'Grade 12', 'Beethoven/Mozart', 'Tue', '09:00', '10:00']], 'attendly-schedule-template.xlsx', 'Schedule', [20, 12, 22, 8, 10, 10]);
@@ -3774,7 +3841,7 @@ const LANG_FIL = {
 "School term": "Termino ng paaralan",
 "Current term": "Kasalukuyang termino",
 "Save term": "I-save ang termino",
-"School year": "Taon ng pasukan",
+"School year": "School year",
 "Term 1": "Termino 1",
 "Term 2": "Termino 2",
 "Term 3": "Termino 3",
@@ -4460,7 +4527,7 @@ const LANG_FIL = {
 "Could not sync to the cloud. Your changes are saved on this device and will sync when you are back online.": "Hindi ma-sync sa cloud. Naka-save sa device na ito ang mga pagbabago mo at magsi-sync kapag online ka na ulit.",
 "Counseling is not set up on the server yet. Ask your admin to run the counseling SQL file.": "Hindi pa naka-set up ang counseling sa server. Sabihin sa admin na patakbuhin ang counseling SQL file.",
 "Create a subject first.": "Gumawa muna ng subject.",
-"Enter a subject and tick at least one section.": "Maglagay ng subject at lagyan ng tsek ang kahit isang section.",
+"Enter a subject and tick at least one section.": "Maglagay ng subject at magtsek ng kahit isang section.",
 "Enter a subject name.": "Maglagay ng pangalan ng subject.",
 "Enter a title.": "Maglagay ng pamagat.",
 "Enter password": "Ilagay ang password",
@@ -4519,7 +4586,7 @@ const LANG_FIL = {
 "That username is taken. Try another one.": "May gumagamit na ng username na iyon. Subukan ang iba.",
 "The camera is busy. Close other apps using it and try again.": "Ginagamit pa ang camera. Isara ang ibang app na gumagamit nito at subukan ulit.",
 "The camera only works on a secure (https) page. Open the site from its https link, not from a saved file.": "Gumagana lang ang camera sa secure na (https) na page. Buksan ang site gamit ang https link nito, hindi mula sa naka-save na file.",
-"The end time must be after the start time.": "Dapat mas huli ang oras ng tapos kaysa sa oras ng simula.",
+"The end time must be after the start time.": "Dapat mas huli ang oras ng pagtatapos kaysa sa simula.",
 "The link must start with http:// or https://": "Dapat magsimula sa http:// o https:// ang link",
 "There are no survey results to export yet.": "Wala pang resulta ng survey na maie-export.",
 "This code is not valid for today.": "Hindi valid ang code na ito para ngayong araw.",
@@ -4970,16 +5037,136 @@ const LANG_FIL = {
 "Nothing in this subject yet. Lessons, reviewers, homework and quizzes will show here.": "Wala pang laman ang asignaturang ito. Lalabas dito ang mga aralin, reviewer, takdang-aralin at quiz.",
 "Submitted, awaiting score": "Naisumite, naghihintay ng iskor",
 "Sections": "Mga seksyon",
-"Advisory class": "Advisory na klase",
+"Advisory class": "Advisory class",
 "tap a teacher to see the full profile": "pindutin ang guro para makita ang buong profile",
 "Everyone in this class and their status for this session.": "Lahat ng nasa klase at ang kanilang status para sa sesyong ito.",
 "Class report": "Ulat ng klase",
 "The Excel file has the same students and statuses as the table above.": "Pareho ang mga estudyante at status sa Excel file at sa talahanayan sa itaas.",
 "Open Attendance": "Buksan ang Attendance",
 "Class list for this session: mark students by hand, record cutting, and confirm classmate check-ins.": "Listahan ng klase para sa sesyong ito: markahan ang mga estudyante nang mano-mano, itala ang pag-cutting, at kumpirmahin ang mga check-in ng kaklase.",
-"No students are enrolled in this class yet.": "Wala pang naka-enroll sa klaseng ito."
+"No students are enrolled in this class yet.": "Wala pang naka-enroll sa klaseng ito.",
+"Accounts": "Mga account",
+"Counseling and Wellness": "Counseling at Wellness",
+"Counseling and wellness": "Counseling at wellness",
+"School Schedule": "Schedule ng Paaralan",
+"School schedule": "Schedule ng paaralan",
+"Teachers with a schedule": "Mga guro na may schedule",
+"Now running": "Kasalukuyan",
+"Change term or upload the schedule": "Palitan ang termino o i-upload ang schedule",
+"Upload the whole school schedule, choose the term, edit any teacher or section timetable, and see who is in class right now.": "I-upload ang buong schedule ng paaralan, piliin ang termino, i-edit ang timetable ng anumang guro o seksyon, at tingnan kung sino ang nasa klase ngayon.",
+"Teacher and student directories. Delete an account when someone leaves.": "Mga talaan ng guro at estudyante. Burahin ang account kapag may umalis.",
+"Guidance counselor, appointment times, survey email, and the teacher wellness inbox.": "Guidance counselor, oras ng appointment, email ng survey, at wellness inbox ng mga guro.",
+"School year and term": "School year at termino",
+"Grades 7 to 10 keep the same schedule all year. Grades 11 and 12 follow the term you pick here. Teachers and students see the change right away.": "Pareho ang schedule ng Baitang 7 hanggang 10 buong taon. Ang Baitang 11 at 12 ay sumusunod sa terminong pipiliin mo rito. Makikita agad ng mga guro at estudyante ang pagbabago.",
+"By teacher": "Ayon sa guro",
+"By section": "Ayon sa seksyon",
+"Upload": "I-upload",
+"Show": "Ipakita",
+"Add a period": "Magdagdag ng period",
+"Add a period to this section": "Magdagdag ng period sa seksyong ito",
+"Upload the school schedule": "I-upload ang schedule ng paaralan",
+"Choose the school's Individual Teacher's Program workbook (.xlsx). Every teacher's program is read, with Term 1, 2 and 3 sheets. You see a preview first, and nothing is saved until you press Import.": "Piliin ang workbook ng Individual Teacher's Program ng paaralan (.xlsx). Binabasa ang program ng bawat guro, kasama ang mga sheet ng Termino 1, 2 at 3. Makikita mo muna ang preview, at walang mase-save hanggang pindutin mo ang Import.",
+"Remove the whole school schedule": "Alisin ang buong schedule ng paaralan",
+"All terms": "Lahat ng termino",
+"No day set": "Walang araw",
+"No time set": "Walang oras",
+"No periods yet for this term. Upload the school schedule or add a period by hand.": "Wala pang period para sa terminong ito. I-upload ang schedule ng paaralan o magdagdag ng period nang mano-mano.",
+"added by the teacher": "idinagdag ng guro",
+"combined class": "pinagsamang klase",
+"Set by school": "Itinakda ng paaralan",
+"Your schedule was set by the school. Ask the principal to change it.": "Itinakda ng paaralan ang schedule mo. Hilingin sa principal na baguhin ito.",
+"This clears the subjects you added. Periods set by the school stay.": "Buburahin nito ang mga subject na idinagdag mo. Mananatili ang mga period na itinakda ng paaralan.",
+"Edit period": "I-edit ang period",
+"Section(s). Tick more than one for a combined class.": "Section. Lagyan ng tsek ang higit sa isa para sa pinagsamang klase.",
+"Starts": "Magsisimula",
+"Ends": "Matatapos",
+"Term": "Termino",
+"Remove period": "Alisin ang period",
+"Teachers and the students of the ticked sections see the change right away.": "Makikita agad ng mga guro at ng mga estudyante sa mga may tsek na section ang pagbabago.",
+"Nothing is saved until you press Import. Choose which terms to bring in:": "Walang mase-save hanggang pindutin mo ang Import. Piliin kung aling mga termino ang ilalagay:",
+"Teacher in the file": "Guro sa file",
+"Periods": "Mga period",
+"Account": "Account",
+"No account yet (keep on the school list)": "Wala pang account (ilagay muna sa listahan ng paaralan)",
+"Import schedule": "I-import ang schedule",
+"Importing replaces the school-made periods of these teachers for the chosen terms. Periods that teachers added themselves stay.": "Papalitan ng pag-import ang mga period na gawa ng paaralan ng mga gurong ito para sa mga napiling termino. Mananatili ang mga period na idinagdag mismo ng mga guro.",
+"This teacher has no account yet. Their periods are kept on the school list and move to their account when they sign up with the same name.": "Wala pang account ang gurong ito. Nasa listahan ng paaralan ang mga period niya at lilipat sa account niya kapag nag-sign up siya gamit ang parehong pangalan.",
+"Saved.": "Na-save.",
+"Period removed.": "Naalis ang period.",
+"Advisory saved.": "Na-save ang advisory.",
+"School schedule removed.": "Naalis ang schedule ng paaralan.",
+"There are no teachers yet. Upload the school schedule first.": "Wala pang guro. I-upload muna ang schedule ng paaralan.",
+"No teachers yet. Upload the school schedule to list every teacher.": "Wala pang guro. I-upload ang schedule ng paaralan para ilista ang bawat guro.",
+"No teachers yet. Upload the school schedule on the Upload tab.": "Wala pang guro. I-upload ang schedule ng paaralan sa tab na I-upload.",
+"Tick at least one term to import.": "Magtsek ng kahit isang termino na ii-import.",
+"That Excel file could not be read.": "Hindi mabasa ang Excel file na iyon.",
+"Choose the school schedule as an Excel (.xlsx) file.": "Piliin ang schedule ng paaralan bilang Excel (.xlsx) file.",
+"No teacher programs were found. The file should be the school's Individual Teacher's Program workbook.": "Walang nakitang program ng guro. Dapat ang file ay ang workbook ng Individual Teacher's Program ng paaralan.",
+"Remove the school schedule": "Alisin ang schedule ng paaralan",
+"This removes every period that came from an upload or that you added or edited here, for all teachers. Periods that teachers added themselves stay. This cannot be undone.": "Aalisin nito ang bawat period na galing sa upload o idinagdag o ine-edit mo rito, para sa lahat ng guro. Mananatili ang mga period na idinagdag mismo ng mga guro. Hindi na ito maibabalik.",
+"No school schedule has been uploaded yet.": "Wala pang na-upload na schedule ng paaralan."
 };
 const LANG_PATS = [
+[
+"^Now \\(Term (\\d)\\)$",
+"Ngayon (Termino $1)"
+],
+[
+"^\\((\\d+) teachers\\)$",
+"($1 guro)"
+],
+[
+"^(\\d+) teachers and (\\d+) class periods found in (.+)$",
+"$1 guro at $2 period ng klase ang nakita sa $3"
+],
+[
+"^Set the school year to (.+) \\(now (.+)\\)$",
+"Gawing $1 ang school year (ngayon ay $2)"
+],
+[
+"^Matched by section name: (.+)\\.$",
+"Itinugma ayon sa pangalan ng section: $1."
+],
+[
+"^Skipped because the section is not in Attendly: (.+)\\.$",
+"Nilaktawan dahil wala sa Attendly ang section: $1."
+],
+[
+"^Subjects written without a section \\((\\d+)\\): choose which sections get them$",
+"Mga subject na walang nakasulat na section ($1): piliin kung aling mga section ang makakakuha"
+],
+[
+"^Now Term (\\d), SY (.+)\\. Grade 11 and 12 follow it\\. Grades 7 to 10 keep the same schedule\\.$",
+"Ngayon ay Termino $1, SY $2. Sumusunod dito ang Baitang 11 at 12. Pareho pa rin ang schedule ng Baitang 7 hanggang 10."
+],
+[
+"^Imported (\\d+) periods for (\\d+) teachers \\((\\d+) linked to accounts, (\\d+) kept on the school list\\)\\. Teachers and students see them now\\.$",
+"Na-import ang $1 period para sa $2 guro ($3 naiugnay sa account, $4 nasa listahan ng paaralan). Makikita na ito ng mga guro at estudyante."
+],
+[
+"^(\\d+) school-made periods are saved(.*)\\.$",
+"May $1 period na gawa ng paaralan na naka-save$2."
+],
+[
+"^(\\d+) periods?$",
+"$1 period"
+],
+[
+"^(\\d+) periods? \\(no account yet\\)$",
+"$1 period (wala pang account)"
+],
+[
+"^Remove (.+) from (.+)\\? Students of that section will no longer see it\\.$",
+"Alisin ang $1 kay $2? Hindi na ito makikita ng mga estudyante ng section na iyon."
+],
+[
+"^Saved\\. Note: it overlaps with (.+)$",
+"Na-save. Tandaan: nagsasapawan ito sa $1"
+],
+[
+"^Advisory: (.+)$",
+"Advisory: $1"
+],
 [
 "^Hi, (.+)\\.$",
 "Kumusta, $1."
@@ -6470,10 +6657,10 @@ function teacherAllInfo(t) {
 function renderTeachersView() {
   const list = document.getElementById('tch-list'), st = meStudent();
   if (!list) return;
-  document.getElementById('tch-sub').textContent = DB.teachers.length + ' teacher' + (DB.teachers.length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '') + ' · tap a teacher to see the full profile';
+  document.getElementById('tch-sub').textContent = adAllTeachers().length + ' teacher' + (adAllTeachers().length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '') + ' · tap a teacher to see the full profile';
   const q = (document.getElementById('tch-search').value || '').trim().toLowerCase();
   const mine = t => !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
-  const rows = DB.teachers.map(t => { const info = teacherAllInfo(t); return { t, info, mine: mine(t) }; })
+  const rows = adAllTeachers().map(t => { const info = teacherAllInfo(t); return { t, info, mine: mine(t) }; })
     .filter(r => !q || (r.t.name + ' ' + r.info.subjects.join(' ') + ' ' + r.info.sections.map(c => classLabel(c.id)).join(' ') + ' ' + r.info.advisory).toLowerCase().includes(q))
     .sort((a, b) => (b.mine - a.mine) || (a.t.name || '').localeCompare(b.t.name || ''));
   list.innerHTML = rows.length ? rows.map(r => {
@@ -6487,7 +6674,7 @@ function renderTeachersView() {
   }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">' + (q ? 'No teacher matches your search.' : 'No teachers have registered yet.') + '</p>';
 }
 function tchProfile(id) {
-  const t = DB.teachers.find(x => x.id === id); if (!t) return;
+  const t = adOwner(id); if (!t) return;
   const st = meStudent(), info = teacherAllInfo(t), mine = !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
   const old = document.getElementById('tch-prof'); if (old) old.remove();
   const row = (k, v) => '<div class="py-2 border-b border-slate-100 dark:border-slate-800"><p class="text-[11px] uppercase tracking-wide text-slate-400">' + k + '</p><div class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">' + v + '</div></div>';
@@ -6599,6 +6786,11 @@ function renderAdminView() {
   renderCounselorSetting();
   document.getElementById('admin-stat-teachers').textContent = DB.teachers.length;
   document.getElementById('admin-stat-students').textContent = DB.students.length;
+  document.getElementById('admin-stat-classes').textContent = DB.classes.length;
+  if (adPeople().some(r => !r.accountId)) { let ch = false; DB.teachers.forEach(t => { if (adAutoLink(t)) ch = true; }); if (ch) saveDB(); }
+  const adAll = adAllTeachers();
+  document.getElementById('admin-stat-sched').textContent = adAll.filter(t => (t.schedule || []).some(e => minOf(e.start) !== null && (e.classIds || []).length)).length + ' / ' + adAll.length;
+  document.getElementById('admin-term-chip').textContent = 'Term ' + DB.settings.currentTerm + ' \u00b7 SY ' + (DB.settings.schoolYear || '-');
 
   const tBody = document.getElementById('admin-teachers-body');
   document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0);
@@ -6613,7 +6805,7 @@ function renderAdminView() {
       '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + (cls ? escapeHtml(cls.name) : '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.section || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-student="' + s.id + '" title="Delete student" aria-label="Delete student" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>';
   }).join('');
 
-  renderLiveBoard();
+  renderAdminSchedule();
   refreshIcons();
 }
 
@@ -6621,6 +6813,7 @@ function renderAdminView() {
 function markRemoved(id) { DB.removedIds = DB.removedIds || []; if (!DB.removedIds.includes(id)) DB.removedIds.push(id); }
 function removeTeacherAccount(id) {
   const t = DB.teachers.find(x => x.id === id); if (!t) return;
+  adUnlink(t);
   markRemoved(id);
   DB.teachers = DB.teachers.filter(x => x.id !== id);
   (DB.subjects || []).forEach(sb0 => { if (sb0.ownerIds) sb0.ownerIds = sb0.ownerIds.filter(x => x !== id); });
@@ -6648,6 +6841,437 @@ document.addEventListener('click', ev => {
   }
 });
 
+/* ==================== ADMIN: SCHOOL SCHEDULE (upload, term, edit) ==================== */
+// The principal uploads the school's "Individual Teacher's Program" workbook once. Each period is saved on the teacher
+// (or on the school list when that teacher has no account yet) and students see it through their section.
+function adPeople() { return (DB.program && Array.isArray(DB.program.people)) ? DB.program.people : []; }
+function adProg() { if (!DB.program || typeof DB.program !== 'object') DB.program = {}; if (!Array.isArray(DB.program.people)) DB.program.people = []; return DB.program; }
+function adAllTeachers() { return DB.teachers.concat(adPeople().filter(p => !p.accountId)); }
+function adOwner(id) { return DB.teachers.find(t => t.id === id) || adPeople().find(p => p.id === id && !p.accountId) || null; }
+function adByName(a, b) { return (a.name || '').localeCompare(b.name || ''); }
+const AD_ACR = ['TLE', 'MAPEH', 'ICT', 'UCSP', 'HOPE', 'HGP', 'MIL', 'II', 'III'];
+const AD_SUBJ = { 'values': 'Values Education', 'values ed': 'Values Education', 'esp': 'Values Education', 'gen sci': 'General Science', 'gen math': 'General Mathematics', 'math': 'Mathematics',
+  'ap': 'Araling Panlipunan', 'hgp': 'Homeroom Guidance', 'pr 2': 'Practical Research 2', 'pr 1': 'Practical Research 1', 'mil': 'Media and Information Literacy', 'per dev': 'Personal Development',
+  'entrep': 'Entrepreneurship', 'like skills': 'Life Skills', 'sci': 'Science' };
+function adTitle(s) {
+  const t = String(s || '').replace(/\s+/g, ' ').trim().toLowerCase().replace(/(^|[\s\-.(\/])([a-zñ])/g, (m, a, b) => a + b.toUpperCase());
+  return t.split(' ').map(w => AD_ACR.includes(w.toUpperCase()) ? w.toUpperCase() : w).join(' ');
+}
+function adSubject(raw) { const k = String(raw || '').toLowerCase().replace(/[.\s]+/g, ' ').trim(); return AD_SUBJ[k] || adTitle(raw); }
+function adSecNorm(s) { return String(s || '').toLowerCase().replace(/[^a-zñ]/g, ''); }
+function adTimes(s) { const out = [], re = /(\d{1,2})\s*[:.]\s*(\d{2})/g; let m; s = String(s == null ? '' : s); while ((m = re.exec(s))) out.push([+m[1], +m[2]]); return out; }
+function adHm(x) { x = ((x % 1440) + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0'); }
+// "10- ATHENA - ENGLISH", "7 LOVE - VALUES ED.", "GRADE 12 - PR 2", "11-AUSTEN-GEN. SCI.   (9:30-10:30)". Anything else (PAPERWORKS, BREAK...) is not a class.
+function adParseCell(raw) {
+  let t = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim(); if (!t) return null;
+  let times = null;
+  const pm = /\(\s*(\d{1,2}\s*[:.]\s*\d{2})\s*-\s*(\d{1,2}\s*[:.]\s*\d{2})\s*\)\s*$/.exec(t);
+  if (pm) { times = [pm[1], pm[2]]; t = t.slice(0, pm.index).trim(); }
+  const m = /^(?:GRADE\s*)?(\d{1,2})\s*[-\s]\s*(.+)$/i.exec(t); if (!m) return null;
+  const grade = +m[1]; if (grade < 7 || grade > 12) return null;
+  let rest = m[2].trim(), sec = '';
+  const sm = /^([A-Za-zñÑ]+)\s*-\s*(.+)$/.exec(rest);
+  if (sm) { sec = sm[1]; rest = sm[2].trim(); }
+  if (!rest) return null;
+  return { grade, sec, subject: adSubject(rest), times };
+}
+function adSheetTerm(name) { return /2nd|second|term\s*2/i.test(name || '') ? 2 : /3rd|third|term\s*3/i.test(name || '') ? 3 : 1; }
+// Every teacher's program sits one under the other in the sheet: find each "Name:" block and its day columns.
+function adBlocks(sheets) {
+  const out = [];
+  sheets.forEach(sh => {
+    const rows = sh.rows, base = adSheetTerm(sh.name);
+    const cell = (r, c) => String((rows[r] || [])[c] == null ? '' : rows[r][c]).trim();
+    rows.forEach((r, i) => {
+      if (cell(i, 0).toLowerCase() !== 'name:') return;
+      let term = null;
+      for (let j = i - 1; j >= Math.max(0, i - 5) && !term; j--) (rows[j] || []).forEach(c => { const m = /\bterm\s*([123])\b/i.exec(String(c == null ? '' : c)); if (m && !term) term = +m[1]; });
+      let hi = -1;
+      for (let k = i + 1; k < Math.min(rows.length, i + 8); k++) if (cell(k, 0).toLowerCase() === 'time') { hi = k; break; }
+      if (hi < 0) return;
+      const days = {};
+      (rows[hi] || []).forEach((c, ci) => { const d = String(c == null ? '' : c).trim().slice(0, 3).toLowerCase(); const hit = SCHOOL_DAYS.find(x => x.toLowerCase() === d); if (hit && ci > 0) days[ci] = hit; });
+      let end = hi + 1; while (end < rows.length && !/^total/i.test(cell(end, 0)) && cell(end, 0).toLowerCase() !== 'name:') end++;
+      out.push({ sheet: sh.name, name: cell(i, 1), advisory: cell(i + 1, 1), term: term || base, rows, hi, end, days });
+    });
+  });
+  return out;
+}
+// Time labels carry no AM/PM ("5:45 - 6:30", "12:45-1:30"): the day only moves forward, so each row starts at or after the previous one.
+function adBlockPeriods(b) {
+  const slots = []; let prev = null;
+  for (let r = b.hi + 1; r < b.end; r++) {
+    const t = adTimes((b.rows[r] || [])[0]); if (!t.length) continue;
+    const base = t[0][0] * 60 + t[0][1], c = [base, base + 720].filter(x => x < 1440);
+    let s;
+    if (prev === null) s = (t[0][0] >= 5 && t[0][0] <= 12) ? base : base + 720;
+    else { const ok = c.filter(x => x >= prev - 120); s = ok.length ? Math.min.apply(null, ok) : Math.max.apply(null, c); }
+    let e = s + 60;
+    if (t[1]) { const x = t[1][0] * 60 + t[1][1]; const y = [x, x + 720].find(v => v > s); if (y !== undefined) e = y; }
+    prev = e; slots.push({ r, s, e });
+  }
+  const near = (h, m, ref) => { const x = h * 60 + m, y = x + 720; return Math.abs(x - ref) <= Math.abs(y - ref) ? x : y; };
+  const out = [];
+  Object.keys(b.days).forEach(ci => {
+    let last = null;
+    slots.forEach(sl => {
+      const pc = adParseCell((b.rows[sl.r] || [])[ci]);
+      if (!pc) { last = null; return; }
+      let st = sl.s, en = sl.e;
+      if (pc.times) { const a = adTimes(pc.times[0])[0], z = adTimes(pc.times[1])[0]; st = near(a[0], a[1], sl.s); en = near(z[0], z[1], st); if (en <= st) en += 720; }
+      const key = pc.grade + '|' + adSecNorm(pc.sec) + '|' + pc.subject.toLowerCase();
+      if (last && last.key === key && st <= last.en + 1 && !pc.times && !last.timed) last.en = Math.max(last.en, en);
+      else { last = { key, grade: pc.grade, sec: pc.sec, subject: pc.subject, day: b.days[ci], st, en, timed: !!pc.times }; out.push(last); }
+    });
+  });
+  return out;
+}
+// "Shakespeare" is the Acad section and "Austen" the TechPro section; a name that exists in only one grade is taken as that class.
+function adClassIdFor(grade, secRaw) {
+  const n = adSecNorm(secRaw), norm = c => adSecNorm(c.section), inG = DB.classes.filter(c => c.name === 'Grade ' + grade);
+  let c = inG.find(x => norm(x) === n);
+  if (!c && TP_SECTION_ALIAS[n]) c = inG.find(x => norm(x) === TP_SECTION_ALIAS[n]);
+  if (!c && n.length > 3) c = inG.find(x => editDist(norm(x), n) <= 1);
+  if (c) return { id: c.id };
+  const any = DB.classes.filter(x => norm(x) === n || (TP_SECTION_ALIAS[n] && norm(x) === TP_SECTION_ALIAS[n]));
+  return any.length === 1 ? { id: any[0].id, moved: true } : null;
+}
+function adParseWorkbook(sheets) {
+  const blocks = adBlocks(sheets), people = new Map(), unmatched = new Set(), moved = new Set(), gw = new Map(), terms = new Set();
+  let sy = '';
+  sheets.forEach(sh => sh.rows.slice(0, 25).forEach(r => r.forEach(c => { const m = /\bS\.?\s*Y\.?\s*(\d{4})\s*-\s*(\d{4})/i.exec(String(c == null ? '' : c)); if (m && !sy) sy = m[1] + '-' + m[2]; })));
+  blocks.forEach(b => {
+    const key = nameKey(b.name); if (!key) return;
+    let p = people.get(key);
+    if (!p) { p = { key, name: adTitle(b.name), advisoryId: '', advisoryNote: '', terms: new Set(), entries: new Map() }; people.set(key, p); }
+    p.terms.add(b.term); terms.add(b.term);
+    if (!p.advisoryId && b.advisory && !/^n\/?a$/i.test(b.advisory)) {
+      const m = /^(?:grade\s*)?(\d{1,2})\s*[-\s]\s*([A-Za-zñÑ ]+)$/i.exec(b.advisory.trim());
+      const r = m ? adClassIdFor(+m[1], m[2]) : null;
+      if (r) { p.advisoryId = r.id; if (r.moved) moved.add('Advisory ' + b.advisory.trim() + ' used as ' + classLabel(r.id)); }
+      else unmatched.add('Advisory ' + b.advisory.trim());
+    }
+    adBlockPeriods(b).forEach(pd => {
+      let cls = null, gwKey = '';
+      if (pd.sec) {
+        const r = adClassIdFor(pd.grade, pd.sec);
+        if (!r) { unmatched.add('Grade ' + pd.grade + ' ' + adTitle(pd.sec)); return; }
+        cls = [r.id]; if (r.moved) moved.add('Grade ' + pd.grade + ' ' + adTitle(pd.sec) + ' used as ' + classLabel(r.id));
+      } else {
+        const ids = DB.classes.filter(c => c.name === 'Grade ' + pd.grade).map(c => c.id);
+        if (!ids.length) { unmatched.add('Grade ' + pd.grade); return; }
+        gwKey = pd.grade + '|' + pd.subject.toLowerCase();
+        if (!gw.has(gwKey)) gw.set(gwKey, { key: gwKey, grade: pd.grade, subject: pd.subject, ids, chosen: new Set(ids) });
+      }
+      const term = pd.grade <= 10 ? 'all' : b.term, start = adHm(pd.st), end = adHm(pd.en);
+      const k = [pd.subject.toLowerCase(), pd.day, start, end, term, gwKey || cls.join(',')].join('|');
+      const ex = p.entries.get(k);
+      if (ex) ex.from.add(b.term);
+      else p.entries.set(k, { subject: pd.subject, cls, gw: gwKey, day: pd.day, start, end, term, from: new Set([b.term]) });
+    });
+  });
+  const list = Array.from(people.values()).map(p => ({ key: p.key, name: p.name, advisoryId: p.advisoryId, terms: Array.from(p.terms).sort(), list: Array.from(p.entries.values()) })).sort(adByName);
+  return { people: list, gw: Array.from(gw.values()).sort((a, b) => a.grade - b.grade || a.subject.localeCompare(b.subject)), unmatched: Array.from(unmatched).sort(), moved: Array.from(moved), terms: Array.from(terms).sort(), blocks: blocks.length, sy };
+}
+// A teacher account is matched to a person in the file by name; two teachers who could both be the same person are left for the principal to choose.
+function adAutoAccounts(people) {
+  const cand = new Map(), claims = new Map(), out = {};
+  people.forEach(p => {
+    const rec = adPeople().find(r => r.key === p.key && r.accountId), linked = rec ? DB.teachers.find(t => t.id === rec.accountId) : null;
+    const l = linked ? [linked] : DB.teachers.filter(t => tpNameMatches(p.name, t.name));
+    cand.set(p.key, l); l.forEach(t => claims.set(t.id, (claims.get(t.id) || 0) + 1));
+  });
+  people.forEach(p => { const l = cand.get(p.key); out[p.key] = (l.length === 1 && claims.get(l[0].id) === 1) ? l[0].id : ''; });
+  return out;
+}
+function adLinkRec(rec, t) {
+  t.schedule = t.schedule || [];
+  (rec.schedule || []).forEach(e => { if (!t.schedule.some(x => x.id === e.id)) t.schedule.push(e); ensurePortalSubject(e.subject, t.id); });
+  rec.schedule = []; rec.accountId = t.id;
+  if (rec.advisoryClassId && !t.advisoryClassId) t.advisoryClassId = rec.advisoryClassId;
+}
+function adAutoLink(t) {
+  if (!t || !t.name) return false;
+  const recs = adPeople().filter(r => !r.accountId && tpNameMatches(r.name, t.name));
+  if (recs.length !== 1 || DB.teachers.some(o => o.id !== t.id && tpNameMatches(recs[0].name, o.name))) return false;
+  adLinkRec(recs[0], t); return true;
+}
+function adUnlink(t) {
+  const rec = adPeople().find(r => r.accountId === t.id); if (!rec) return;
+  rec.accountId = ''; rec.schedule = (t.schedule || []).filter(e => e.src === 'admin');
+  if (t.advisoryClassId) rec.advisoryClassId = t.advisoryClassId;
+}
+function adApplyImport(parsed, choice, selTerms, useSy, fileName) {
+  const prog = adProg(), sel = new Set(selTerms), gwMap = new Map(parsed.gw.map(g => [g.key, g]));
+  let people = 0, periods = 0, linked = 0, ghosts = 0;
+  parsed.people.forEach(p => {
+    const pTerms = p.terms.filter(t => sel.has(t)); if (!pTerms.length) return;
+    const entries = p.list.filter(e => Array.from(e.from).some(t => sel.has(t)));
+    let rec = prog.people.find(r => r.key === p.key);
+    if (!rec) { rec = { id: uid('pp'), key: p.key, name: p.name, advisoryClassId: '', schedule: [], accountId: '', ghost: true }; prog.people.push(rec); }
+    rec.name = p.name; rec.ghost = true;
+    const acct = choice[p.key] ? DB.teachers.find(t => t.id === choice[p.key]) : null;
+    let target;
+    if (!acct && rec.accountId) {
+      const was = DB.teachers.find(t => t.id === rec.accountId);
+      if (was) { rec.schedule = (was.schedule || []).filter(e => e.src === 'admin'); was.schedule = (was.schedule || []).filter(e => e.src !== 'admin'); }
+    }
+    if (acct) { adLinkRec(rec, acct); target = acct; linked++; } else { rec.accountId = ''; target = rec; ghosts++; }
+    target.schedule = (target.schedule || []).filter(e => !((e.src === 'admin' || e.src === 'program') && (e.term === 'all' || pTerms.includes(Number(e.term)))));
+    entries.forEach(e => {
+      const ids = e.gw ? Array.from((gwMap.get(e.gw) || { chosen: [] }).chosen) : e.cls;
+      if (!ids.length) return;
+      target.schedule.push({ id: uid('sch'), src: 'admin', subject: e.subject, classIds: ids.slice(), day: e.day, start: e.start, end: e.end, term: e.term });
+      periods++;
+      if (acct) ensurePortalSubject(e.subject, acct.id);
+    });
+    if (p.advisoryId) { if (acct) acct.advisoryClassId = p.advisoryId; else rec.advisoryClassId = p.advisoryId; }
+    people++;
+  });
+  prog.terms = Array.from(new Set((prog.terms || []).concat(selTerms))).sort();
+  prog.importedAt = new Date().toISOString(); prog.file = fileName || '';
+  if (useSy && parsed.sy) { prog.sy = parsed.sy; DB.settings.schoolYear = parsed.sy; }
+  return { people, periods, linked, ghosts };
+}
+
+/* ---- admin: schedule screen ---- */
+const adInp = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
+const adBtn = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2';
+const adBtn2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800';
+let adTab = 'live', adSel = { teacher: '', section: '', term: 'cur' }, adPending = null;
+function adTermLabel(e) { return !e.term || e.term === 'all' ? 'All terms' : 'Term ' + e.term; }
+function adTermVisible(e, view) {
+  if (view === 'all') return true;
+  const t = view === 'cur' ? DB.settings.currentTerm : Number(view);
+  if (!e.term || e.term === 'all' || Number(e.term) === t) return true;
+  const ids = e.classIds || [];
+  return ids.length > 0 && ids.every(isJuniorHigh);
+}
+function adTermsOverlap(a, b) { return !a.term || a.term === 'all' || !b.term || b.term === 'all' || Number(a.term) === Number(b.term); }
+function adSetTermOptions(sel) {
+  if (!sel) return;
+  const cur = adSel.term;
+  sel.innerHTML = '<option value="cur">Now (Term ' + DB.settings.currentTerm + ')</option><option value="1">Term 1</option><option value="2">Term 2</option><option value="3">Term 3</option><option value="all">All terms</option>';
+  sel.value = cur;
+}
+function adPeriodList(rows, mode) {
+  if (!rows.length) return '<p class="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No periods yet for this term. Upload the school schedule or add a period by hand.</p>';
+  const days = SCHOOL_DAYS.concat(['']);
+  return days.map(d => {
+    const items = rows.filter(r => (r.e.day || '') === d).sort((a, b) => (minOf(a.e.start) === null ? 9999 : minOf(a.e.start)) - (minOf(b.e.start) === null ? 9999 : minOf(b.e.start)));
+    if (!items.length) return '';
+    return '<div class="mb-4"><p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">' + (DAY_FULL[d] || 'No day set') + '</p><div class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg">' +
+      items.map(({ o, e }) => {
+        const tm = e.start ? fmt12(e.start) + (e.end ? ' – ' + fmt12(e.end) : '') : 'No time set';
+        const who = mode === 'teacher' ? (classesLabel(e.classIds) || 'No section set') : (escapeHtml(o.name) + ((e.classIds || []).length > 1 ? ' · combined class' : ''));
+        return '<div class="flex items-start justify-between gap-3 px-3 py-2.5"><div class="min-w-0"><p class="text-sm font-medium">' + escapeHtml(e.subject) + ' <span class="text-xs font-normal text-slate-500 dark:text-slate-400">' + tm + '</span></p>' +
+          '<p class="text-xs text-slate-500 dark:text-slate-400">' + (mode === 'teacher' ? escapeHtml(who) : who) + ' · ' + adTermLabel(e) + (e.src === 'admin' ? '' : ' · added by the teacher') + '</p></div>' +
+          '<div class="shrink-0 flex gap-1"><button type="button" data-ad-edit="' + o.id + '|' + e.id + '" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800">Edit</button>' +
+          '<button type="button" data-ad-del="' + o.id + '|' + e.id + '" class="text-xs font-medium text-rose-500 px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800">Remove</button></div></div>';
+      }).join('') + '</div></div>';
+  }).join('');
+}
+function adRenderTeachers() {
+  const sel = document.getElementById('ad-t-sel'); if (!sel) return;
+  adSetTermOptions(document.getElementById('ad-t-term'));
+  const all = adAllTeachers().slice().sort(adByName);
+  if (!all.some(t => t.id === adSel.teacher)) adSel.teacher = all.length ? all[0].id : '';
+  sel.innerHTML = all.map(t => '<option value="' + t.id + '">' + escapeHtml(t.name) + ' · ' + (t.schedule || []).length + ' period' + ((t.schedule || []).length === 1 ? '' : 's') + (t.ghost ? ' (no account yet)' : '') + '</option>').join('');
+  sel.value = adSel.teacher;
+  const t = adOwner(adSel.teacher), box = document.getElementById('ad-t-list'), adv = document.getElementById('ad-t-adv');
+  document.getElementById('ad-t-add').disabled = !t;
+  if (adv) { populateClassSelect(adv, true); adv.options[0].textContent = 'None'; adv.value = t && t.advisoryClassId ? t.advisoryClassId : ''; adv.disabled = !t; }
+  if (!t) { box.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No teachers yet. Upload the school schedule to list every teacher.</p>'; return; }
+  const rows = (t.schedule || []).filter(e => adTermVisible(e, adSel.term)).map(e => ({ o: t, e }));
+  box.innerHTML = (t.ghost ? '<p class="text-xs text-amber-700 dark:text-amber-400 mb-3">This teacher has no account yet. Their periods are kept on the school list and move to their account when they sign up with the same name.</p>' : '') + adPeriodList(rows, 'teacher');
+}
+function adRenderSections() {
+  const sel = document.getElementById('ad-s-sel'); if (!sel) return;
+  adSetTermOptions(document.getElementById('ad-s-term'));
+  populateClassSelect(sel, false);
+  if (DB.classes.some(c => c.id === adSel.section)) sel.value = adSel.section; else adSel.section = sel.value;
+  const cid = adSel.section, box = document.getElementById('ad-s-list');
+  document.getElementById('ad-s-add').disabled = !cid;
+  if (!cid) { box.innerHTML = ''; return; }
+  const rows = [];
+  adAllTeachers().forEach(o => (o.schedule || []).forEach(e => { if (entryHasClass(e, cid) && adTermVisible(e, adSel.term)) rows.push({ o, e }); }));
+  const adviser = adAllTeachers().filter(t => t.advisoryClassId === cid).map(t => t.name);
+  const students = DB.students.filter(s => s.classId === cid).length;
+  box.innerHTML = '<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">' + escapeHtml(classLabel(cid)) + ' · ' + students + ' student' + (students === 1 ? '' : 's') + (adviser.length ? ' · Adviser: ' + escapeHtml(adviser.join(', ')) : '') + '. Students in this section see these periods on their own screen.</p>' + adPeriodList(rows, 'section');
+}
+function adRenderPreview() {
+  const box = document.getElementById('ad-prev'); if (!box) return;
+  if (!adPending) { box.innerHTML = ''; return; }
+  const P = adPending, d = P.parsed;
+  const total = d.people.reduce((n, p) => n + p.list.length, 0);
+  const teachersIn = t => d.people.filter(p => p.terms.includes(t)).length;
+  const optsFor = key => '<option value="">No account yet (keep on the school list)</option>' + DB.teachers.slice().sort(adByName).map(t => '<option value="' + t.id + '"' + (P.choice[key] === t.id ? ' selected' : '') + '>' + escapeHtml(t.name) + (t.email ? ' · ' + escapeHtml(t.email) : '') + '</option>').join('');
+  let h = '<div class="border border-indigo-200 dark:border-indigo-900 rounded-xl p-4 mt-4 bg-indigo-50/40 dark:bg-indigo-950/20">' +
+    '<p class="text-sm font-semibold">' + d.people.length + ' teachers and ' + total + ' class periods found in ' + escapeHtml(P.fileName) + '</p>' +
+    '<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Nothing is saved until you press Import. Choose which terms to bring in:</p>' +
+    '<div class="flex flex-wrap gap-3 mt-2">' + d.terms.map(t => '<label class="inline-flex items-center gap-1.5 text-sm"><input type="checkbox" data-ad-term="' + t + '"' + (P.terms.has(t) ? ' checked' : '') + '> Term ' + t + ' <span class="text-xs text-slate-500">(' + teachersIn(t) + ' teachers)</span></label>').join('') + '</div>';
+  if (d.sy && d.sy !== DB.settings.schoolYear) h += '<label class="inline-flex items-center gap-1.5 text-sm mt-3"><input type="checkbox" id="ad-use-sy"' + (P.useSy ? ' checked' : '') + '> Set the school year to ' + escapeHtml(d.sy) + ' (now ' + escapeHtml(DB.settings.schoolYear || '-') + ')</label>';
+  if (d.moved.length) h += '<p class="text-xs text-amber-700 dark:text-amber-400 mt-3">Matched by section name: ' + d.moved.map(escapeHtml).join('; ') + '.</p>';
+  if (d.unmatched.length) h += '<p class="text-xs text-rose-600 dark:text-rose-400 mt-2">Skipped because the section is not in Attendly: ' + d.unmatched.map(escapeHtml).join(', ') + '.</p>';
+  if (d.gw.length) h += '<details class="mt-3"><summary class="text-sm font-medium cursor-pointer">Subjects written without a section (' + d.gw.length + '): choose which sections get them</summary><div class="mt-2 divide-y divide-slate-100 dark:divide-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900">' +
+    d.gw.map(g => '<div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2"><span class="text-sm">Grade ' + g.grade + ' · ' + escapeHtml(g.subject) + '</span><span class="flex flex-wrap gap-3">' +
+      g.ids.map(id => '<label class="inline-flex items-center gap-1 text-xs"><input type="checkbox" data-ad-gw="' + escapeHtml(g.key) + '|' + id + '"' + (g.chosen.has(id) ? ' checked' : '') + '> ' + escapeHtml((DB.classes.find(c => c.id === id) || {}).section || '') + '</label>').join('') + '</span></div>').join('') + '</div></details>';
+  h += '<div class="mt-4 overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800"><th class="py-2 font-medium">Teacher in the file</th><th class="py-2 font-medium">Periods</th><th class="py-2 font-medium">Account</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-800">' +
+    d.people.map(p => '<tr><td class="py-2 pr-3 align-top"><p class="font-medium">' + escapeHtml(p.name) + '</p>' + (p.advisoryId ? '<p class="text-xs text-slate-500">Advisory: ' + escapeHtml(classLabel(p.advisoryId)) + '</p>' : '') + '</td><td class="py-2 pr-3 align-top tabular-nums">' + p.list.length + '</td>' +
+      '<td class="py-2 align-top"><select data-ad-choice="' + escapeHtml(p.key) + '" class="' + adInp + '">' + optsFor(p.key) + '</select></td></tr>').join('') + '</tbody></table></div>' +
+    '<p class="text-xs text-slate-500 dark:text-slate-400 mt-3">Importing replaces the school-made periods of these teachers for the chosen terms. Periods that teachers added themselves stay.</p>' +
+    '<div class="flex flex-wrap gap-2 mt-3"><button type="button" id="ad-import" class="' + adBtn + '">Import schedule</button><button type="button" id="ad-import-cancel" class="' + adBtn2 + '">Cancel</button></div></div>';
+  box.innerHTML = h;
+}
+function adRenderUploadInfo() {
+  const el = document.getElementById('ad-upload-info'); if (!el) return;
+  const prog = DB.program || {}, n = adAllTeachers().reduce((a, t) => a + (t.schedule || []).filter(e => e.src === 'admin').length, 0);
+  el.textContent = n ? n + ' school-made periods are saved' + (prog.importedAt ? ' (last upload ' + new Date(prog.importedAt).toLocaleDateString() + (prog.file ? ', ' + prog.file : '') + ')' : '') + '.' : 'No school schedule has been uploaded yet.';
+}
+function renderAdminSchedule() {
+  if (!document.getElementById('ad-term')) return;
+  document.getElementById('ad-term').value = String(DB.settings.currentTerm);
+  document.getElementById('ad-year').value = DB.settings.schoolYear || '';
+  ['live', 'teachers', 'sections', 'upload'].forEach(t => {
+    document.getElementById('ad-p-' + t).classList.toggle('hidden', t !== adTab);
+    const b = document.querySelector('[data-ad-tab="' + t + '"]');
+    if (b) {
+      b.classList.toggle('border-indigo-600', t === adTab); b.classList.toggle('text-indigo-600', t === adTab); b.classList.toggle('dark:text-indigo-400', t === adTab);
+      b.classList.toggle('border-transparent', t !== adTab); b.classList.toggle('text-slate-500', t !== adTab);
+    }
+  });
+  if (adTab === 'live') renderLiveBoard();
+  if (adTab === 'teachers') adRenderTeachers();
+  if (adTab === 'sections') adRenderSections();
+  if (adTab === 'upload') { adRenderUploadInfo(); adRenderPreview(); }
+}
+function adEditor(ownerId, entryId, pre) {
+  pre = pre || {};
+  const owner0 = ownerId ? adOwner(ownerId) : null, e = owner0 && entryId ? (owner0.schedule || []).find(x => x.id === entryId) : null;
+  const old = document.getElementById('ad-edit'); if (old) old.remove();
+  const teachers = adAllTeachers().slice().sort(adByName);
+  if (!teachers.length) { toast('There are no teachers yet. Upload the school schedule first.', 'warning'); return; }
+  const cur = new Set(e ? (e.classIds || []) : (pre.classIds || []));
+  const subs = Array.from(new Set(DB.subjects.map(s => s.name).concat(adAllTeachers().reduce((a, t) => a.concat((t.schedule || []).map(x => x.subject)), [])))).filter(Boolean).sort();
+  const groups = {}; DB.classes.forEach(c => { (groups[c.name] = groups[c.name] || []).push(c); });
+  const day = e ? e.day : (pre.day || ''), term = e ? (e.term || 'all') : 'all';
+  const d = document.createElement('div'); d.id = 'ad-edit';
+  d.className = 'fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4';
+  d.innerHTML = '<div class="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl p-5 space-y-3">' +
+    '<div class="flex items-center justify-between"><h3 class="text-base font-semibold">' + (e ? 'Edit period' : 'Add a period') + '</h3><button type="button" id="ad-e-x" class="text-sm text-slate-500 underline">Close</button></div>' +
+    '<div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-teacher">Teacher</label><select id="ad-e-teacher" class="' + adInp + '">' + teachers.map(t => '<option value="' + t.id + '"' + (t.id === (ownerId || adSel.teacher) ? ' selected' : '') + '>' + escapeHtml(t.name) + '</option>').join('') + '</select></div>' +
+    '<div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-subject">Subject</label><input id="ad-e-subject" list="ad-subj-list" class="' + adInp + '" value="' + escapeHtml(e ? e.subject : '') + '" placeholder="Science"><datalist id="ad-subj-list">' + subs.map(s => '<option value="' + escapeHtml(s) + '">').join('') + '</datalist></div>' +
+    '<div><p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Section(s). Tick more than one for a combined class.</p>' + Object.keys(groups).map(g => '<p class="text-[11px] text-slate-400 mt-2 mb-1">' + escapeHtml(g) + '</p><div class="flex flex-wrap gap-1.5">' + groups[g].map(c => '<label class="cursor-pointer"><input type="checkbox" class="ad-e-cls peer sr-only" value="' + c.id + '"' + (cur.has(c.id) ? ' checked' : '') + '><span class="inline-block text-xs font-medium px-2.5 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600">' + escapeHtml(c.section || c.name) + '</span></label>').join('') + '</div>').join('') + '</div>' +
+    '<div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-day">Day</label><select id="ad-e-day" class="' + adInp + '"><option value="">No day set</option>' + SCHOOL_DAYS.map(x => '<option value="' + x + '"' + (x === day ? ' selected' : '') + '>' + DAY_FULL[x] + '</option>').join('') + '</select></div>' +
+    '<div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-term">Term</label><select id="ad-e-term" class="' + adInp + '"><option value="all"' + (term === 'all' ? ' selected' : '') + '>All terms</option>' + [1, 2, 3].map(x => '<option value="' + x + '"' + (String(term) === String(x) ? ' selected' : '') + '>Term ' + x + '</option>').join('') + '</select></div>' +
+    '<div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-start">Starts</label><input id="ad-e-start" type="time" class="' + adInp + '" value="' + escapeHtml(e ? e.start || '' : '') + '"></div>' +
+    '<div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="ad-e-end">Ends</label><input id="ad-e-end" type="time" class="' + adInp + '" value="' + escapeHtml(e ? e.end || '' : '') + '"></div></div>' +
+    '<div class="flex flex-wrap gap-2 pt-2"><button type="button" id="ad-e-save" class="' + adBtn + '">Save</button><button type="button" id="ad-e-cancel" class="' + adBtn2 + '">Cancel</button>' + (e ? '<button type="button" id="ad-e-del" class="ml-auto text-sm font-medium text-rose-500 px-3 py-2">Remove period</button>' : '') + '</div>' +
+    '<p class="text-[11px] text-slate-500 dark:text-slate-400">Teachers and the students of the ticked sections see the change right away.</p></div>';
+  const close = () => d.remove(), val = id => d.querySelector('#' + id).value;
+  d.addEventListener('click', ev => { if (ev.target === d || ev.target.closest('#ad-e-x') || ev.target.closest('#ad-e-cancel')) close(); });
+  d.querySelector('#ad-e-save').addEventListener('click', () => {
+    const subject = val('ad-e-subject').trim(), classIds = Array.from(d.querySelectorAll('.ad-e-cls:checked')).map(i => i.value);
+    const start = val('ad-e-start'), end = val('ad-e-end'), target = adOwner(val('ad-e-teacher')), tv = val('ad-e-term');
+    if (!subject || !classIds.length) { toast('Enter a subject and tick at least one section.', 'warning'); return; }
+    if (start && end && minOf(end) <= minOf(start)) { toast('The end time must be after the start time.', 'warning'); return; }
+    if (!target) return;
+    const data = { subject, classIds, day: val('ad-e-day'), start, end, term: tv === 'all' ? 'all' : Number(tv), src: 'admin' };
+    let entry;
+    if (e) {
+      const oldSubject = e.subject;
+      if (owner0 !== target) { owner0.schedule = (owner0.schedule || []).filter(x => x.id !== e.id); target.schedule = (target.schedule || []).concat([e]); if (!owner0.ghost) unlinkSubjectIfUnused(owner0, oldSubject); }
+      Object.assign(e, data); entry = e;
+      if (owner0 === target && oldSubject !== subject && !target.ghost) unlinkSubjectIfUnused(target, oldSubject);
+    } else { entry = Object.assign({ id: uid('sch') }, data); target.schedule = (target.schedule || []).concat([entry]); }
+    if (!target.ghost) ensurePortalSubject(subject, target.id);
+    const s1 = minOf(entry.start), e1 = entry.end ? minOf(entry.end) : (s1 === null ? null : s1 + 1);
+    const clash = s1 === null ? null : (target.schedule || []).find(x => {
+      if (x.id === entry.id || !x.day || x.day !== entry.day || !adTermsOverlap(x, entry)) return false;
+      const s2 = minOf(x.start); if (s2 === null) return false;
+      const e2 = x.end ? minOf(x.end) : s2 + 1;
+      return s1 < e2 && s2 < e1;
+    });
+    if (!saveDB()) return;
+    adSel.teacher = target.id; close(); renderAdminView();
+    toast('Saved.' + (clash ? ' Note: it overlaps with ' + clash.subject + ' (' + fmt12(clash.start) + ').' : ''), clash ? 'warning' : 'success');
+  });
+  const del = d.querySelector('#ad-e-del');
+  if (del) del.addEventListener('click', () => { close(); adRemove(owner0.id, e.id); });
+  document.body.appendChild(d);
+}
+function adRemove(ownerId, entryId) {
+  const o = adOwner(ownerId), e = o && (o.schedule || []).find(x => x.id === entryId); if (!e) return;
+  askConfirm('Remove period', 'Remove ' + e.subject + (e.day ? ' on ' + DAY_FULL[e.day] : '') + (e.start ? ' at ' + fmt12(e.start) : '') + ' from ' + o.name + '? Students of that section will no longer see it.', () => {
+    o.schedule = (o.schedule || []).filter(x => x.id !== entryId);
+    if (!o.ghost) unlinkSubjectIfUnused(o, e.subject);
+    saveDB(); renderAdminView(); toast('Period removed.', 'success');
+  });
+}
+document.addEventListener('click', ev => {
+  if (!DB || !DB.auth || DB.auth.role !== 'admin') return;
+  const g = sel => ev.target.closest(sel);
+  let b;
+  if ((b = g('[data-ad-tab]'))) { adTab = b.dataset.adTab; renderAdminSchedule(); return; }
+  if ((b = g('[data-ad-edit]'))) { const p = b.dataset.adEdit.split('|'); adEditor(p[0], p[1]); return; }
+  if ((b = g('[data-ad-del]'))) { const p = b.dataset.adDel.split('|'); adRemove(p[0], p[1]); return; }
+  if (g('#ad-t-add')) { adEditor('', '', {}); return; }
+  if (g('#ad-s-add')) { adEditor('', '', { classIds: adSel.section ? [adSel.section] : [] }); return; }
+  if (g('#ad-term-save')) {
+    DB.settings.currentTerm = Number(document.getElementById('ad-term').value) || 2;
+    DB.settings.schoolYear = document.getElementById('ad-year').value.trim() || DB.settings.schoolYear || '2025-2026';
+    saveDB(); renderAdminView();
+    toast('Now Term ' + DB.settings.currentTerm + ', SY ' + DB.settings.schoolYear + '. Grade 11 and 12 follow it. Grades 7 to 10 keep the same schedule.', 'success'); return;
+  }
+  if (g('#ad-import-cancel')) { adPending = null; adRenderPreview(); const f = document.getElementById('ad-file'); if (f) f.value = ''; return; }
+  if (g('#ad-import')) {
+    if (!adPending) return;
+    const P = adPending;
+    if (!P.terms.size) { toast('Tick at least one term to import.', 'warning'); return; }
+    const r = adApplyImport(P.parsed, P.choice, Array.from(P.terms), P.useSy, P.fileName);
+    if (!saveDB()) return;
+    adPending = null; const f = document.getElementById('ad-file'); if (f) f.value = '';
+    adTab = 'teachers'; renderAdminView();
+    toast('Imported ' + r.periods + ' periods for ' + r.people + ' teachers (' + r.linked + ' linked to accounts, ' + r.ghosts + ' kept on the school list). Teachers and students see them now.', 'success'); return;
+  }
+  if (g('#ad-clear-all')) {
+    askConfirm('Remove the school schedule', 'This removes every period that came from an upload or that you added or edited here, for all teachers. Periods that teachers added themselves stay. This cannot be undone.', () => {
+      adAllTeachers().forEach(t => { const gone = (t.schedule || []).filter(e => e.src === 'admin'); t.schedule = (t.schedule || []).filter(e => e.src !== 'admin'); if (!t.ghost) gone.forEach(e => unlinkSubjectIfUnused(t, e.subject)); });
+      const p = adProg(); p.people = p.people.filter(r => r.accountId || (r.schedule || []).length); p.terms = []; p.importedAt = '';
+      saveDB(); renderAdminView(); toast('School schedule removed.', 'success');
+    });
+  }
+});
+document.addEventListener('change', ev => {
+  if (!DB || !DB.auth || DB.auth.role !== 'admin') return;
+  const t = ev.target; if (!t) return;
+  if (t.id === 'ad-t-sel') { adSel.teacher = t.value; adRenderTeachers(); return; }
+  if (t.id === 'ad-s-sel') { adSel.section = t.value; adRenderSections(); return; }
+  if (t.id === 'ad-t-term' || t.id === 'ad-s-term') { adSel.term = t.value; adRenderTeachers(); adRenderSections(); return; }
+  if (t.id === 'ad-t-adv') { const o = adOwner(adSel.teacher); if (o) { o.advisoryClassId = t.value; saveDB(); renderAdminView(); toast('Advisory saved.', 'success'); } return; }
+  if (t.id === 'ad-use-sy' && adPending) { adPending.useSy = t.checked; return; }
+  if (t.dataset && t.dataset.adTerm && adPending) { const n = Number(t.dataset.adTerm); if (t.checked) adPending.terms.add(n); else adPending.terms.delete(n); return; }
+  if (t.dataset && t.dataset.adChoice && adPending) { adPending.choice[t.dataset.adChoice] = t.value; return; }
+  if (t.dataset && t.dataset.adGw && adPending) {
+    const i = t.dataset.adGw.lastIndexOf('|'), g = adPending.parsed.gw.find(x => x.key === t.dataset.adGw.slice(0, i)), id = t.dataset.adGw.slice(i + 1);
+    if (g) { if (t.checked) g.chosen.add(id); else g.chosen.delete(id); }
+    return;
+  }
+  if (t.id === 'ad-file') {
+    const file = t.files && t.files[0]; if (!file) return;
+    if (/\.xls$/i.test(file.name)) { toast('Please save the file as .xlsx (Excel Workbook) and try again.', 'warning'); t.value = ''; return; }
+    if (!/\.xlsx$/i.test(file.name)) { toast('Choose the school schedule as an Excel (.xlsx) file.', 'warning'); t.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = e2 => readXlsxBook(e2.target.result, { fillDown: true }).then(sheets => {
+      const parsed = adParseWorkbook(sheets);
+      if (!parsed.people.length) { adPending = null; adRenderPreview(); toast('No teacher programs were found. The file should be the school\'s Individual Teacher\'s Program workbook.', 'warning'); return; }
+      adPending = { parsed, fileName: file.name, choice: adAutoAccounts(parsed.people), terms: new Set(parsed.terms), useSy: true };
+      adRenderPreview();
+    }).catch(() => { toast('That Excel file could not be read.', 'error'); });
+    reader.readAsArrayBuffer(file);
+  }
+});
+
 /* ---- admin: live teacher schedule (computed from saved schedules, so it works offline) ---- */
 function liveStatusFor(t, d) {
   const today = DAY_NAMES[d.getDay()], nowMin = d.getHours() * 60 + d.getMinutes();
@@ -6672,7 +7296,7 @@ function renderLiveBoard() {
   document.getElementById('live-clock').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   document.getElementById('live-day').textContent = DAY_FULL[DAY_NAMES[d.getDay()]] + ', ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' · Term ' + DB.settings.currentTerm;
   const q = liveFilter.trim().toLowerCase();
-  const items = DB.teachers.map(t => ({ t, s: liveStatusFor(t, d) }));
+  const items = adAllTeachers().map(t => ({ t, s: liveStatusFor(t, d) }));
   const count = k => items.filter(i => i.s.k === k).length;
   const chip = (txt, cls) => '<span class="text-[11px] font-semibold px-2 py-1 rounded-full ' + cls + '">' + txt + '</span>';
   document.getElementById('live-summary').innerHTML =
@@ -6685,7 +7309,7 @@ function renderLiveBoard() {
     if (!q) return true;
     return (i.t.name || '').toLowerCase().includes(q) || (i.t.schedule || []).some(e => (e.subject || '').toLowerCase().includes(q));
   }).sort((a, b) => order[a.s.k] - order[b.s.k] || (a.t.name || '').localeCompare(b.t.name || ''));
-  if (!DB.teachers.length) list.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No teachers registered yet.</p>';
+  if (!items.length) list.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No teachers yet. Upload the school schedule on the Upload tab.</p>';
   else if (!shown.length) list.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No teacher matches your search.</p>';
   else list.innerHTML = shown.map(({ t, s }) => {
     let badge, detail;
@@ -6709,7 +7333,7 @@ function renderLiveBoard() {
 document.addEventListener('input', ev => { if (ev.target && ev.target.id === 'live-search') { liveFilter = ev.target.value; renderLiveBoard(); } });
 setInterval(() => {
   const a = document.querySelector('.view-section.active');
-  if (a && a.dataset.view === 'admin' && DB && DB.auth && DB.auth.role === 'admin') renderLiveBoard();
+  if (a && a.dataset.view === 'admin-schedule' && adTab === 'live' && DB && DB.auth && DB.auth.role === 'admin') renderLiveBoard();
 }, 30000);
 window.addEventListener('online', () => { try { renderLiveBoard(); } catch (e) {} });
 window.addEventListener('offline', () => { try { renderLiveBoard(); } catch (e) {} });
