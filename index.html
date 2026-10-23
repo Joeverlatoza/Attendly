@@ -42,6 +42,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
 <style>
+.cn-bub{position:absolute;bottom:-60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7),rgba(94,234,212,.22));border:1px solid rgba(45,212,191,.25);animation:cnrise linear infinite;pointer-events:none}
+@keyframes cnrise{from{transform:translate(0,0)}50%{transform:translate(14px,-170px)}to{transform:translate(-8px,-360px)}}
+@keyframes cnpop{0%{transform:scale(.97);opacity:0}100%{transform:scale(1);opacity:1}}
+.cn-pop{animation:cnpop .35s ease-out both}
+@media (prefers-reduced-motion:reduce){.cn-bub,.cn-pop{animation:none}}
   :root { color-scheme: light dark; }
   @supports (height: 100dvh) { #app.h-screen, #app { height: 100dvh; } html.fit-zoom, .fit-zoom body { height: 100dvh; } }
   .fit-zoom #app, .fit-zoom .h-screen { height: calc(100vh / var(--fit-k)); }
@@ -5160,9 +5165,92 @@ const LANG_FIL = {
 "Five-year hope": "Pag-asa sa loob ng limang taon",
 "Your planning and balance look steady. Keep going.": "Mukhang matatag ang pagpaplano at balanse mo. Ituloy mo lang.",
 "You are unsure about a few things. The counselor can help you plan your workload and your next steps.": "May ilang bagay kang hindi sigurado. Matutulungan ka ng counselor na planuhin ang workload at susunod na hakbang mo.",
-"Planning your time or your future feels hard right now. A talk with the counselor can help you make a plan.": "Mahirap ngayon ang pagpaplano ng oras o ng kinabukasan mo. Makakatulong ang pakikipag-usap sa counselor para makabuo ng plano."
+"Planning your time or your future feels hard right now. A talk with the counselor can help you make a plan.": "Mahirap ngayon ang pagpaplano ng oras o ng kinabukasan mo. Makakatulong ang pakikipag-usap sa counselor para makabuo ng plano.",
+"Before you start": "Bago ka magsimula",
+"This is a screening and self-reflection tool. It does not diagnose, and it does not replace a qualified professional. You can stop at any time.": "Ito ay kasangkapan sa screening at pagninilay sa sarili. Hindi ito nagda-diagnose at hindi nito pinapalitan ang isang kwalipikadong propesyonal. Maaari kang huminto anumang oras.",
+"Your privacy.": "Ang privacy mo.",
+"Your answers stay on this device and show up in your Progress tab. Nothing is sent to the counselor unless you choose to send it at the end. If someone can see your screen, they can see your answers, so choose a private moment.": "Nananatili sa device na ito ang mga sagot mo at lalabas sa tab ng Progress. Walang ipapadala sa counselor maliban kung pipiliin mong ipadala sa dulo. Kung nakikita ng iba ang screen mo, makikita rin nila ang mga sagot mo, kaya pumili ng pribadong sandali.",
+"Exit": "Lumabas",
+"Screening only. It does not diagnose.": "Screening lang ito. Hindi ito nagda-diagnose.",
+"Exit the survey?": "Lalabas sa survey?",
+"Your answers so far will be erased.": "Mabubura ang mga sagot mo hanggang ngayon.",
+"Please read this first": "Pakibasa muna ito",
+"You said these problems have made daily life:": "Sabi mo, ang mga problemang ito ay naging ganito sa araw-araw mong buhay:",
+"This screening cannot tell whether you have a mental health condition. If these feelings last or get in the way of daily life, consider talking to a counselor or a qualified mental health professional.": "Hindi masasabi ng screening na ito kung may kondisyon ka sa mental health. Kung tumatagal ang mga damdaming ito o nakakasagabal sa araw-araw na buhay, isaalang-alang ang pakikipag-usap sa counselor o sa isang kwalipikadong propesyonal sa mental health.",
+"Gentle ideas for what you marked": "Mga banayad na ideya para sa mga minarkahan mo",
+"These ideas are picked by simple rules from your answers, on your device. They are general self-care suggestions, not treatment.": "Pinipili ang mga ideyang ito sa pamamagitan ng simpleng patakaran mula sa mga sagot mo, sa device mo. Pangkalahatang mungkahi ito sa pag-aalaga sa sarili, hindi gamutan.",
+"See my answers": "Tingnan ang mga sagot ko",
+"Take a quiet moment": "Maglaan ng tahimik na sandali",
+"You did something kind for yourself today. Finish with a few slow breaths.": "May mabuti kang ginawa para sa sarili mo ngayon. Tapusin sa ilang mabagal na paghinga.",
+"Quick calm (60 seconds)": "Mabilis na pagkalma (60 segundo)",
+"About these questions": "Tungkol sa mga tanong na ito",
+"These are original Attendly reflection questions. They are not a validated test, so there is no clinical score or diagnosis.": "Mga orihinal na tanong ng Attendly para sa pagninilay ang mga ito. Hindi ito napatunayang pagsusulit, kaya walang klinikal na iskor o diagnosis.",
+"Attendly is a school tool for screening and self-reflection. It is not clinically validated and does not replace an assessment by a qualified professional.": "Ang Attendly ay kasangkapan ng paaralan para sa screening at pagninilay sa sarili. Hindi ito klinikal na napatunayan at hindi nito pinapalitan ang pagsusuri ng isang kwalipikadong propesyonal.",
+"The questions, answer choices and scoring come from the PHQ-9, a published and widely used screening questionnaire. The wording is lightly adjusted for school.": "Ang mga tanong, pagpipiliang sagot at pagmamarka ay galing sa PHQ-9, isang nailathala at malawakang ginagamit na talatanungan sa screening. Bahagyang inayos ang pananalita para sa paaralan.",
+"The questions, answer choices and scoring come from the GAD-7, a published and widely used screening questionnaire. The wording is lightly adjusted for school.": "Ang mga tanong, pagpipiliang sagot at pagmamarka ay galing sa GAD-7, isang nailathala at malawakang ginagamit na talatanungan sa screening. Bahagyang inayos ang pananalita para sa paaralan.",
+"These burnout questions are original reflection prompts informed by the World Health Organization description of burnout as an occupational phenomenon, not a medical condition. They are not a validated test.": "Ang mga tanong na ito tungkol sa burnout ay orihinal na gabay sa pagninilay na hango sa paglalarawan ng World Health Organization sa burnout bilang phenomenon sa trabaho, hindi bilang medikal na kondisyon. Hindi ito napatunayang pagsusulit.",
+"Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.": "Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.",
+"Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.": "Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.",
+"World Health Organization. (2019, May 28). Burn-out an occupational phenomenon: International Classification of Diseases.": "World Health Organization. (2019, May 28). Burn-out an occupational phenomenon: International Classification of Diseases.",
+"About these surveys": "Tungkol sa mga survey na ito",
+"How they are scored": "Paano sila minamarkahan",
+"Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.": "Screen sa depresyon (PHQ-9): 0 hanggang 27. 0-4 minimal, 5-9 banayad, 10-14 katamtaman, 15-19 katamtamang malala, 20-27 malala. Hiwalay na sinusuri ang tanong tungkol sa pag-iisip na saktan ang sarili, bukod sa kabuuang iskor.",
+"Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.": "Screen sa pagkabalisa (GAD-7): 0 hanggang 21. 0-4 minimal, 5-9 banayad, 10-14 katamtaman, 15-21 malala. Para ito sa nasa hustong gulang, kaya para sa mas batang estudyante, gamitin ang resulta bilang panimula ng usapan, hindi hatol.",
+"The other surveys are original Attendly reflection questions. They are not validated tests, so their levels are only a guide.": "Ang iba pang survey ay mga orihinal na tanong ng Attendly para sa pagninilay. Hindi sila napatunayang pagsusulit, kaya gabay lang ang mga antas nila.",
+"Understanding what you feel": "Pag-unawa sa nararamdaman mo",
+"Depression symptoms: lasting sadness, loss of interest, changes in sleep, appetite or energy.": "Sintomas ng depresyon: matagal na lungkot, pagkawala ng interes, pagbabago sa tulog, gana o lakas.",
+"Anxiety symptoms: too much worry, restlessness, feeling on edge.": "Sintomas ng pagkabalisa: sobrang pag-aalala, hindi mapakali, pakiramdam na nasa bingit.",
+"Stress: a response to demands that feel too heavy. It can ease when the demands change.": "Stress: reaksyon sa mga hinihingi na masyadong mabigat. Gumagaan ito kapag nagbago ang mga hinihingi.",
+"Burnout: exhaustion, mental distance from school or work, and feeling less able to cope. The World Health Organization describes it as an occupational phenomenon, not a medical condition.": "Burnout: pagod na pagod, pagkalayo ng isip sa paaralan o trabaho, at pakiramdam na hindi na makayanan. Inilalarawan ito ng World Health Organization bilang phenomenon sa trabaho, hindi medikal na kondisyon.",
+"When to seek professional support": "Kailan hihingi ng propesyonal na suporta",
+"Consider reaching out if feelings last for weeks, make school or work hard, or you feel unsafe. Start with the school counselor, a doctor or a licensed mental health professional. You do not need the right words. You can simply say, \"I have not been feeling okay.\"": "Isaalang-alang ang paghingi ng tulong kung tumatagal ng ilang linggo ang mga damdamin, nahihirapan ka sa paaralan o trabaho, o pakiramdam mo ay hindi ka ligtas. Magsimula sa school counselor, doktor o lisensyadong propesyonal sa mental health. Hindi mo kailangan ng tamang salita. Puwede mo lang sabihing, \"Hindi ako okay nitong mga nakaraan.\"",
+"Privacy and data": "Privacy at data",
+"Your results are saved on this device, in your Progress tab. They are sent to the counselor only when you press Send, and only with your consent.": "Naka-save sa device na ito ang mga resulta mo, sa tab ng Progress. Ipinapadala lang ito sa counselor kapag pinindot mo ang Send, at sa pahintulot mo lang.",
+"References": "Mga sanggunian",
+"Pick one small activity you used to enjoy and try it for just 10 minutes, even if you do not feel like it at first.": "Pumili ng isang maliit na gawain na dati mong ikinasisiya at subukan ito nang 10 minuto lang, kahit ayaw mo muna.",
+"Write down what you feel without judging it, or tell someone you trust. Naming a feeling can ease its weight.": "Isulat ang nararamdaman mo nang hindi hinuhusgahan, o sabihin sa pinagkakatiwalaan mo. Gumagaan ang damdamin kapag pinangalanan ito.",
+"Try a gentle wind-down: similar sleep and wake times, screens away before bed, and a quiet, dim room.": "Subukan ang mahinahong paghahanda sa pagtulog: parehong oras ng tulog at gising, iwasan ang gadget bago matulog, at tahimik at madilim na kuwarto.",
+"Plan lighter tasks for when your energy is low, take short rests, and get some daylight or fresh air.": "Magplano ng mas magagaan na gawain kapag mababa ang lakas mo, magpahinga nang saglit, at lumabas para sa liwanag ng araw o sariwang hangin.",
+"Simple, regular meals at gentle times can help when your appetite feels off.": "Makakatulong ang simple at regular na pagkain sa mahinahong oras kapag kakaiba ang gana mo.",
+"Talk to yourself the way you would to a good friend. Feeling like a failure is common when people are struggling. It is not a fact about you.": "Kausapin ang sarili mo gaya ng pakikipag-usap mo sa mabuting kaibigan. Karaniwan ang pakiramdam na bigo kapag nahihirapan ang tao. Hindi ito katotohanan tungkol sa iyo.",
+"Break tasks into tiny steps and work in short blocks of 15 to 20 minutes with breaks in between.": "Hatiin ang gawain sa maliliit na hakbang at magtrabaho sa maiikling bloke na 15 hanggang 20 minuto na may pahinga sa pagitan.",
+"Gentle movement, like a slow walk or stretching, can help whether you feel slowed down or restless.": "Makakatulong ang banayad na galaw, gaya ng mabagal na paglalakad o pag-unat, kahit mabagal ka man o hindi mapakali.",
+"Try slow breathing: in for 4, out for 6, for a few minutes. The Breathe tab can guide you.": "Subukan ang mabagal na paghinga: hinga papasok nang 4, palabas nang 6, nang ilang minuto. Magagabayan ka ng tab ng Breathe.",
+"Set aside a short \"worry time\" and write your worries down. Outside that time, remind yourself they are parked for later.": "Maglaan ng maikling \"oras ng pag-aalala\" at isulat ang mga alalahanin mo. Sa labas ng oras na iyon, ipaalala sa sarili na isinantabi muna ang mga ito.",
+"Sort worries into \"I can act on this\" and \"I cannot control this\", then make one small plan for the first group.": "Ihiwalay ang mga alalahanin sa \"may magagawa ako rito\" at \"hindi ko ito makokontrol\", pagkatapos gumawa ng isang maliit na plano para sa unang grupo.",
+"Try progressive muscle relaxation: gently tense and then release each muscle group, from your toes up to your shoulders.": "Subukan ang progressive muscle relaxation: dahan-dahang higpitan at pagkatapos ay bitawan ang bawat bahagi ng kalamnan, mula daliri ng paa hanggang balikat.",
+"Short bursts of movement, like a brisk walk or stretching, can help release restless energy.": "Makakatulong ang maiikling galaw, gaya ng mabilis na paglalakad o pag-unat, para mailabas ang hindi mapakaling lakas.",
+"When irritation rises, pause, take a few slow breaths, and step away for a minute if you can.": "Kapag tumataas ang inis, huminto, huminga nang mabagal nang ilang beses, at lumayo muna nang isang minuto kung kaya.",
+"Try the 5-4-3-2-1 grounding in Quick calm to bring your attention back to the present.": "Subukan ang 5-4-3-2-1 grounding sa Quick calm para maibalik ang atensyon mo sa kasalukuyan.",
+"Protect real rest: short breaks during the day and at least one pocket of time that is truly yours.": "Protektahan ang tunay na pahinga: maiikling pahinga sa maghapon at kahit isang oras na tunay na sa iyo.",
+"Work in short focused blocks of about 25 minutes with a 5-minute break, one task at a time.": "Magtrabaho sa maiikling bloke ng pokus na mga 25 minuto na may 5 minutong pahinga, isang gawain bawat pagkakataon.",
+"When your body tightens up, try the Breathe tab and stretch your neck and shoulders between tasks.": "Kapag naninigas ang katawan mo, subukan ang tab ng Breathe at iunat ang leeg at balikat sa pagitan ng mga gawain.",
+"List everything, choose the top three for today, and let the rest wait. Ask whether anything can be postponed, shared or asked about.": "Ilista ang lahat, piliin ang tatlong pinakamahalaga ngayon, at hayaang maghintay ang iba. Itanong kung may maipagpapaliban, mahahati o maitatanong.",
+"Ask a teacher for feedback on one task. Effort often goes unseen until someone hears about it.": "Humingi ng puna sa guro tungkol sa isang gawain. Madalas hindi napapansin ang pagsisikap hangga't hindi ito naririnig ng iba.",
+"Share how you feel with someone you trust, or chat with a classmate you like. It feels lighter when it is not carried alone.": "Ibahagi ang nararamdaman mo sa pinagkakatiwalaan mo, o makipagkuwentuhan sa kaklaseng gusto mo. Gumagaan ito kapag hindi mag-isang pinapasan.",
+"Plan one guilt-free break each day. Rest is part of doing well, not a reward for finishing.": "Magplano ng isang pahinga bawat araw na walang guilt. Bahagi ng pagiging maayos ang pahinga, hindi gantimpala sa pagtatapos.",
+"Reconnect with something small you used to enjoy, or remember why you started. If this lasts, talk to the counselor.": "Balikan ang isang maliit na bagay na dati mong ikinasisiya, o alalahanin kung bakit ka nagsimula. Kung tumatagal ito, kausapin ang counselor.",
+"List everything, choose the top three for today, and let the rest wait. Ask whether anything can be postponed, shared or declined.": "Ilista ang lahat, piliin ang tatlong pinakamahalaga ngayon, at hayaang maghintay ang iba. Itanong kung may maipagpapaliban, mahahati o mahihindian.",
+"Tell the principal or a colleague about one thing you finished this week. Effort is easier to see when it is shared.": "Sabihin sa principal o sa katrabaho ang isang natapos mo ngayong linggo. Mas madaling makita ang pagsisikap kapag ibinabahagi.",
+"Message one colleague, the counselor or the principal today. Asking for support is a strength.": "Magmensahe sa isang katrabaho, sa counselor o sa principal ngayon. Lakas ang paghingi ng suporta.",
+"Plan one guilt-free break each day, and set a time to stop work at home.": "Magplano ng isang pahinga bawat araw na walang guilt, at magtakda ng oras para huminto sa trabaho sa bahay.",
+"Reconnect with what first drew you to teaching: a favorite lesson or a student success. If this lasts, talk to the counselor.": "Balikan kung ano ang unang umakit sa iyo sa pagtuturo: paboritong aralin o tagumpay ng estudyante. Kung tumatagal ito, kausapin ang counselor.",
+"Short breaks between classes help patience come back. Be kind to yourself when you are stretched thin.": "Nakakatulong ang maiikling pahinga sa pagitan ng klase para bumalik ang pasensya. Maging mabait sa sarili kapag sobra ang pagod.",
+"Choose one evening a week with no work at home, and protect it.": "Pumili ng isang gabi bawat linggo na walang trabaho sa bahay, at protektahan ito.",
+"Keep regular sleep and wake times when you can.": "Panatilihin ang regular na oras ng tulog at gising kung kaya.",
+"Move your body in a way that feels good, even briefly.": "Igalaw ang katawan sa paraang masarap sa pakiramdam, kahit sandali lang.",
+"Spend time with people who make you feel at ease.": "Maglaan ng oras sa mga taong nagpapagaan ng loob mo.",
+"Reach out to one person today, such as a friend, a family member or the counselor, and tell them how you have been feeling.": "Lapitan ang isang tao ngayon, gaya ng kaibigan, kapamilya o counselor, at sabihin kung ano ang nararamdaman mo."
 };
 const LANG_PATS = [
+[
+"^(\\d+) questions · about (\\d+) min$",
+"$1 tanong · mga $2 min"
+],
+[
+"^You answered \"(.+)\" or \"(.+)\" on (\\d+) of (\\d+) statements\\.$",
+"Sumagot ka ng \"@1\" o \"@2\" sa $3 sa $4 na pahayag."
+],
 [
 "^Now \\(Term (\\d)\\)$",
 "Ngayon (Termino $1)"
@@ -5677,6 +5765,68 @@ CN_SURVEYS.tfuture.items = cnLikert([['I put off tasks like checking papers or r
 CN_SURVEYS.tfuture.levels[0].tip = 'Your planning and balance look steady. Keep going.';
 CN_SURVEYS.tfuture.levels[1].tip = 'You are unsure about a few things. The counselor can help you plan your workload and your next steps.';
 CN_SURVEYS.tfuture.levels[2].tip = 'Planning your time or your future feels hard right now. A talk with the counselor can help you make a plan.';
+// Added from the MindSpace base: "how hard has this made things" follow-up for the anxiety screen too, tips picked by the answers, and source notes.
+(function () {
+  const diffQ = () => cnChoice('How much have these problems made it hard to do your schoolwork, take care of things at home, or get along with people?', ['Not difficult at all', 'Somewhat difficult', 'Very difficult', 'Extremely difficult'], 'Effect on daily life', false);
+  [CN_SURVEYS.gad, CN_SURVEYS.tgad].forEach(g => { const d = diffQ(); d.diff = true; g.items.splice(7, 0, d); });
+  [CN_SURVEYS.phq, CN_SURVEYS.tphq].forEach(p => { p.items.forEach(it => { if (it.type === 'choice' && /How much have these problems/.test(it.q)) it.diff = true; }); });
+  const PHQ = ['Pick one small activity you used to enjoy and try it for just 10 minutes, even if you do not feel like it at first.', 'Write down what you feel without judging it, or tell someone you trust. Naming a feeling can ease its weight.', 'Try a gentle wind-down: similar sleep and wake times, screens away before bed, and a quiet, dim room.', 'Plan lighter tasks for when your energy is low, take short rests, and get some daylight or fresh air.', 'Simple, regular meals at gentle times can help when your appetite feels off.', 'Talk to yourself the way you would to a good friend. Feeling like a failure is common when people are struggling. It is not a fact about you.', 'Break tasks into tiny steps and work in short blocks of 15 to 20 minutes with breaks in between.', 'Gentle movement, like a slow walk or stretching, can help whether you feel slowed down or restless.'];
+  const GAD = ['Try slow breathing: in for 4, out for 6, for a few minutes. The Breathe tab can guide you.', 'Set aside a short "worry time" and write your worries down. Outside that time, remind yourself they are parked for later.', 'Sort worries into "I can act on this" and "I cannot control this", then make one small plan for the first group.', 'Try progressive muscle relaxation: gently tense and then release each muscle group, from your toes up to your shoulders.', 'Short bursts of movement, like a brisk walk or stretching, can help release restless energy.', 'When irritation rises, pause, take a few slow breaths, and step away for a minute if you can.', 'Try the 5-4-3-2-1 grounding in Quick calm to bring your attention back to the present.'];
+  const B_COMMON = { 1: 'Protect real rest: short breaks during the day and at least one pocket of time that is truly yours.', 2: 'Work in short focused blocks of about 25 minutes with a 5-minute break, one task at a time.', 3: 'When your body tightens up, try the Breathe tab and stretch your neck and shoulders between tasks.' };
+  const BURN = Object.assign([], B_COMMON, { 0: 'List everything, choose the top three for today, and let the rest wait. Ask whether anything can be postponed, shared or asked about.', 4: 'Ask a teacher for feedback on one task. Effort often goes unseen until someone hears about it.', 5: 'Share how you feel with someone you trust, or chat with a classmate you like. It feels lighter when it is not carried alone.', 6: 'Plan one guilt-free break each day. Rest is part of doing well, not a reward for finishing.', 7: 'Reconnect with something small you used to enjoy, or remember why you started. If this lasts, talk to the counselor.' });
+  const TBURN = Object.assign([], B_COMMON, { 0: 'List everything, choose the top three for today, and let the rest wait. Ask whether anything can be postponed, shared or declined.', 4: 'Tell the principal or a colleague about one thing you finished this week. Effort is easier to see when it is shared.', 5: 'Message one colleague, the counselor or the principal today. Asking for support is a strength.', 6: 'Plan one guilt-free break each day, and set a time to stop work at home.', 7: 'Reconnect with what first drew you to teaching: a favorite lesson or a student success. If this lasts, talk to the counselor.', 8: 'Short breaks between classes help patience come back. Be kind to yourself when you are stretched thin.', 9: 'Choose one evening a week with no work at home, and protect it.' });
+  CN_SURVEYS.phq.tips = PHQ; CN_SURVEYS.tphq.tips = PHQ; CN_SURVEYS.gad.tips = GAD; CN_SURVEYS.tgad.tips = GAD; CN_SURVEYS.burn.tips = BURN; CN_SURVEYS.tburn.tips = TBURN;
+})();
+const CN_REFS = {
+  phq: { note: 'The questions, answer choices and scoring come from the PHQ-9, a published and widely used screening questionnaire. The wording is lightly adjusted for school.', cite: 'Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.' },
+  gad: { note: 'The questions, answer choices and scoring come from the GAD-7, a published and widely used screening questionnaire. The wording is lightly adjusted for school.', cite: 'Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.' },
+  burn: { note: 'These burnout questions are original reflection prompts informed by the World Health Organization description of burnout as an occupational phenomenon, not a medical condition. They are not a validated test.', cite: 'World Health Organization. (2019, May 28). Burn-out an occupational phenomenon: International Classification of Diseases.' }
+};
+const CN_GENERAL_IDEAS = ['Keep regular sleep and wake times when you can.', 'Move your body in a way that feels good, even briefly.', 'Spend time with people who make you feel at ease.'];
+function cnIntroHtml(sv) {
+  return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">Before you start</p><h3 class="text-base font-semibold mt-0.5">' + escapeHtml(sv.name) + '</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">' + escapeHtml(sv.blurb) + '</p>' +
+    '<p class="text-[11px] text-slate-400 mt-1">' + escapeHtml(sv.items.length + ' questions · about ' + sv.minutes + ' min') + '</p>' +
+    '<div class="mt-4 rounded-lg border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-slate-700 dark:text-slate-200">This is a screening and self-reflection tool. It does not diagnose, and it does not replace a qualified professional. You can stop at any time.</div>' +
+    '<div class="mt-3 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs text-slate-600 dark:text-slate-300"><span class="font-semibold">Your privacy.</span> <span>Your answers stay on this device and show up in your Progress tab. Nothing is sent to the counselor unless you choose to send it at the end. If someone can see your screen, they can see your answers, so choose a private moment.</span></div>' +
+    '<p class="text-[11px] text-slate-400 mt-3">' + escapeHtml(sv.source) + '</p>' +
+    '<div class="flex gap-2 mt-4"><button data-cn-svstart class="' + CN_BTN + '">Start</button><button data-cn-svreset class="' + CN_BTN2 + '">Not now</button></div></div>';
+}
+function cnResultNote(sv, s) {
+  let h = '';
+  const di = sv.items.findIndex(it => it.diff);
+  if (di >= 0 && s.ans[di] != null) h += '<p class="text-xs text-slate-500 dark:text-slate-400 mt-2"><span>You said these problems have made daily life:</span> <b>' + escapeHtml(sv.items[di].opts[s.ans[di]]) + '</b></p>';
+  if (sv.scale) { const hi = sv.scoreIdx.filter(i => (s.ans[i] || 0) >= 2).length; h += '<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">' + escapeHtml('You answered "' + sv.scale[2] + '" or "' + sv.scale[3] + '" on ' + hi + ' of ' + sv.scoreIdx.length + ' statements.') + '</p>'; }
+  return h + '<p class="text-[11px] text-slate-400 mt-2">This screening cannot tell whether you have a mental health condition. If these feelings last or get in the way of daily life, consider talking to a counselor or a qualified mental health professional.</p>';
+}
+function cnIdeasHtml(sv, s, res) {
+  if (!sv.tips) return '';
+  let tips = sv.scoreIdx.filter(i => (s.ans[i] || 0) >= 2 && sv.tips[i]).map(i => sv.tips[i]).slice(0, 5);
+  if (!tips.length) tips = CN_GENERAL_IDEAS.slice();
+  if (res.li > 0) tips.push('Reach out to one person today, such as a friend, a family member or the counselor, and tell them how you have been feeling.');
+  return '<div class="mt-4"><p class="text-sm font-semibold mb-1">Gentle ideas for what you marked</p><ul class="list-disc pl-5 space-y-1 text-sm">' + tips.map(x => '<li>' + escapeHtml(x) + '</li>').join('') + '</ul><p class="text-[11px] text-slate-400 mt-2">These ideas are picked by simple rules from your answers, on your device. They are general self-care suggestions, not treatment.</p></div>';
+}
+function cnAnswersHtml(sv, s) {
+  const rows = sv.items.map((it, i) => {
+    const type = it.type || 'scale', txt = (s.txt[i] || '').trim(); let a = '';
+    if (type === 'text') a = txt; else if (s.ans[i] != null) { const o = (it.opts || sv.scale).concat(it.other ? [CN_OTHER] : []); a = s.ans[i] < (it.opts || sv.scale).length ? o[s.ans[i]] : txt; }
+    if (!a) return '';
+    const hi = !it.type && (s.ans[i] || 0) >= 2;
+    return '<li class="py-1.5"><span class="block">' + escapeHtml(it.q) + '</span><b class="' + (hi ? 'text-amber-700 dark:text-amber-400' : '') + '">' + escapeHtml(a) + '</b></li>';
+  }).join('');
+  return '<details class="mt-4 text-sm"><summary class="cursor-pointer text-sm font-semibold">See my answers</summary><ul class="mt-2 divide-y divide-slate-200 dark:divide-slate-800 text-xs text-slate-600 dark:text-slate-300">' + rows + '</ul></details>';
+}
+function cnSourceHtml(sv) {
+  const R = CN_REFS[sv.aud === 't' ? sv.id.slice(1) : sv.id];
+  return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>' + escapeHtml(R ? R.note : 'These are original Attendly reflection questions. They are not a validated test, so there is no clinical score or diagnosis.') + '</p>' + (R ? '<p>' + escapeHtml(R.cite) + '</p>' : '') + '<p>Attendly is a school tool for screening and self-reflection. It is not clinically validated and does not replace an assessment by a qualified professional.</p></div></details>';
+}
+function cnAboutHtml() {
+  return '<details class="mt-4 text-xs text-slate-600 dark:text-slate-300"><summary class="cursor-pointer text-sm font-semibold">About these surveys</summary><div class="mt-3 space-y-3">' +
+    '<div><p class="font-semibold">How they are scored</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.</li><li>Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.</li><li>The other surveys are original Attendly reflection questions. They are not validated tests, so their levels are only a guide.</li></ul></div>' +
+    '<div><p class="font-semibold">Understanding what you feel</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression symptoms: lasting sadness, loss of interest, changes in sleep, appetite or energy.</li><li>Anxiety symptoms: too much worry, restlessness, feeling on edge.</li><li>Stress: a response to demands that feel too heavy. It can ease when the demands change.</li><li>Burnout: exhaustion, mental distance from school or work, and feeling less able to cope. The World Health Organization describes it as an occupational phenomenon, not a medical condition.</li></ul></div>' +
+    '<div><p class="font-semibold">When to seek professional support</p><p class="mt-1">Consider reaching out if feelings last for weeks, make school or work hard, or you feel unsafe. Start with the school counselor, a doctor or a licensed mental health professional. You do not need the right words. You can simply say, "I have not been feeling okay."</p></div>' +
+    '<div><p class="font-semibold">Privacy and data</p><p class="mt-1">Your results are saved on this device, in your Progress tab. They are sent to the counselor only when you press Send, and only with your consent.</p></div>' +
+    '<div><p class="font-semibold">References</p><p class="mt-1">' + escapeHtml(CN_REFS.phq.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.gad.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.burn.cite) + '</p></div></div></details>';
+}
 const CN_STEPS_T = {
   load: 'Write your top 3 tasks for tomorrow and let the rest wait. If a deadline is not realistic, tell the principal early and ask what can move.',
   body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders between classes.',
@@ -6117,7 +6267,7 @@ function cnPanelExplore() {
 /* ---- Surveys ---- */
 function cnStartSurvey(id) {
   if (!CN_SURVEYS[id]) return;
-  cn.sv = { id, step: 0, ans: [], txt: [], done: false, sent: false, busy: false, rec: null, email: '' };
+  cn.sv = { id, intro: true, step: 0, ans: [], txt: [], done: false, sent: false, busy: false, rec: null, email: '' };
   cnRenderPanel('surveys'); window.scrollTo(0, 0);
 }
 function cnPanelSurveys() {
@@ -6125,30 +6275,35 @@ function cnPanelSurveys() {
   if (!s) {
     return '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">Surveys</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-4">Pick one. You get a result and a plan with small next steps. These are screening questions, not a diagnosis, and nothing is sent unless you choose to send it. Most surveys also have questions where you can choose an answer or write your own. Writing is always optional.</p><div class="space-y-2">' +
       cnSvList().map(k => { const v = CN_SURVEYS[k]; return '<button data-cn-sv="' + k + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(v.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(v.blurb) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">~' + v.minutes + ' min</span></button>'; }).join('') + '</div>' +
-      '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for ' + (cnIsT() ? 'teachers' : 'students') + '.</p></div>';
+      '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for ' + (cnIsT() ? 'teachers' : 'students') + '.</p>' + cnAboutHtml() + '</div>';
   }
   const sv = CN_SURVEYS[s.id];
+  if (s.intro && !s.done) return cnIntroHtml(sv);
   if (!s.done) {
     const i = s.step, it = sv.items[i], type = it.type || 'scale', last = i >= sv.items.length - 1;
     const opts = type === 'text' ? [] : (it.opts || sv.scale).concat(it.other ? [CN_OTHER] : []);
     const otherSel = type === 'choice' && it.other && s.ans[i] === opts.length - 1, txt = s.txt[i] || '';
     const hint = type === 'text' ? 'Type your answer here. You can skip this question.' : otherSel ? 'Write your own answer' : type === 'choice' ? 'Want to add more in your own words? (optional)' : 'Want to say it in your own words? (optional)';
-    return '<div class="' + CN_CARD + '"><div class="flex items-center justify-between mb-2"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + ' · ' + (i + 1) + ' of ' + sv.items.length + '</p><button data-cn-svback class="text-xs text-slate-500 hover:underline">' + (i ? 'Back' : 'Cancel') + '</button></div>' +
-      '<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 overflow-hidden"><div class="h-full bg-teal-500" style="width:' + Math.round(i / sv.items.length * 100) + '%"></div></div>' +
+    return '<div class="' + CN_CARD + ' relative overflow-hidden" aria-live="polite">' + [[34, 8, 17, 2], [54, 28, 24, 11], [26, 52, 15, 6], [46, 68, 21, 1], [30, 86, 19, 9]].map(b => '<span class="cn-bub" aria-hidden="true" style="width:' + b[0] + 'px;height:' + b[0] + 'px;left:' + b[1] + '%;animation-duration:' + b[2] + 's;animation-delay:-' + b[3] + 's"></span>').join('') + '<div class="relative"><div class="flex items-center justify-between mb-2"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + ' · ' + (i + 1) + ' of ' + sv.items.length + '</p><span class="flex items-center gap-3"><button data-cn-svback class="text-xs text-slate-500 hover:underline">' + (i ? 'Back' : 'Cancel') + '</button>' + (i ? '<button data-cn-svexit class="text-xs text-rose-600 hover:underline">Exit</button>' : '') + '</span></div>' +
+      '<div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="' + sv.items.length + '" aria-valuenow="' + i + '"><div class="h-full bg-teal-500" style="width:' + Math.round(i / sv.items.length * 100) + '%"></div></div>' +
+      (i === 0 ? '<p class="text-[11px] text-slate-400 mb-2">Screening only. It does not diagnose.</p>' : '') + '<div class="cn-pop">' +
       (sv.lead && !it.type ? '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">' + escapeHtml(sv.lead) + '</p>' : '') +
       (type !== 'scale' ? '<p class="text-[11px] text-teal-700 dark:text-teal-300 font-medium mb-1">' + (type === 'text' ? 'Your own words (optional)' : 'Choose one') + '</p>' : '') +
       '<h3 class="text-base font-semibold mb-3">' + escapeHtml(it.q) + '</h3>' + (opts.length ? '<div class="space-y-2">' +
-      opts.map((o, k) => '<button data-cn-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (s.ans[i] === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div>' : '') +
+      opts.map((o, k) => '<button data-cn-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (s.ans[i] === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div>' : '') + '</div>' +
       '<label for="cn-ans-txt" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mt-4 mb-1">' + hint + '</label>' +
       '<textarea id="cn-ans-txt" rows="' + (type === 'text' ? 4 : 2) + '" maxlength="500" placeholder="Write here..." class="' + CN_INP + '">' + escapeHtml(txt) + '</textarea>' +
-      '<div class="flex gap-2 mt-4"><button data-cn-next class="' + CN_BTN + '">' + (last ? 'Finish' : (type === 'text' && !txt.trim() ? 'Skip' : 'Next')) + '</button></div></div>';
+      '<div class="flex gap-2 mt-4"><button data-cn-next class="' + CN_BTN + '">' + (last ? 'Finish' : (type === 'text' && !txt.trim() ? 'Skip' : 'Next')) + '</button></div></div></div>';
   }
   const r = s.rec, res = cnSurveyResult(sv, s.ans), cs = cnIsT() ? (cnTRecipients()[0] || {}).p : cnCounselor(), urgent = res.safety >= 1;
-  return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + '</p>' +
+  const tint = res.level.high ? ' bg-gradient-to-b from-violet-50 to-transparent dark:from-violet-950/25' : (res.li > 0 ? ' bg-gradient-to-b from-sky-50 to-transparent dark:from-sky-950/25' : '');
+  return '<div class="' + CN_CARD + tint + '">' + (urgent ? '<div class="mb-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4" role="alert"><p class="text-[11px] uppercase tracking-wide font-semibold text-rose-700 dark:text-rose-300">Please read this first</p><p class="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-0.5">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>' : '') +
+    '<p class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(sv.name) + '</p>' +
     '<div class="flex items-center gap-2 mt-1">' + cnChip(res.level.name, res.level.cls) + '<span class="text-xs text-slate-400 tabular-nums">' + res.total + ' / ' + res.max + '</span></div>' +
-    '<p class="text-sm mt-2">' + escapeHtml(res.level.tip) + '</p>' +
-    (urgent ? '<div class="mt-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>' : '') +
-    '<div class="mt-4"><p class="text-sm font-semibold mb-2">Your plan</p><ol class="space-y-2">' + r.plan.map((x, i) => '<li class="flex gap-2 text-sm"><span class="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[11px] font-semibold flex items-center justify-center shrink-0 mt-0.5">' + (i + 1) + '</span><span>' + escapeHtml(x) + '</span></li>').join('') + '</ol></div>' +
+    '<p class="text-sm mt-2">' + escapeHtml(res.level.tip) + '</p>' + cnResultNote(sv, s) +
+        '<div class="mt-4"><p class="text-sm font-semibold mb-2">Your plan</p><ol class="space-y-2">' + r.plan.map((x, i) => '<li class="flex gap-2 text-sm"><span class="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[11px] font-semibold flex items-center justify-center shrink-0 mt-0.5">' + (i + 1) + '</span><span>' + escapeHtml(x) + '</span></li>').join('') + '</ol></div>' +
+    cnIdeasHtml(sv, s, res) + cnAnswersHtml(sv, s) +
+    '<div class="mt-4 rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50/60 dark:bg-teal-950/20 p-4 text-center"><p class="text-sm font-semibold">Take a quiet moment</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">You did something kind for yourself today. Finish with a few slow breaths.</p><button data-cn-calm class="' + CN_BTN2 + ' mt-2">Quick calm (60 seconds)</button></div>' + cnSourceHtml(sv) +
     '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-copyplan="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="copy" class="w-4 h-4"></i>Copy plan</button><button data-cn-dl="' + r.id + '" class="' + CN_BTN2 + '"><i data-lucide="download" class="w-4 h-4"></i>Download Excel</button></div>' +
     '<div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-4">' + (s.sent ? '<p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Sent to ' + escapeHtml(s.toLabel || 'the counselor') + (s.email === 'ok' ? ' and emailed as an Excel file' : '') + '. You will see their reply under Talk.</p>' + (s.email !== 'ok' ? '<p class="text-[11px] text-slate-500 mt-1">The email could not be sent yet. ' + (cnIsT() ? 'They' : 'The counselor') + ' can still read your result in the app.</p>' : '') :
       (cn_share_ok(cs) ? cnShareHtml(s, cs, urgent) 
@@ -6498,6 +6653,8 @@ document.addEventListener('click', async ev => {
   if ((el = g('[data-cn-sv]'))) { if (cnNeedUsername()) return; cnStartSurvey(el.dataset.cnSv); return; }
   if ((el = g('[data-cn-ans]'))) { const s = cn.sv; s.ans[s.step] = +el.dataset.cnAns; cnRenderPanel('surveys'); return; }
   if (g('[data-cn-next]')) { cnSurveyNext(); return; }
+  if (g('[data-cn-svstart]')) { cn.sv.intro = false; cnRenderPanel('surveys'); window.scrollTo(0, 0); return; }
+  if (g('[data-cn-svexit]')) { askConfirm('Exit the survey?', 'Your answers so far will be erased.', () => { cn.sv = null; cnShowTab('surveys'); }); return; }
   if (g('[data-cn-svback]')) { const s = cn.sv; if (s.step === 0) cn.sv = null; else s.step--; cnRenderPanel('surveys'); return; }
   if (g('[data-cn-svreset]')) { cn.sv = null; cnShowTab('surveys'); return; }
   if (g('[data-cn-svsend]')) { cnSurveySend(); return; }
