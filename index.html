@@ -42,6 +42,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
 <style>
+html[data-tsize="1"]{font-size:112.5%}html[data-tsize="2"]{font-size:125%}
+html[data-tsize="1"] .text-\[10px\]{font-size:11.5px}html[data-tsize="1"] .text-\[11px\]{font-size:12.5px}
+html[data-tsize="2"] .text-\[10px\]{font-size:13px}html[data-tsize="2"] .text-\[11px\]{font-size:14px}
+html[data-font="easy"] body,html[data-font="easy"] button,html[data-font="easy"] input,html[data-font="easy"] textarea,html[data-font="easy"] select{font-family:'Atkinson Hyperlegible',Verdana,Tahoma,sans-serif!important}
+html[data-space="1"] body{letter-spacing:.02em;word-spacing:.08em;line-height:1.7}
+html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-count:1!important}
 .cn-bub{position:absolute;bottom:-60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7),rgba(94,234,212,.22));border:1px solid rgba(45,212,191,.25);animation:cnrise linear infinite;pointer-events:none}
 @keyframes cnrise{from{transform:translate(0,0)}50%{transform:translate(14px,-170px)}to{transform:translate(-8px,-360px)}}
 @keyframes cnpop{0%{transform:scale(.97);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -3210,6 +3216,7 @@ const ADMIN_PASSWORD_HASH = 'f5d883f78c5311a9098a6729d9f04e815c80fa3b1f7cdd67a99
 /* ==================== AUTH: ROLE NAV & SCREEN SWITCHING ==================== */
 function applyRoleNav() {
   const role = DB.auth ? DB.auth.role : null;
+  if (typeof helpNowSync === 'function') helpNowSync();
   document.querySelectorAll('.nav-btn, .nav-btn-m').forEach(b => {
     const allowed = NAV_ROLES[b.dataset.view] || [];
     b.classList.toggle('hidden', !(role && allowed.includes(role)));
@@ -3252,6 +3259,7 @@ function logout() {
   askConfirm('Log out', 'You will need to sign in again to continue.', () => {
     DB.auth = null;
     saveDB();
+    try { helpNowSync(); hnClose(); cnAmbStop(true); cnScanStop(); } catch (e) {}
     try { if (sb) sb.auth.signOut().catch(() => {}); } catch (e) {}
     renderAuthGate();
     toast('Signed out.', 'success');
@@ -4100,7 +4108,7 @@ const LANG_FIL = {
 "Somatic Regulation": "Pagpapakalma ng Katawan",
 "Guided breathing and grounding that tell your body it is safe, so your heart rate slows and your thoughts settle..": "Gabay na paghinga at grounding na nagsasabi sa katawan mo na ligtas ka, para bumagal ang tibok ng puso at kumalma ang isip mo.",
 "Community Advocacy": "Pagtulong sa Komunidad",
-"Direct access to counseling support, help with school concerns, and information about community resources..": "Direktang daan sa counseling, tulong sa mga problema sa school, at impormasyon tungkol sa mga tulong sa komunidad.",
+"Direct access to counseling support, help with school concerns, and information about community resources.": "Direktang daan sa counseling, tulong sa mga problema sa school, at impormasyon tungkol sa mga tulong sa komunidad.",
 "Ask the counselor which of these are running at school right now.": "Itanong sa counselor kung alin sa mga ito ang meron ngayon sa school.",
 "← Back to Explore": "← Bumalik sa Tuklasin",
 "Pillar": "Haligi",
@@ -5240,9 +5248,236 @@ const LANG_FIL = {
 "Keep regular sleep and wake times when you can.": "Panatilihin ang regular na oras ng tulog at gising kung kaya.",
 "Move your body in a way that feels good, even briefly.": "Igalaw ang katawan sa paraang masarap sa pakiramdam, kahit sandali lang.",
 "Spend time with people who make you feel at ease.": "Maglaan ng oras sa mga taong nagpapagaan ng loob mo.",
-"Reach out to one person today, such as a friend, a family member or the counselor, and tell them how you have been feeling.": "Lapitan ang isang tao ngayon, gaya ng kaibigan, kapamilya o counselor, at sabihin kung ano ang nararamdaman mo."
+"Reach out to one person today, such as a friend, a family member or the counselor, and tell them how you have been feeling.": "Lapitan ang isang tao ngayon, gaya ng kaibigan, kapamilya o counselor, at sabihin kung ano ang nararamdaman mo.",
+"I have not been feeling okay lately.": "Hindi ako okay nitong mga nakaraan.",
+"\"I have not been feeling okay lately.\"": "\"Hindi ako okay nitong mga nakaraan.\"",
+"Can we talk? Something has been on my mind.": "Puwede ba tayong mag-usap? May bumabagabag sa isip ko.",
+"\"Can we talk? Something has been on my mind.\"": "\"Puwede ba tayong mag-usap? May bumabagabag sa isip ko.\"",
+"I am having a hard time with school and I need help.": "Nahihirapan ako sa school at kailangan ko ng tulong.",
+"\"I am having a hard time with school and I need help.\"": "\"Nahihirapan ako sa school at kailangan ko ng tulong.\"",
+"I am worried about a friend and I do not know what to do.": "Nag-aalala ako sa isang kaibigan at hindi ko alam ang gagawin.",
+"\"I am worried about a friend and I do not know what to do.\"": "\"Nag-aalala ako sa isang kaibigan at hindi ko alam ang gagawin.\"",
+"I do not know how to say this, but I need someone to listen.": "Hindi ko alam kung paano sasabihin ito, pero kailangan ko ng makikinig.",
+"\"I do not know how to say this, but I need someone to listen.\"": "\"Hindi ko alam kung paano sasabihin ito, pero kailangan ko ng makikinig.\"",
+"I have not been feeling okay lately, and I would like to talk.": "Hindi ako okay nitong mga nakaraan, at gusto kong makipag-usap.",
+"\"I have not been feeling okay lately, and I would like to talk.\"": "\"Hindi ako okay nitong mga nakaraan, at gusto kong makipag-usap.\"",
+"My workload has become too much, and I need to talk about what can change.": "Sobra na ang gawain ko, at kailangan kong pag-usapan kung ano ang puwedeng baguhin.",
+"\"My workload has become too much, and I need to talk about what can change.\"": "\"Sobra na ang gawain ko, at kailangan kong pag-usapan kung ano ang puwedeng baguhin.\"",
+"I am tired all the time and I think it is burnout. Can we find a time to talk?": "Lagi akong pagod at sa tingin ko ay burnout ito. Puwede ba tayong maghanap ng oras para mag-usap?",
+"\"I am tired all the time and I think it is burnout. Can we find a time to talk?\"": "\"Lagi akong pagod at sa tingin ko ay burnout ito. Puwede ba tayong maghanap ng oras para mag-usap?\"",
+"Something at home is affecting my work, and I need some support.": "May nangyayari sa bahay na nakakaapekto sa trabaho ko, at kailangan ko ng suporta.",
+"\"Something at home is affecting my work, and I need some support.\"": "\"May nangyayari sa bahay na nakakaapekto sa trabaho ko, at kailangan ko ng suporta.\"",
+"A check-in is a start. A person can help you more. You can message or book a time here, and it goes only to the person you choose.": "Simula lang ang check-in. Mas matutulungan ka ng isang tao. Dito ka puwedeng magmensahe o mag-book ng oras, at sa taong pipiliin mo lang ito mapupunta.",
+"A kind check on workload, tiredness and rest.": "Isang magiliw na pagsusuri sa dami ng gawain, pagod at pahinga.",
+"A person, a goal, a pet, a dream, anything that matters to you.": "Isang tao, layunin, alagang hayop, pangarap, o anumang mahalaga sa iyo.",
+"A private plan for hard moments: your warning signs, what helps, and who to reach. Best filled in together with your counselor.": "Isang pribadong plano para sa mahihirap na sandali: ang mga babala mo, ang nakakatulong, at kung sino ang lalapitan. Pinakamainam na sagutan kasama ang counselor mo.",
+"A real person, hotlines and a safety plan": "Isang totoong tao, mga hotline at safety plan",
+"A reason to keep going": "Dahilan para magpatuloy",
+"A simple plan makes schoolwork feel smaller. Write down what is due, pick the most important things, and tick them off.": "Pinapagaan ng simpleng plano ang gawain sa school. Isulat ang mga due, piliin ang pinakamahalaga, at lagyan ng tsek kapag tapos na.",
+"A week before: split the topics into small parts and study one part a day, with short breaks.": "Isang linggo bago: hatiin ang mga paksa sa maliliit na bahagi at mag-aral ng isang bahagi bawat araw, na may maiikling pahinga.",
+"About 3 minutes. It guides you from your head down to your toes, one part at a time.": "Mga 3 minuto. Ginagabayan ka nito mula ulo hanggang daliri ng paa, isang bahagi bawat pagkakataon.",
+"Add a note about how today feels": "Magdagdag ng tala kung ano ang pakiramdam ngayong araw",
+"After the test: do something kind for yourself. One test does not decide who you are.": "Pagkatapos ng test: gumawa ng mabuti para sa sarili. Hindi ang isang test ang magpapasya kung sino ka.",
+"Ambient sounds": "Mga ambient na tunog",
+"Another prompt": "Ibang gabay na tanong",
+"Ask for help with one thing, like a quiet study time or fewer chores before exams.": "Humingi ng tulong sa isang bagay, gaya ng tahimik na oras sa pag-aaral o mas kaunting gawaing-bahay bago ang exam.",
+"Ask for support: lighter duties for a while, help with reports, or a talk with the principal.": "Humingi ng suporta: mas magagaan na tungkulin sa ngayon, tulong sa mga report, o pakikipag-usap sa principal.",
+"Ask gently: \"I noticed you seem down. Do you want to talk?\"": "Magtanong nang malumanay: \"Napansin kong parang malungkot ka. Gusto mo bang mag-usap?\"",
+"Ask the counselor if a family talk could help.": "Itanong sa counselor kung makakatulong ang pag-uusap kasama ang pamilya.",
+"Average mood for each day of the week (taller is better).": "Karaniwang mood sa bawat araw ng linggo (mas mataas, mas maganda).",
+"Batch similar tasks. Check papers in one block instead of between everything else.": "Pagsama-samahin ang magkakatulad na gawain. Mag-check ng papel sa isang bloke sa halip na paulit-ulit sa pagitan ng ibang gawain.",
+"Be there": "Maging naroon",
+"Breathing, music, a walk, writing, praying, drawing...": "Paghinga, musika, paglalakad, pagsusulat, pagdarasal, pagguhit...",
+"Bullying is never your fault. It can be teasing, rumors, being left out, threats or hurtful messages online. You deserve to feel safe.": "Hindi mo kailanman kasalanan ang bullying. Maaari itong pang-aasar, tsismis, pagbubukod, pagbabanta o masasakit na mensahe online. Karapat-dapat kang maging ligtas.",
+"Bullying: what to do": "Bullying: ano ang gagawin",
+"Burnout check": "Pagsusuri sa burnout",
+"Burnout does not go away with one weekend. Recovery is slow and happens in small, steady steps: rest, support and changes to what drains you.": "Hindi nawawala ang burnout sa isang weekend. Mabagal ang paggaling at nangyayari sa maliliit at tuloy-tuloy na hakbang: pahinga, suporta at pagbabago sa mga nakakaubos sa iyo.",
+"Burnout recovery": "Paggaling mula sa burnout",
+"Call now. These lines are free. Then tell a trusted adult.": "Tumawag ngayon. Libre ang mga linyang ito. Pagkatapos, magsabi sa pinagkakatiwalaang nakatatanda.",
+"Calm room, calm you": "Kalmadong silid, kalmadong ikaw",
+"Check in again in a few days.": "Kumustahin ulit sila pagkalipas ng ilang araw.",
+"Classroom stress": "Stress sa silid-aralan",
+"Clear": "Burahin lahat",
+"Copy to show my counselor": "Kopyahin para ipakita sa counselor ko",
+"Deep calm hum": "Malalim na kalmadong hum",
+"Delete all": "Burahin lahat",
+"Do not promise to keep serious worries secret. If a friend talks about hurting themselves, tell a trusted adult right away.": "Huwag mangakong itatago ang seryosong alalahanin. Kung nagsasabi ang kaibigan mo na sasaktan niya ang sarili, magsabi agad sa pinagkakatiwalaang nakatatanda.",
+"Do not reply to hurtful messages. Block or report the person on the app.": "Huwag sagutin ang masasakit na mensahe. I-block o i-report ang tao sa app.",
+"Do the hardest subject when you have the most energy.": "Gawin ang pinakamahirap na subject kapag pinakamalakas ka.",
+"Download": "I-download",
+"During the test: read all the directions, answer the easy items first, and take 3 slow breaths if your mind goes blank.": "Habang may test: basahin ang lahat ng panuto, sagutan muna ang madadali, at huminga nang mabagal nang 3 beses kung blangko ang isip mo.",
+"Easy-to-read font": "Madaling basahing font",
+"Encourage them to talk to the counselor, and offer to go along.": "Himukin silang makipag-usap sa counselor, at mag-alok na samahan sila.",
+"Exam anxiety": "Pagkabalisa sa exam",
+"Expectations from family can push us to try harder, and can also feel heavy: grades, money, chores or the future. Feeling stuck between pleasing them and caring for yourself is common.": "Ang inaasahan ng pamilya ay makakapagtulak sa atin na magsikap, at maaari ring maging mabigat: grado, pera, gawaing-bahay o kinabukasan. Karaniwan ang pakiramdam na naiipit sa pagitan ng pagpapasaya sa kanila at pag-aalaga sa sarili.",
+"Family pressure": "Presyon mula sa pamilya",
+"Feeling nervous before a test is normal. A little nerves can help you focus, but too much can make your mind go blank. These small steps can help you feel steadier.": "Normal ang kabahan bago ang test. Makakatulong ang kaunting kaba para mag-focus, pero ang sobra ay maaaring magpablangko ng isip. Makakatulong ang maliliit na hakbang na ito para mas maging matatag ka.",
+"For example, asking a trusted adult to keep something away, or staying near people.": "Halimbawa, ang pagpapaalis sa isang pinagkakatiwalaang nakatatanda ng mapanganib na bagay, o ang pananatili malapit sa ibang tao.",
+"For students": "Para sa mga estudyante",
+"For teachers": "Para sa mga guro",
+"Free to call. If someone is in immediate danger, call 911.": "Libre ang tawag. Kung may nasa agarang panganib, tumawag sa 911.",
+"Get comfortable. Close your eyes if you like, and take a slow breath in and out.": "Maging komportable. Ipikit ang mga mata kung gusto mo, at huminga nang mabagal papasok at palabas.",
+"Get help": "Humingi ng tulong",
+"Ground yourself: 5-4-3-2-1": "Ibalik ang sarili sa kasalukuyan: 5-4-3-2-1",
+"Group sessions where teachers support each other, guided by the counselor.": "Mga grupong sesyon kung saan nagsusuportahan ang mga guro, na ginagabayan ng counselor.",
+"Guide": "Gabay",
+"Guided body scan": "Gabay na body scan",
+"Guides": "Mga gabay",
+"Home and expectations": "Tahanan at inaasahan",
+"Home and family check": "Pagsusuri sa tahanan at pamilya",
+"Hotlines": "Mga hotline",
+"How are you feeling?": "Ano ang pakiramdam mo?",
+"How to start the conversation": "Paano sisimulan ang usapan",
+"I feel a little better": "Medyo mas maayos na ang pakiramdam ko",
+"If there is fighting or you feel unsafe at home, tell the counselor or a trusted adult.": "Kung may away o pakiramdam mong hindi ka ligtas sa bahay, sabihin sa counselor o sa pinagkakatiwalaang nakatatanda.",
+"If worry about exams keeps you from sleeping or studying, tell your counselor.": "Kung hindi ka makatulog o makapag-aral dahil sa pag-aalala sa exam, sabihin sa counselor mo.",
+"If you are in danger or may hurt yourself": "Kung nasa panganib ka o baka saktan mo ang sarili mo",
+"If you feel numb, hopeless or cannot cope, talk to the counselor or a doctor.": "Kung manhid ang pakiramdam mo, walang pag-asa o hindi mo na makayanan, kausapin ang counselor o doktor.",
+"If you feel unsafe right now, tell an adult at once or call 911.": "Kung hindi ka ligtas ngayon, magsabi agad sa nakatatanda o tumawag sa 911.",
+"If you see someone being bullied, you can get help for them or sit with them.": "Kung may nakikita kang binu-bully, puwede kang humingi ng tulong para sa kanila o samahan sila.",
+"It is okay to rest. Rest is part of doing well.": "Okay lang magpahinga. Bahagi ng pagiging maayos ang pahinga.",
+"Keep screenshots or notes of what happened, with dates, to show an adult.": "Itago ang mga screenshot o tala ng nangyari, kasama ang petsa, para maipakita sa nakatatanda.",
+"Leave one free evening each week for rest.": "Magtira ng isang malayang gabi bawat linggo para sa pahinga.",
+"Less motion": "Mas kaunting galaw",
+"Let us slow down together. Follow the circle.": "Magdahan-dahan tayo nang magkasama. Sundan ang bilog.",
+"List your tasks and mark what only you can do, what can be shared, and what can wait.": "Ilista ang mga gawain at markahan kung alin ang ikaw lang ang makakagawa, alin ang puwedeng hatiin, at alin ang puwedeng maghintay.",
+"Listen without judging or rushing to give advice. \"That sounds really hard\" goes a long way.": "Making nang hindi humuhusga o nagmamadaling magpayo. Malaking tulong ang \"Mukhang napakahirap niyan.\"",
+"Look after yourself too. You can talk to the counselor about how you feel.": "Alagaan mo rin ang sarili mo. Puwede mong kausapin ang counselor tungkol sa nararamdaman mo.",
+"Made on your device, so they work without internet.": "Ginagawa sa device mo, kaya gumagana kahit walang internet.",
+"Make my safety plan": "Gawin ang safety plan ko",
+"Mood journal": "Mood journal",
+"More space between letters and lines": "Mas maluwag na pagitan ng letra at linya",
+"Morning of the test: eat something, drink water, and try slow breathing before you go in.": "Umaga ng test: kumain, uminom ng tubig, at subukan ang mabagal na paghinga bago pumasok.",
+"My entries": "Mga tala ko",
+"My safety plan": "Ang safety plan ko",
+"My study plan": "Ang study plan ko",
+"My warning signs": "Ang mga babala ko",
+"Name and phone number of three people you trust.": "Pangalan at numero ng tatlong taong pinagkakatiwalaan mo.",
+"Name three things you are grateful for today.": "Magbanggit ng tatlong bagay na ipinagpapasalamat mo ngayon.",
+"Name what drains you most and what gives you energy, then change one thing.": "Pangalanan kung ano ang pinakanakakaubos sa iyo at ano ang nagbibigay ng lakas, pagkatapos ay magbago ng isang bagay.",
+"Noisy classes, tired students, difficult behavior and being observed can wear you down. Small routines can calm the room and you.": "Ang maiingay na klase, pagod na estudyante, mahirap na asal at ang pagmamasid sa iyo ay maaaring makapagod. Makakapagpakalma ng silid at ng sarili ang maliliit na routine.",
+"Numbers can change. Ask your counselor to confirm they are still current.": "Maaaring magbago ang mga numero. Hilingin sa counselor mo na kumpirmahin kung gumagana pa ang mga ito.",
+"Ocean waves": "Alon ng dagat",
+"One thing I can do to keep my space safe": "Isang bagay na magagawa ko para maging ligtas ang paligid ko",
+"Patterns": "Mga pattern",
+"People I can ask for help": "Mga taong puwede kong hingan ng tulong",
+"People and places that help me feel better": "Mga taong at lugar na nakakapagpagaan ng loob ko",
+"Phone": "Telepono",
+"Pick a calm time to tell one family member how you feel, using \"I\" sentences, like \"I feel tired when...\"": "Pumili ng kalmadong oras para sabihin sa isang kapamilya ang nararamdaman mo, gamit ang mga pangungusap na \"Ako\", gaya ng \"Napapagod ako kapag...\"",
+"Pick one or two clear class rules and repeat them calmly.": "Pumili ng isa o dalawang malinaw na patakaran sa klase at ulitin ito nang mahinahon.",
+"Plan your week": "Planuhin ang linggo mo",
+"Principal": "Principal",
+"Professionals and hotlines": "Mga propesyonal at hotline",
+"Protect your energy": "Protektahan ang lakas mo",
+"Rain": "Ulan",
+"Read it aloud to me": "Basahin ito nang malakas para sa akin",
+"Reading options": "Mga opsyon sa pagbabasa",
+"Reconnect with what you enjoy: family, hobbies, prayer, music or time outdoors.": "Balikan ang mga bagay na ikinasisiya mo: pamilya, hilig, panalangin, musika o oras sa labas.",
+"Reset": "I-reset",
+"Rest on purpose: sleep, meals, and a daily break with no work and no screen.": "Magpahinga nang sinasadya: tulog, pagkain, at araw-araw na pahinga na walang trabaho at walang screen.",
+"Retake": "Ulitin",
+"Safety check": "Pagsusuri sa kaligtasan",
+"Save entry": "I-save ang tala",
+"Save my plan": "I-save ang plano ko",
+"Saved only on this device.": "Naka-save lang sa device na ito.",
+"Saved only on this device. Nothing is sent unless you copy it or send it yourself.": "Naka-save lang sa device na ito. Walang ipapadala maliban kung ikaw mismo ang kokopya o magpapadala.",
+"Set a stop time for school work at home, and keep one evening a week free.": "Magtakda ng oras ng paghinto sa school work sa bahay, at magtira ng isang gabi bawat linggo na malaya.",
+"Share tools and lesson materials with colleagues so nobody starts from zero.": "Magbahagi ng mga kagamitan at materyales sa aralin sa mga katrabaho para walang nagsisimula sa wala.",
+"Share what you are doing well, not only what is hard, so they can see your effort.": "Ibahagi ang mga nagagawa mong maayos, hindi lang ang mahirap, para makita nila ang pagsisikap mo.",
+"Slow and steady": "Mabagal pero tuloy-tuloy",
+"Slowly notice 5 things you can see, 4 you can feel, 3 you can hear, 2 you can smell and 1 you can taste.": "Dahan-dahang pansinin ang 5 bagay na nakikita mo, 4 na nararamdaman mo, 3 na naririnig mo, 2 na naaamoy mo at 1 na natitikman mo.",
+"Soft wind": "Banayad na hangin",
+"Start class with a short calming routine, like one minute of quiet breathing.": "Simulan ang klase sa maikling nakakakalmang routine, gaya ng isang minutong tahimik na paghinga.",
+"Stay near friends or adults when you can, and avoid places where it happens.": "Manatili malapit sa mga kaibigan o nakatatanda kung kaya, at iwasan ang mga lugar kung saan ito nangyayari.",
+"Stay safe": "Manatiling ligtas",
+"Step out for a minute to reset if a colleague can cover.": "Lumabas nang isang minuto para mag-reset kung may katrabahong makakapalit.",
+"Stop sound": "Itigil ang tunog",
+"Stress check": "Pagsusuri sa stress",
+"Study in blocks of 25 minutes with a 5-minute break.": "Mag-aral sa mga bloke ng 25 minuto na may 5 minutong pahinga.",
+"Study planner": "Study planner",
+"Supporting a friend": "Pagsuporta sa kaibigan",
+"Take the burnout check again in two weeks to see if things are shifting.": "Gawin muli ang pagsusuri sa burnout pagkalipas ng dalawang linggo para makita kung may nagbabago.",
+"Talk to a real person": "Makipag-usap sa totoong tao",
+"Talk to the counselor or principal about repeated student behavior, so you are not alone with it.": "Kausapin ang counselor o principal tungkol sa paulit-ulit na asal ng estudyante, para hindi ka mag-isa rito.",
+"Teaching does not end when the bell rings: lesson plans, papers, reports, advisory and requests. Boundaries protect your energy so you can keep teaching well.": "Hindi natatapos ang pagtuturo kapag tumunog ang bell: lesson plan, papel, report, advisory at mga kahilingan. Pinoprotektahan ng mga hangganan ang lakas mo para patuloy kang makapagturo nang maayos.",
+"Tell a trusted adult as soon as you can: your adviser, the counselor, a teacher or a parent.": "Magsabi sa pinagkakatiwalaang nakatatanda sa lalong madaling panahon: adviser, counselor, guro o magulang.",
+"Tell the principal early if a deadline is not realistic, and ask what can move.": "Sabihin agad sa principal kung hindi makatotohanan ang deadline, at itanong kung ano ang puwedeng ilipat.",
+"Test-day calm": "Kalma sa araw ng test",
+"Text size": "Laki ng teksto",
+"The night before: review lightly, pack your things and sleep. Sleep helps memory more than cramming.": "Gabi bago ang test: magreview nang magaan, ihanda ang gamit at matulog. Mas nakakatulong sa memorya ang tulog kaysa sa pag-aaral nang sabay-sabay.",
+"Things I can do on my own to feel calmer": "Mga magagawa ko mag-isa para kumalma",
+"This is a draft made to be filled in with your counselor. It is not a replacement for professional help. It is saved only on this device.": "Ito ay burador na ginawa para sagutan kasama ang counselor mo. Hindi nito pinapalitan ang propesyonal na tulong. Naka-save lang ito sa device na ito.",
+"Time for a new check?": "Oras na ba para sa bagong pagsusuri?",
+"Today's reminder": "Paalala ngayong araw",
+"Use in a message": "Gamitin sa mensahe",
+"Volume": "Lakas ng tunog",
+"What do you need to do?": "Ano ang kailangan mong gawin?",
+"What thoughts, feelings or situations tell me I am starting to struggle?": "Anong mga iniisip, damdamin o sitwasyon ang nagsasabi sa akin na nahihirapan na ako?",
+"When a friend is struggling, you do not have to fix everything. Listening and staying kind can mean a lot.": "Kapag nahihirapan ang kaibigan mo, hindi mo kailangang ayusin ang lahat. Malaking bagay ang pakikinig at pananatiling mabait.",
+"When something happens, pause for 3 slow breaths before you respond.": "Kapag may nangyari, huminto at huminga nang mabagal nang 3 beses bago tumugon.",
+"Where can I go, or who can I be with, to take my mind off things?": "Saan ako puwedeng pumunta, o sino ang puwede kong makasama, para maibsan ang isip ko?",
+"Workload and boundaries": "Gawain at mga hangganan",
+"Workload check": "Pagsusuri sa dami ng gawain",
+"Write down one thing that went well after each school day.": "Magsulat ng isang bagay na naging maayos pagkatapos ng bawat araw sa school.",
+"Write down what you can control and what you cannot, then start with one small step.": "Isulat kung ano ang makokontrol mo at ano ang hindi, pagkatapos ay magsimula sa isang maliit na hakbang.",
+"Write here (optional)": "Isulat dito (opsyonal)",
+"Write what is due this week, then pick the 3 most important.": "Isulat ang mga due ngayong linggo, pagkatapos piliin ang 3 pinakamahalaga.",
+"You are not alone.": "Hindi ka nag-iisa.",
+"You can also tell a colleague, a friend, or someone in your family.": "Puwede ka ring magsabi sa katrabaho, kaibigan, o kapamilya.",
+"You can also tell a parent or guardian, any teacher, or another adult you trust.": "Puwede ka ring magsabi sa magulang o guardian, sinumang guro, o ibang nakatatandang pinagkakatiwalaan mo.",
+"You do not need perfect words. Pick one, copy it, or put it in a message.": "Hindi mo kailangan ng perpektong salita. Pumili ng isa, kopyahin ito, o ilagay sa mensahe.",
+"Your last three entries were low. You do not have to carry this alone. Consider messaging or booking a time with the counselor.": "Mababa ang huling tatlong tala mo. Hindi mo kailangang pasanin ito nang mag-isa. Isaalang-alang ang pagmensahe o pag-book ng oras sa counselor.",
+"Your mood has been lower this week than last week. It may help to talk to someone you trust or to the counselor.": "Mas mababa ang mood mo ngayong linggo kaysa noong nakaraan. Makakatulong na kausapin ang pinagkakatiwalaan mo o ang counselor.",
+"← Back to Get help": "← Bumalik sa Humingi ng tulong",
+"Pick how you feel first.": "Piliin muna kung ano ang pakiramdam mo.",
+"Saved to your journal.": "Na-save sa journal mo.",
+"Your safety plan is saved on this device.": "Na-save sa device na ito ang safety plan mo.",
+"Delete all entries?": "Burahin ang lahat ng tala?",
+"Your whole mood journal on this device will be erased.": "Mabubura ang buong mood journal mo sa device na ito.",
+"Clear your safety plan?": "Buburahin ang safety plan mo?",
+"Everything you wrote in it on this device will be erased.": "Mabubura ang lahat ng isinulat mo rito sa device na ito.",
+"Write what you need to do.": "Isulat kung ano ang kailangan mong gawin.",
+"Could not save the file. Use Copy instead.": "Hindi ma-save ang file. Gamitin na lang ang Kopyahin.",
+"This device cannot play ambient sounds.": "Hindi kayang patugtugin ng device na ito ang mga ambient na tunog.",
+"Could not start the sound on this device.": "Hindi masimulan ang tunog sa device na ito.",
+"Start a sound first.": "Magsimula muna ng tunog.",
+"Sound stopped. Sleep well.": "Huminto na ang tunog. Mahimbing na tulog.",
+"Nice. Body scan counted.": "Magaling. Nabilang ang body scan.",
+"Well done. You can do this any time.": "Magaling. Puwede mo itong gawin anumang oras.",
+"Breathe out slowly": "Huminga palabas nang dahan-dahan",
+"Your school has not set up a counselor in Attendly yet. You can still tell a trusted adult.": "Wala pang itinakdang counselor ang paaralan mo sa Attendly. Puwede ka pa ring magsabi sa pinagkakatiwalaang nakatatanda.",
+"No entries yet.": "Wala pang tala.",
+"Nothing planned yet. Add your first task.": "Wala pang plano. Idagdag ang una mong gawain.",
+"Add a few entries and your patterns will show up here, like which days are harder.": "Magdagdag ng ilang tala at lalabas dito ang mga pattern mo, gaya ng kung aling mga araw ang mas mahirap.",
+"Keep checking in. After about a week, patterns will show up here.": "Magpatuloy sa pag-check in. Pagkalipas ng mga isang linggo, lalabas dito ang mga pattern.",
+"Help me right now": "Tulungan ako ngayon din",
+"Help now": "Tulong ngayon"
 };
 const LANG_PATS = [
+[
+"^(\\d+) entr(?:y|ies)$",
+"$1 tala"
+],
+[
+"^Playing: (.+) · stops at (.+)$",
+"Tumutugtog: @1 · hihinto sa $2"
+],
+[
+"^Playing: (.+)$",
+"Tumutugtog: @1"
+],
+[
+"^It has been (\\d+) days since your last (.+)\\. Surveys look back about 2 weeks, so a new one shows how you are now\\.$",
+"$1 araw na ang nakalipas mula sa huli mong @2. Tumitingin ang mga survey sa nakaraang mga 2 linggo, kaya ipinapakita ng bago kung kumusta ka ngayon."
+],
+[
+"^Your lowest mood so far tends to be on (\\w+)s \\(about ([\\d.]+) out of 5\\)\\. Notice what happens on those days, and plan something kind for them\\.$",
+"Madalas na pinakamababa ang mood mo tuwing @1 (mga $2 sa 5). Pansinin kung ano ang nangyayari sa mga araw na iyon, at magplano ng mabait na gawin para sa mga ito."
+],
+[
+"^(.+) \\(school counselor\\)\\. (.+)$",
+"$1 (school counselor). $2"
+],
 [
 "^(\\d+) questions · about (\\d+) min$",
 "$1 tanong · mga $2 min"
@@ -6004,6 +6239,7 @@ function cnDay(t) { const d = new Date(t); return d.getFullYear() + '-' + (d.get
 function cnAddLog(type, title, min, val) {
   const l = cnLog(); l.push({ t: Date.now(), type, title, min: min || 0, val });
   try { localStorage.setItem(cnKey(), JSON.stringify(l.slice(-500))); } catch (e) {}
+  if (type === 'mood' && !cn._noJ) cnJAdd(val, '', '');
   if (cn.built) { cnRenderPanel('progress'); if (cn.tab === 'home') cnRenderPanel('home'); }
 }
 function cnStats() {
@@ -6174,12 +6410,12 @@ async function cnSurveySend() {
 }
 
 /* ---- student view shell ---- */
-const CN_TABS = [['home', 'Home', 'heart'], ['explore', 'Explore', 'compass'], ['surveys', 'Surveys', 'clipboard-list'], ['breathe', 'Breathe', 'wind'], ['music', 'Music', 'music'], ['talk', 'Talk', 'message-circle'], ['book', 'Book', 'calendar-check'], ['progress', 'Progress', 'activity']];
-const CN_DYNAMIC = ['home', 'explore', 'surveys', 'talk', 'book', 'progress'];
+const CN_TABS = [['home', 'Home', 'heart'], ['explore', 'Explore', 'compass'], ['surveys', 'Surveys', 'clipboard-list'], ['breathe', 'Breathe', 'wind'], ['music', 'Music', 'music'], ['talk', 'Talk', 'message-circle'], ['book', 'Book', 'calendar-check'], ['help', 'Get help', 'hand-helping'], ['journal', 'Journal', 'notebook-pen'], ['progress', 'Progress', 'activity']];
+const CN_DYNAMIC = ['home', 'explore', 'surveys', 'talk', 'book', 'help', 'journal', 'progress'];
 function renderCounseling() {
   const root = document.getElementById('cn-root'); if (!root) return;
   if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
-    cnStopBreath(); cnStopCalm(); cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
+    cnStopBreath(); cnStopCalm(); cnAmbStop(true); cnScanStop(); cn.helpView = 'main'; cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
     cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false };
     root.innerHTML = '<div class="space-y-4">' +
       '<div class="flex items-center gap-2"><div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 flex-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
@@ -6211,6 +6447,8 @@ function cnRenderPanel(name) {
   else if (name === 'surveys') el.innerHTML = cnPanelSurveys();
   else if (name === 'talk') { if (!el.dataset.built) { el.innerHTML = cnPanelTalk(); el.dataset.built = '1'; } cnRenderConvos(); }
   else if (name === 'book') el.innerHTML = cnPanelBook();
+  else if (name === 'help') el.innerHTML = cnPanelHelp();
+  else if (name === 'journal') el.innerHTML = cnPanelJournal();
   else if (name === 'progress') el.innerHTML = cnPanelProgress();
   refreshIcons();
 }
@@ -6230,6 +6468,310 @@ function cnGo(go) {
   if (go.indexOf('tab:') === 0) { cnShowTab(go.slice(4)); window.scrollTo(0, 0); }
 }
 
+/* ==================== WELLNESS EXTRAS: help now, get help, journal, guides, ambient, body scan, safety plan, reading options ==================== */
+function cnSaveText(name, text) {
+  try { const b = new Blob([text], { type: 'text/plain;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); } catch (e) { toast('Could not save the file. Use Copy instead.', 'warning'); }
+}
+function cnUid() { return DB.auth ? DB.auth.userId : 'x'; }
+function cnLsGet(k, d) { try { const v = JSON.parse(localStorage.getItem(k + cnUid())); return v == null ? d : v; } catch (e) { return d; } }
+function cnLsSet(k, v) { try { localStorage.setItem(k + cnUid(), JSON.stringify(v)); } catch (e) {} }
+const CN_DAILY = ['You are doing better than you think.', 'Small steps still count as steps.', 'It is okay to rest. Rest is part of doing well.', 'You do not have to be perfect to be worthy.', 'Asking for help is a sign of strength.', 'One hard day does not make a hard life.', 'Be as kind to yourself as you are to your friends.', 'Your feelings are valid, even the heavy ones.', 'Breathe in, breathe out. You are here, and that is enough for now.', 'Progress is not always loud. Sometimes it is just showing up.', 'You are not alone, even when it feels that way.', 'Today, choose one thing that makes you feel a little lighter.', 'Mistakes are how we learn. They do not define you.', 'You matter, and the people around you are glad you are here.'];
+const CN_JPROMPTS = ['What is one thing that made you smile today?', 'What is weighing on you most right now? Write it down to set it down.', 'Name three things you are grateful for today.', 'What did you do today that you are proud of, even if it is small?', 'What would you tell a friend who felt the way you do now?', 'What helps you feel calm? How can you do more of it this week?', 'What is one thing you can let go of today?', 'Who made you feel supported lately? What did they do?', 'Describe your day in three words. Why those words?', 'What is one small thing you can look forward to?', 'What is something you learned about yourself this week?', 'What do you need more of right now, and what do you need less of?', 'Write about a time you got through something hard. What helped?', 'If today had a color, what would it be and why?'];
+const CN_MOODS = [['😣', 1, 'Rough'], ['😕', 2, 'Low'], ['😐', 3, 'Okay'], ['🙂', 4, 'Good'], ['😄', 5, 'Great']];
+function cnDailyMsg() { return CN_DAILY[Math.floor(Date.now() / 864e5) % CN_DAILY.length]; }
+function cnDailyHtml() { return '<div class="rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50/60 dark:bg-teal-950/20 px-4 py-3"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Today\'s reminder</p><p class="text-sm mt-0.5">' + escapeHtml(cnDailyMsg()) + '</p></div>'; }
+
+/* ---- retake reminder: two weeks after the last survey ---- */
+function cnRetakeHtml() {
+  const r = cnResults().filter(x => CN_SURVEYS[x.survey] && cnSvList().includes(x.survey)).pop(); if (!r) return '';
+  const days = Math.floor((Date.now() - r.t) / 864e5); if (days < 14) return '';
+  return '<div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 flex items-center gap-3"><div class="min-w-0 flex-1"><p class="text-sm font-semibold">Time for a new check?</p><p class="text-xs text-slate-600 dark:text-slate-300">' + escapeHtml('It has been ' + days + ' days since your last ' + CN_SURVEYS[r.survey].name + '. Surveys look back about 2 weeks, so a new one shows how you are now.') + '</p></div><button data-cn-go="survey:' + r.survey + '" class="' + CN_BTN + ' !py-1.5 text-xs shrink-0">Retake</button></div>';
+}
+
+/* ---- Mood journal (stays on this device) ---- */
+function cnJList() { return cnLsGet('attendly_journal_', []); }
+function cnJAdd(mood, note, prompt) { const l = cnJList(); l.push({ t: Date.now(), mood, note: note || '', prompt: prompt || '' }); cnLsSet('attendly_journal_', l.slice(-400)); }
+function cnJPrompt() { return CN_JPROMPTS[(Math.floor(Date.now() / 864e5) + (cn.jShift || 0)) % CN_JPROMPTS.length]; }
+function cnJInsights(l) {
+  const out = [], names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const sum = [0, 0, 0, 0, 0, 0, 0], cnt = [0, 0, 0, 0, 0, 0, 0];
+  l.forEach(e => { const d = new Date(e.t).getDay(); sum[d] += e.mood; cnt[d]++; });
+  const avg = sum.map((s, i) => cnt[i] ? s / cnt[i] : null), have = avg.map((a, i) => cnt[i] >= 2 ? i : -1).filter(i => i >= 0);
+  if (l.length >= 7 && have.length >= 3) {
+    const lo = have.reduce((a, b) => avg[b] < avg[a] ? b : a), hi = have.reduce((a, b) => avg[b] > avg[a] ? b : a);
+    if (avg[hi] - avg[lo] >= 0.6) out.push('Your lowest mood so far tends to be on ' + names[lo] + 's (about ' + avg[lo].toFixed(1) + ' out of 5). Notice what happens on those days, and plan something kind for them.');
+  }
+  const now = Date.now(), wk = x => x.filter(e => now - e.t < 7 * 864e5), pw = l.filter(e => now - e.t >= 7 * 864e5 && now - e.t < 14 * 864e5);
+  if (wk(l).length >= 3 && pw.length >= 3) { const a = wk(l).reduce((s, e) => s + e.mood, 0) / wk(l).length, b = pw.reduce((s, e) => s + e.mood, 0) / pw.length; if (b - a >= 0.7) out.push('Your mood has been lower this week than last week. It may help to talk to someone you trust or to the counselor.'); }
+  if (l.length >= 3 && l.slice(-3).every(e => e.mood <= 2)) out.push('Your last three entries were low. You do not have to carry this alone. Consider messaging or booking a time with the counselor.');
+  return { out, avg, cnt, names };
+}
+function cnJText(list) {
+  return 'Mood journal (' + (cnAcct() ? cnAcct().name : '') + ')\n\n' + list.map(e => new Date(e.t).toLocaleString() + ' · mood ' + e.mood + '/5 (' + (CN_MOODS.find(m => m[1] === e.mood) || [0, 0, ''])[2] + ')' + (e.note ? '\n' + e.note : '')).join('\n\n');
+}
+function cnPanelJournal() {
+  const l = cnJList(), ins = cnJInsights(l), sel = cn.jMood || 0;
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const wd = '<div class="flex items-end gap-2 h-20 mb-1">' + order.map(d => { const a = ins.avg[d]; return '<div class="flex-1 flex flex-col items-center justify-end h-full"><div class="w-full rounded-t bg-teal-500/80" style="height:' + (a ? Math.round(a / 5 * 56) : 2) + 'px"></div></div>'; }).join('') + '</div><div class="flex gap-2">' + order.map(d => '<span class="flex-1 text-center text-[10px] text-slate-400">' + ins.names[d].slice(0, 3) + '</span>').join('') + '</div>';
+  return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Mood journal</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3">Saved only on this device. Nothing is sent unless you copy it or send it yourself.</p>' +
+    '<p class="text-xs font-medium mb-2">How are you feeling?</p><div class="flex gap-2 flex-wrap mb-3">' + CN_MOODS.map(m => '<button data-j-mood="' + m[1] + '" aria-pressed="' + (sel === m[1]) + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl border ' + (sel === m[1] ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div>' +
+    '<div class="flex items-start justify-between gap-2 mb-1"><label for="j-note" class="text-xs font-medium text-teal-700 dark:text-teal-300">' + escapeHtml(cnJPrompt()) + '</label><button data-j-prompt class="text-[11px] text-slate-500 hover:underline shrink-0">Another prompt</button></div>' +
+    '<textarea id="j-note" rows="4" maxlength="1000" placeholder="Write here (optional)" class="' + CN_INP + '">' + escapeHtml(cn.jNote || '') + '</textarea>' +
+    '<div class="mt-3"><button data-j-save class="' + CN_BTN + '">Save entry</button></div></div>' +
+    (cnRetakeHtml() ? '<div class="mt-4">' + cnRetakeHtml() + '</div>' : '') +
+    '<div class="' + CN_CARD + ' mt-4"><h3 class="text-sm font-semibold mb-1">Patterns</h3>' + (l.length >= 3 ? wd + '<p class="text-[11px] text-slate-400 mt-1">Average mood for each day of the week (taller is better).</p>' + (ins.out.length ? '<ul class="mt-3 space-y-2">' + ins.out.map(x => '<li class="text-sm rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2">' + escapeHtml(x) + '</li>').join('') + '</ul>' : '<p class="text-xs text-slate-500 dark:text-slate-400 mt-3">Keep checking in. After about a week, patterns will show up here.</p>') : '<p class="text-xs text-slate-500 dark:text-slate-400">Add a few entries and your patterns will show up here, like which days are harder.</p>') + '</div>' +
+    '<div class="' + CN_CARD + ' mt-4"><div class="flex items-center justify-between mb-2"><h3 class="text-sm font-semibold">My entries</h3><span class="text-[11px] text-slate-400">' + escapeHtml(l.length + (l.length === 1 ? ' entry' : ' entries')) + '</span></div>' +
+    (l.length ? '<div class="space-y-2">' + l.slice(-8).reverse().map(e => '<div class="border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="flex items-center gap-2"><span class="text-lg">' + (CN_MOODS.find(m => m[1] === e.mood) || [''])[0] + '</span><span class="text-[11px] text-slate-500 dark:text-slate-400 flex-1">' + escapeHtml(new Date(e.t).toLocaleString()) + '</span><button data-j-del="' + e.t + '" class="text-[11px] text-rose-600 hover:underline">Delete</button></div>' + (e.note ? '<p class="text-sm mt-1 whitespace-pre-wrap">' + escapeHtml(e.note) + '</p>' : '') + '</div>').join('') + '</div>' +
+      '<div class="flex flex-wrap gap-2 mt-3"><button data-j-copyall class="' + CN_BTN2 + ' text-xs !py-1.5">Copy to show my counselor</button><button data-j-dl class="' + CN_BTN2 + ' text-xs !py-1.5">Download</button><button data-j-clear class="' + CN_BTN2 + ' text-xs !py-1.5 text-rose-600">Delete all</button></div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">No entries yet.</p>') + '</div>';
+}
+
+/* ---- Get help: a real person, scripts, hotlines, safety plan ---- */
+const CN_SCRIPTS_S = ['I have not been feeling okay lately.', 'Can we talk? Something has been on my mind.', 'I am having a hard time with school and I need help.', 'I am worried about a friend and I do not know what to do.', 'I do not know how to say this, but I need someone to listen.'];
+const CN_SCRIPTS_T = ['I have not been feeling okay lately, and I would like to talk.', 'My workload has become too much, and I need to talk about what can change.', 'I am tired all the time and I think it is burnout. Can we find a time to talk?', 'Something at home is affecting my work, and I need some support.', 'I do not know how to say this, but I need someone to listen.'];
+function cnScripts() { return cnIsT() ? CN_SCRIPTS_T : CN_SCRIPTS_S; }
+function cnPanelHelp() {
+  if (cn.helpView === 'plan') return cnPanelPlan();
+  const T = cnIsT(), cs = cnCounselor();
+  const people = T ? cnTRecipients().map(r => [r.label, r.p]) : cnRecipients().first;
+  return '<div class="' + CN_CARD + '"><h3 class="text-sm font-semibold">Talk to a real person</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3">A check-in is a start. A person can help you more. You can message or book a time here, and it goes only to the person you choose.</p>' +
+    (people.length ? '<div class="space-y-2">' + people.map(p => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><span class="w-9 h-9 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 flex items-center justify-center text-sm font-semibold shrink-0">' + escapeHtml((p[1].name || '?').trim().charAt(0).toUpperCase()) + '</span><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(p[1].name || p[0]) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p[0]) + '</span></span><button data-cn-tab="talk" class="' + CN_BTN2 + ' !px-2.5 !py-1 text-xs">Message</button>' + (cs && normEmail(p[1].email) === normEmail(cs.email) ? '<button data-cn-tab="book" class="' + CN_BTN2 + ' !px-2.5 !py-1 text-xs">Book</button>' : '') + '</div>').join('') + '</div>' : '<p class="text-xs text-slate-500 dark:text-slate-400">Your school has not set up a counselor in Attendly yet. You can still tell a trusted adult.</p>') +
+    '<p class="text-xs text-slate-500 dark:text-slate-400 mt-3">' + (T ? 'You can also tell a colleague, a friend, or someone in your family.' : 'You can also tell a parent or guardian, any teacher, or another adult you trust.') + '</p></div>' +
+    '<div class="' + CN_CARD + ' mt-4"><h3 class="text-sm font-semibold">How to start the conversation</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3">You do not need perfect words. Pick one, copy it, or put it in a message.</p><div class="space-y-2">' +
+    cnScripts().map((x, i) => '<div class="border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><p class="text-sm">"' + escapeHtml(x) + '"</p><div class="flex gap-3 mt-1.5"><button data-hp-copy="' + i + '" class="text-[11px] text-teal-700 dark:text-teal-400 hover:underline">Copy</button><button data-hp-use="' + i + '" class="text-[11px] text-teal-700 dark:text-teal-400 hover:underline">Use in a message</button></div></div>').join('') + '</div></div>' +
+    '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 p-4 mt-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Hotlines</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">Free to call. If someone is in immediate danger, call 911.</p>' + cnHotlinesHtml() + '<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Numbers can change. Ask your counselor to confirm they are still current.</p></div>' +
+    '<div class="' + CN_CARD + ' mt-4"><h3 class="text-sm font-semibold">My safety plan</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3">A private plan for hard moments: your warning signs, what helps, and who to reach. Best filled in together with your counselor.</p><button data-hp-plan class="' + CN_BTN + '">' + (cnSpGet().saved ? 'Open my safety plan' : 'Make my safety plan') + '</button></div>';
+}
+function cnSpGet() { return cnLsGet('attendly_safetyplan_', { warn: '', own: '', places: '', people: [{ n: '', p: '' }, { n: '', p: '' }, { n: '', p: '' }], safer: '', reason: '' }); }
+function cnSpFields() { return [['warn', 'My warning signs', 'What thoughts, feelings or situations tell me I am starting to struggle?'], ['own', 'Things I can do on my own to feel calmer', 'Breathing, music, a walk, writing, praying, drawing...'], ['places', 'People and places that help me feel better', 'Where can I go, or who can I be with, to take my mind off things?']]; }
+function cnPanelPlan() {
+  const p = cnSpGet(), cs = cnCounselor();
+  const ta = (k, label, hint, rows) => '<label for="sp-' + k + '" class="block text-xs font-medium mt-3 mb-0.5">' + escapeHtml(label) + '</label><p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">' + escapeHtml(hint) + '</p><textarea id="sp-' + k + '" rows="' + (rows || 2) + '" maxlength="600" class="' + CN_INP + '">' + escapeHtml(p[k] || '') + '</textarea>';
+  return '<button data-hp-back class="text-xs text-teal-700 dark:text-teal-400 hover:underline mb-3">← Back to Get help</button>' +
+    '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">My safety plan</h3><div class="mt-2 rounded-lg border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-slate-700 dark:text-slate-200">This is a draft made to be filled in with your counselor. It is not a replacement for professional help. It is saved only on this device.</div>' +
+    cnSpFields().map(f => ta(f[0], f[1], f[2])).join('') +
+    '<p class="text-xs font-medium mt-3 mb-0.5">People I can ask for help</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">Name and phone number of three people you trust.</p>' +
+    p.people.map((x, i) => '<div class="flex gap-2 mb-2"><input id="sp-pn' + i + '" type="text" maxlength="60" placeholder="Name" value="' + escapeHtml(x.n || '') + '" class="' + CN_INP + '"><input id="sp-pp' + i + '" type="tel" maxlength="30" placeholder="Phone" value="' + escapeHtml(x.p || '') + '" class="' + CN_INP + '"></div>').join('') +
+    '<div class="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2 mt-1"><p class="text-xs font-medium">Professionals and hotlines</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml((cs ? (cs.name || 'Guidance counselor') + ' (school counselor). ' : '') + CN_HOTLINES.map(h => h.name + ' ' + h.nums[0]).join('. ') + '.') + '</p></div>' +
+    ta('safer', 'One thing I can do to keep my space safe', 'For example, asking a trusted adult to keep something away, or staying near people.') + ta('reason', 'A reason to keep going', 'A person, a goal, a pet, a dream, anything that matters to you.') +
+    '<div class="flex flex-wrap gap-2 mt-4"><button data-sp-save class="' + CN_BTN + '">Save my plan</button><button data-sp-copy class="' + CN_BTN2 + '">Copy</button><button data-sp-dl class="' + CN_BTN2 + '">Download</button><button data-sp-clear class="' + CN_BTN2 + ' text-rose-600">Clear</button></div></div>';
+}
+function cnSpRead() {
+  const v = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  return { saved: true, warn: v('sp-warn'), own: v('sp-own'), places: v('sp-places'), safer: v('sp-safer'), reason: v('sp-reason'), people: [0, 1, 2].map(i => ({ n: v('sp-pn' + i), p: v('sp-pp' + i) })) };
+}
+function cnSpText(p) {
+  const cs = cnCounselor();
+  return 'My safety plan\n\nMy warning signs:\n' + (p.warn || '-') + '\n\nThings I can do on my own to feel calmer:\n' + (p.own || '-') + '\n\nPeople and places that help me feel better:\n' + (p.places || '-') + '\n\nPeople I can ask for help:\n' + p.people.filter(x => x.n || x.p).map(x => x.n + ' ' + x.p).join('\n') + '\n\nProfessionals and hotlines:\n' + (cs ? (cs.name || 'Guidance counselor') + ' (school counselor)\n' : '') + CN_HOTLINES.map(h => h.name + ': ' + h.nums.join(', ')).join('\n') + '\n\nOne thing I can do to keep my space safe:\n' + (p.safer || '-') + '\n\nA reason to keep going:\n' + (p.reason || '-') + '\n\nIf I am in immediate danger, I will call 911.';
+}
+
+/* ---- Guides and the study planner ---- */
+const CN_GRAD_T = 'from-teal-100 to-sky-100 dark:from-teal-950/60 dark:to-sky-950/60', CN_GRAD_A = 'from-amber-100 to-rose-100 dark:from-amber-950/50 dark:to-rose-950/50', CN_GRAD_I = 'from-indigo-100 to-sky-100 dark:from-indigo-950/60 dark:to-sky-950/60';
+Object.assign(CN_PAGES, {
+  exam: { group: 'Guide', title: 'Exam anxiety', tag: 'Test-day calm', icon: 'clipboard-check', grad: CN_GRAD_T, intro: 'Feeling nervous before a test is normal. A little nerves can help you focus, but too much can make your mind go blank. These small steps can help you feel steadier.',
+    points: ['A week before: split the topics into small parts and study one part a day, with short breaks.', 'The night before: review lightly, pack your things and sleep. Sleep helps memory more than cramming.', 'Morning of the test: eat something, drink water, and try slow breathing before you go in.', 'During the test: read all the directions, answer the easy items first, and take 3 slow breaths if your mind goes blank.', 'After the test: do something kind for yourself. One test does not decide who you are.', 'If worry about exams keeps you from sleeping or studying, tell your counselor.'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Talk to someone', 'tab:talk']] },
+  planner: { group: 'Guide', title: 'Study planner', tag: 'Plan your week', icon: 'calendar-days', grad: CN_GRAD_I, planner: true, intro: 'A simple plan makes schoolwork feel smaller. Write down what is due, pick the most important things, and tick them off.',
+    points: ['Write what is due this week, then pick the 3 most important.', 'Study in blocks of 25 minutes with a 5-minute break.', 'Do the hardest subject when you have the most energy.', 'Leave one free evening each week for rest.'], actions: [['Stress check', 'survey:stress'], ['Quick calm', 'calm']] },
+  bullying: { group: 'Guide', title: 'Bullying: what to do', tag: 'Stay safe', icon: 'shield', grad: CN_GRAD_A, intro: 'Bullying is never your fault. It can be teasing, rumors, being left out, threats or hurtful messages online. You deserve to feel safe.',
+    points: ['Tell a trusted adult as soon as you can: your adviser, the counselor, a teacher or a parent.', 'Keep screenshots or notes of what happened, with dates, to show an adult.', 'Do not reply to hurtful messages. Block or report the person on the app.', 'Stay near friends or adults when you can, and avoid places where it happens.', 'If you see someone being bullied, you can get help for them or sit with them.', 'If you feel unsafe right now, tell an adult at once or call 911.'], actions: [['Message the counselor', 'tab:talk'], ['Safety check', 'survey:safe'], ['Get help', 'tab:help']] },
+  family: { group: 'Guide', title: 'Family pressure', tag: 'Home and expectations', icon: 'home', grad: CN_GRAD_T, intro: 'Expectations from family can push us to try harder, and can also feel heavy: grades, money, chores or the future. Feeling stuck between pleasing them and caring for yourself is common.',
+    points: ['Pick a calm time to tell one family member how you feel, using "I" sentences, like "I feel tired when..."', 'Share what you are doing well, not only what is hard, so they can see your effort.', 'Ask for help with one thing, like a quiet study time or fewer chores before exams.', 'Write down what you can control and what you cannot, then start with one small step.', 'If there is fighting or you feel unsafe at home, tell the counselor or a trusted adult.', 'Ask the counselor if a family talk could help.'], actions: [['Home and family check', 'survey:family'], ['Book a time', 'tab:book'], ['Talk to someone', 'tab:talk']] },
+  friend: { group: 'Guide', title: 'Supporting a friend', tag: 'Be there', icon: 'heart-handshake', grad: CN_GRAD_A, intro: 'When a friend is struggling, you do not have to fix everything. Listening and staying kind can mean a lot.',
+    points: ['Ask gently: "I noticed you seem down. Do you want to talk?"', 'Listen without judging or rushing to give advice. "That sounds really hard" goes a long way.', 'Do not promise to keep serious worries secret. If a friend talks about hurting themselves, tell a trusted adult right away.', 'Encourage them to talk to the counselor, and offer to go along.', 'Check in again in a few days.', 'Look after yourself too. You can talk to the counselor about how you feel.'], actions: [['Get help', 'tab:help'], ['Message the counselor', 'tab:talk'], ['Quick calm', 'calm']] }
+});
+Object.assign(CN_PAGES_T, {
+  tworkload: { group: 'Guide', title: 'Workload and boundaries', tag: 'Protect your energy', icon: 'scale', grad: CN_GRAD_T, intro: 'Teaching does not end when the bell rings: lesson plans, papers, reports, advisory and requests. Boundaries protect your energy so you can keep teaching well.',
+    points: ['List your tasks and mark what only you can do, what can be shared, and what can wait.', 'Set a stop time for school work at home, and keep one evening a week free.', 'Batch similar tasks. Check papers in one block instead of between everything else.', 'It is okay to say "I can do this by Friday" instead of "yes, now".', 'Tell the principal early if a deadline is not realistic, and ask what can move.', 'Share tools and lesson materials with colleagues so nobody starts from zero.'], actions: [['Workload check', 'survey:tstress'], ['Talk to someone', 'tab:talk'], ['Quick calm', 'calm']] },
+  tclass: { group: 'Guide', title: 'Classroom stress', tag: 'Calm room, calm you', icon: 'school', grad: CN_GRAD_I, intro: 'Noisy classes, tired students, difficult behavior and being observed can wear you down. Small routines can calm the room and you.',
+    points: ['Start class with a short calming routine, like one minute of quiet breathing.', 'Pick one or two clear class rules and repeat them calmly.', 'When something happens, pause for 3 slow breaths before you respond.', 'Step out for a minute to reset if a colleague can cover.', 'Talk to the counselor or principal about repeated student behavior, so you are not alone with it.', 'Write down one thing that went well after each school day.'], actions: [['Open Breathe', 'tab:breathe'], ['Quick calm', 'calm'], ['Talk to someone', 'tab:talk']] },
+  trecovery: { group: 'Guide', title: 'Burnout recovery', tag: 'Slow and steady', icon: 'battery-charging', grad: CN_GRAD_A, intro: 'Burnout does not go away with one weekend. Recovery is slow and happens in small, steady steps: rest, support and changes to what drains you.',
+    points: ['Rest on purpose: sleep, meals, and a daily break with no work and no screen.', 'Name what drains you most and what gives you energy, then change one thing.', 'Ask for support: lighter duties for a while, help with reports, or a talk with the principal.', 'Reconnect with what you enjoy: family, hobbies, prayer, music or time outdoors.', 'Take the burnout check again in two weeks to see if things are shifting.', 'If you feel numb, hopeless or cannot cope, talk to the counselor or a doctor.'], actions: [['Burnout check', 'survey:tburn'], ['Talk to someone', 'tab:talk'], ['Book a time', 'tab:book']] }
+});
+const CN_GUIDES_S = ['exam', 'planner', 'bullying', 'family', 'friend'], CN_GUIDES_T = ['tworkload', 'tclass', 'trecovery'];
+function cnGuidesCard() {
+  return '<div class="' + CN_CARD + ' mt-4"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Guides</p><h3 class="text-base font-semibold mb-3">' + (cnIsT() ? 'For teachers' : 'For students') + '</h3><div class="space-y-2">' +
+    (cnIsT() ? CN_GUIDES_T : CN_GUIDES_S).map(id => { const p = cnPages()[id]; return '<button data-cn-page="' + id + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ' + p.grad + ' flex items-center justify-center shrink-0"><i data-lucide="' + p.icon + '" class="w-5 h-5 text-teal-700 dark:text-teal-300"></i></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(p.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</span></span></button>'; }).join('') + '</div></div>';
+}
+function cnPlannerHtml() {
+  const l = cnLsGet('attendly_study_', []).slice().sort((a, b) => (a.done - b.done) || (a.due || '9').localeCompare(b.due || '9'));
+  return '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">My study plan</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">Saved only on this device.</p>' +
+    '<div class="flex flex-wrap gap-2 mb-3"><input id="pl-text" type="text" maxlength="80" placeholder="What do you need to do?" class="' + CN_INP + ' flex-1 min-w-[10rem]"><input id="pl-due" type="date" class="' + CN_INP + ' w-40"><button data-pl-add class="' + CN_BTN + '">Add</button></div>' +
+    (l.length ? '<ul class="space-y-1.5">' + l.map(x => '<li class="flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><input type="checkbox" data-pl-done="' + x.id + '" ' + (x.done ? 'checked' : '') + ' class="accent-teal-600 w-4 h-4" aria-label="Done"><span class="flex-1 min-w-0 text-sm ' + (x.done ? 'line-through text-slate-400' : '') + '">' + escapeHtml(x.text) + (x.due ? ' <span class="text-[11px] text-slate-400">· ' + escapeHtml(x.due) + '</span>' : '') + '</span><button data-pl-del="' + x.id + '" class="text-[11px] text-rose-600 hover:underline">Remove</button></li>').join('') + '</ul>' : '<p class="text-xs text-slate-500 dark:text-slate-400">Nothing planned yet. Add your first task.</p>') + '</div>';
+}
+
+/* ---- Ambient sounds (made on the device, no internet) and guided body scan ---- */
+const CN_AMB = [['rain', 'Rain', 'cloud-rain'], ['ocean', 'Ocean waves', 'waves'], ['wind', 'Soft wind', 'wind'], ['hum', 'Deep calm hum', 'audio-lines']];
+cn.amb = { ctx: null, id: null, vol: 0.5, srcs: [], master: null, timer: null, until: 0 };
+cn.scan = { on: false, i: 0, timer: null, voice: true };
+function cnAmbNoise(ctx, brown) {
+  const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0); let last = 0;
+  for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w * 0.5; }
+  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; return s;
+}
+function cnAmbStop(quiet) {
+  const a = cn.amb; a.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); a.srcs = [];
+  if (a.master) { try { a.master.disconnect(); } catch (e) {} a.master = null; }
+  a.id = null; clearTimeout(a.timer); a.timer = null; a.until = 0;
+  if (!quiet) cnAmbUi();
+}
+function cnAmbStart(id) {
+  cnAmbStop(true); const a = cn.amb, AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { toast('This device cannot play ambient sounds.', 'warning'); return; }
+  try {
+    a.ctx = a.ctx || new AC(); if (a.ctx.state === 'suspended') a.ctx.resume();
+    const c = a.ctx, master = c.createGain(); master.gain.value = a.vol; master.connect(c.destination); a.master = master;
+    const filt = (type, f, q) => { const n = c.createBiquadFilter(); n.type = type; n.frequency.value = f; if (q) n.Q.value = q; return n; }, gain = v => { const g = c.createGain(); g.gain.value = v; return g; };
+    const lfo = (rate, depth, target) => { const o = c.createOscillator(); o.frequency.value = rate; const g = gain(depth); o.connect(g); g.connect(target); o.start(); a.srcs.push(o); };
+    let src;
+    if (id === 'rain') { src = cnAmbNoise(c, false); const g = gain(0.35); src.connect(filt('highpass', 900)).connect(filt('lowpass', 7000)).connect(g).connect(master); }
+    else if (id === 'ocean') { src = cnAmbNoise(c, true); const g = gain(0.55); src.connect(filt('lowpass', 500)).connect(g).connect(master); lfo(0.12, 0.35, g.gain); }
+    else if (id === 'wind') { src = cnAmbNoise(c, false); const bp = filt('bandpass', 500, 0.7), g = gain(0.5); src.connect(bp).connect(g).connect(master); lfo(0.08, 250, bp.frequency); }
+    else { src = cnAmbNoise(c, true); const g = gain(0.9); src.connect(filt('lowpass', 400)).connect(g).connect(master); }
+    src.start(); a.srcs.push(src); a.id = id;
+    cnAddLog('music', 'Ambient: ' + (CN_AMB.find(x => x[0] === id) || [0, id])[1], 0);
+  } catch (e) { cnAmbStop(true); toast('Could not start the sound on this device.', 'warning'); }
+  cnAmbUi();
+}
+function cnAmbTimer(min) { const a = cn.amb; clearTimeout(a.timer); if (!a.id) { toast('Start a sound first.', 'warning'); return; } a.until = Date.now() + min * 60000; a.timer = setTimeout(() => { cnAmbStop(); toast('Sound stopped. Sleep well.', 'success'); }, min * 60000); cnAmbUi(); }
+function cnAmbHtml() {
+  return '<div id="cn-amb" class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold">Ambient sounds</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Made on your device, so they work without internet.</p>' +
+    '<div class="grid grid-cols-2 gap-2">' + CN_AMB.map(x => '<button data-amb="' + x[0] + '" class="cn-amb-btn flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm hover:border-teal-400"><i data-lucide="' + x[2] + '" class="w-4 h-4 text-teal-600 shrink-0"></i><span>' + x[1] + '</span></button>').join('') + '</div>' +
+    '<div class="flex items-center gap-2 mt-3"><label for="amb-vol" class="text-xs text-slate-500">Volume</label><input id="amb-vol" data-amb-vol type="range" min="5" max="100" value="' + Math.round(cn.amb.vol * 100) + '" class="flex-1 accent-teal-600"></div>' +
+    '<div class="flex items-center gap-2 mt-3 flex-wrap"><span class="text-xs text-slate-500">Stop after:</span>' + [15, 30, 60].map(m => '<button data-amb-timer="' + m + '" class="text-xs rounded-full border border-slate-300 dark:border-slate-700 px-2.5 py-1">' + m + ' min</button>').join('') + '<button data-amb-stop class="ml-auto text-xs text-rose-600 hover:underline">Stop sound</button></div><p id="amb-note" class="text-[11px] text-slate-400 mt-1"></p></div>';
+}
+function cnAmbUi() {
+  document.querySelectorAll('.cn-amb-btn').forEach(b => { const on = b.dataset.amb === cn.amb.id; b.classList.toggle('border-teal-500', on); b.classList.toggle('bg-teal-50', on); b.setAttribute('aria-pressed', on); });
+  const n = document.getElementById('amb-note'); if (n) n.textContent = cn.amb.id ? langT('Playing: ' + (CN_AMB.find(x => x[0] === cn.amb.id) || [0, ''])[1] + (cn.amb.until ? ' · stops at ' + new Date(cn.amb.until).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')) : '';
+}
+const CN_SCAN = ['Get comfortable. Close your eyes if you like, and take a slow breath in and out.', 'Relax your forehead and the space between your eyebrows.', 'Soften your eyes, your cheeks and your jaw. Let your teeth part a little.', 'Drop your shoulders away from your ears. Let your neck feel long and loose.', 'Let your arms get heavy, all the way to your fingertips.', 'Notice your chest rise and fall. Breathe slowly and gently.', 'Soften your belly. Let go of any tightness there.', 'Relax your hips and your legs, down to your knees.', 'Let your feet and toes feel heavy and warm.', 'Take one more slow breath. When you are ready, open your eyes and stretch.'];
+function cnScanHtml() {
+  return '<div id="cn-scan" class="' + CN_CARD + ' mt-4 text-center"><p class="text-sm font-semibold">Guided body scan</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">About 3 minutes. It guides you from your head down to your toes, one part at a time.</p>' +
+    '<p id="scan-text" aria-live="polite" class="text-sm min-h-[3.5rem] mt-4 max-w-xs mx-auto"></p><div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mt-2 mb-3 overflow-hidden max-w-xs mx-auto"><div id="scan-bar" class="h-full bg-teal-500" style="width:0%"></div></div>' +
+    '<label class="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 mb-3"><input type="checkbox" id="scan-voice" ' + (cn.scan.voice ? 'checked' : '') + ' class="accent-teal-600"> Read it aloud to me</label><div><button data-scan-toggle class="' + CN_BTN + '">Start</button></div></div>';
+}
+function cnScanSay(t) { try { if (cn.scan.voice && window.speechSynthesis) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(langT(t)); u.rate = 0.85; u.lang = APP_LANG === 'fil' ? 'fil-PH' : 'en-US'; speechSynthesis.speak(u); } } catch (e) {} }
+function cnScanUi() {
+  const s = cn.scan, t = document.getElementById('scan-text'), b = document.getElementById('scan-bar'), btn = document.querySelector('[data-scan-toggle]'); if (!t) return;
+  t.textContent = s.on ? langT(CN_SCAN[s.i]) : (s.i >= CN_SCAN.length ? langT('Well done. You can do this any time.') : '');
+  b.style.width = (s.on ? Math.round((s.i + 1) / CN_SCAN.length * 100) : (s.i >= CN_SCAN.length ? 100 : 0)) + '%'; btn.textContent = s.on ? langT('Stop') : langT(s.i >= CN_SCAN.length ? 'Start again' : 'Start');
+}
+function cnScanStop(finished) { const s = cn.scan; clearTimeout(s.timer); s.timer = null; s.on = false; try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {} if (!finished) s.i = 0; cnScanUi(); }
+function cnScanStep() {
+  const s = cn.scan; if (!s.on) return;
+  if (s.i >= CN_SCAN.length) { cnScanStop(true); cnAddLog('practice', 'Body scan', 3); toast('Nice. Body scan counted.', 'success'); return; }
+  cnScanUi(); cnScanSay(CN_SCAN[s.i]); s.timer = setTimeout(() => { s.i++; cnScanStep(); }, 18000);
+}
+function cnBuildExtras() {
+  const m = document.getElementById('cn-p-music'), b = document.getElementById('cn-p-breathe');
+  if (m) m.insertAdjacentHTML('beforeend', cnAmbHtml());
+  if (b) b.insertAdjacentHTML('beforeend', cnScanHtml());
+  cnAmbUi(); cnScanUi();
+}
+
+/* ---- Help me right now: one tap from any page ---- */
+cn.hn = { on: false, timer: null };
+function hnBuild() {
+  if (document.getElementById('help-now')) return;
+  const f = document.createElement('button'); f.id = 'help-fab'; f.type = 'button'; f.setAttribute('aria-label', 'Help me right now');
+  f.className = 'hidden fixed bottom-4 left-4 md:left-[17rem] z-30 inline-flex items-center gap-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2 shadow-lg';
+  f.innerHTML = '<i data-lucide="life-buoy" class="w-4 h-4"></i><span>Help now</span>'; document.body.appendChild(f);
+  const d = document.createElement('div'); d.id = 'help-now'; d.className = 'hidden fixed inset-0 z-[60] overflow-y-auto bg-gradient-to-b from-sky-50 via-white to-rose-50 dark:from-slate-950 dark:via-slate-950 dark:to-rose-950/30'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Help me right now');
+  d.innerHTML = '<div class="max-w-md mx-auto px-5 py-6"><div class="flex justify-end"><button data-hn-close class="text-sm text-slate-600 dark:text-slate-300 underline">Close</button></div>' +
+    '<h2 class="text-xl font-semibold text-center">You are not alone.</h2><p class="text-sm text-slate-600 dark:text-slate-300 text-center mt-1">Let us slow down together. Follow the circle.</p>' +
+    '<div class="flex justify-center my-6"><div class="relative w-44 h-44 flex items-center justify-center"><div id="hn-circle" class="absolute inset-0 rounded-full bg-teal-300/60 dark:bg-teal-600/40" style="transform:scale(.6);transition:transform 4s ease-in-out"></div><p id="hn-label" class="relative text-base font-medium text-teal-900 dark:text-teal-100">Get ready</p></div></div>' +
+    '<div class="rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 p-4"><p class="text-sm font-semibold">Ground yourself: 5-4-3-2-1</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Slowly notice 5 things you can see, 4 you can feel, 3 you can hear, 2 you can smell and 1 you can taste.</p></div>' +
+    '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/20 p-4 mt-3"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">If you are in danger or may hurt yourself</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">Call now. These lines are free. Then tell a trusted adult.</p><div id="hn-lines"></div></div>' +
+    '<div id="hn-actions" class="flex flex-wrap gap-2 mt-4 justify-center"></div></div>';
+  document.body.appendChild(d);
+}
+function helpNowSync() { const f = document.getElementById('help-fab'); if (f) f.classList.toggle('hidden', !(typeof DB !== 'undefined' && DB && DB.auth && DB.auth.role)); }
+function hnCycle() {
+  if (!cn.hn.on) return; const c = document.getElementById('hn-circle'), l = document.getElementById('hn-label'); if (!c) return;
+  c.style.transition = 'transform 4s ease-in-out'; c.style.transform = 'scale(1.05)'; l.textContent = langT('Breathe in');
+  cn.hn.timer = setTimeout(() => { if (!cn.hn.on) return; c.style.transition = 'transform 6s ease-in-out'; c.style.transform = 'scale(.6)'; l.textContent = langT('Breathe out slowly'); cn.hn.timer = setTimeout(hnCycle, 6000); }, 4000);
+}
+function hnOpen() {
+  hnBuild(); const d = document.getElementById('help-now'); d.classList.remove('hidden');
+  document.getElementById('hn-lines').innerHTML = cnHotlinesHtml(true);
+  const role = DB.auth && DB.auth.role, can = role === 'student' || role === 'teacher';
+  document.getElementById('hn-actions').innerHTML = (can ? '<button data-hn-go="talk" class="' + CN_BTN + '">Talk to someone</button><button data-hn-go="plan" class="' + CN_BTN2 + '">My safety plan</button>' : '') + '<button data-hn-close class="' + CN_BTN2 + '">I feel a little better</button>';
+  refreshIcons(); cn.hn.on = true; clearTimeout(cn.hn.timer); hnCycle(); cnAddLog && DB.auth && role !== 'admin' && cnAddLog('calm', 'Help now', 1);
+}
+function hnClose() { cn.hn.on = false; clearTimeout(cn.hn.timer); const d = document.getElementById('help-now'); if (d) d.classList.add('hidden'); }
+function hnGo(w) { hnClose(); goToView('counseling'); if (w === 'plan') { cn.helpView = 'plan'; cnShowTab('help'); } else { cnShowTab('talk'); } window.scrollTo(0, 0); }
+
+/* ---- Reading options: text size, easy-read font, spacing, less motion ---- */
+const A11Y_KEY = 'attendly_a11y';
+function a11yGet() { try { return Object.assign({ size: 0, font: 0, space: 0, calm: 0 }, JSON.parse(localStorage.getItem(A11Y_KEY) || '{}')); } catch (e) { return { size: 0, font: 0, space: 0, calm: 0 }; } }
+function a11yApply() {
+  const s = a11yGet(), h = document.documentElement; h.dataset.tsize = s.size; h.dataset.font = s.font ? 'easy' : ''; h.dataset.space = s.space; h.dataset.calm = s.calm;
+  if (s.font && !document.getElementById('a11y-font')) { const l = document.createElement('link'); l.id = 'a11y-font'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap'; document.head.appendChild(l); }
+}
+function a11ySet(k, v) { const s = a11yGet(); s[k] = v; try { localStorage.setItem(A11Y_KEY, JSON.stringify(s)); } catch (e) {} a11yApply(); a11yRender(); }
+function a11yRender() {
+  const p = document.getElementById('a11y-pop'); if (!p) return; const s = a11yGet();
+  const tog = (k, label) => '<label class="flex items-center justify-between gap-3 text-sm py-1.5"><span>' + label + '</span><input type="checkbox" data-a11y-tog="' + k + '" ' + (s[k] ? 'checked' : '') + ' class="accent-teal-600 w-4 h-4"></label>';
+  p.innerHTML = '<p class="text-sm font-semibold mb-2">Reading options</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Text size</p><div class="flex gap-2 mb-3">' + [['A', 0], ['A+', 1], ['A++', 2]].map(x => '<button data-a11y-size="' + x[1] + '" aria-pressed="' + (s.size === x[1]) + '" class="flex-1 rounded-lg border px-2 py-1.5 text-sm ' + (s.size === x[1] ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 font-semibold' : 'border-slate-300 dark:border-slate-700') + '">' + x[0] + '</button>').join('') + '</div>' +
+    tog('font', 'Easy-to-read font') + tog('space', 'More space between letters and lines') + tog('calm', 'Less motion') + '<button data-a11y-reset class="text-xs text-slate-500 hover:underline mt-2">Reset</button>';
+}
+function a11yToggle() { const p = document.getElementById('a11y-pop'); if (!p) return; const open = p.classList.contains('hidden'); p.classList.toggle('hidden', !open); if (open) a11yRender(); }
+function a11yClose() { const p = document.getElementById('a11y-pop'); if (p) p.classList.add('hidden'); }
+function a11yBuild() {
+  if (document.getElementById('a11y-btn')) return; const lb = document.getElementById('logout-btn'); if (!lb) return;
+  const b = document.createElement('button'); b.id = 'a11y-btn'; b.type = 'button'; b.setAttribute('aria-label', 'Reading options'); b.className = 'inline-flex items-center text-xs font-semibold border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800'; b.textContent = 'Aa';
+  lb.parentNode.insertBefore(b, lb);
+  const p = document.createElement('div'); p.id = 'a11y-pop'; p.className = 'hidden fixed top-14 right-3 z-[65] w-64 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl p-4'; document.body.appendChild(p);
+}
+function wellInit() { a11yApply(); a11yBuild(); hnBuild(); helpNowSync(); refreshIcons(); }
+
+/* ---- clicks for the extras ---- */
+document.addEventListener('click', ev => {
+  const g = sel => ev.target.closest(sel); let el;
+  if (g('#a11y-btn')) { a11yToggle(); return; }
+  if (!g('#a11y-pop')) a11yClose();
+  if (g('#help-fab')) { hnOpen(); return; }
+  if (g('[data-hn-close]')) { hnClose(); return; }
+  if ((el = g('[data-hn-go]'))) { hnGo(el.dataset.hnGo); return; }
+  if ((el = g('[data-a11y-size]'))) { a11ySet('size', +el.dataset.a11ySize); return; }
+  if ((el = g('[data-a11y-tog]'))) { a11ySet(el.dataset.a11yTog, el.checked ? 1 : 0); return; }
+  if (g('[data-a11y-reset]')) { try { localStorage.removeItem(A11Y_KEY); } catch (e) {} a11yApply(); a11yRender(); return; }
+  if ((el = g('[data-j-mood]'))) { cn.jMood = +el.dataset.jMood; cnRenderPanel('journal'); return; }
+  if (g('[data-j-prompt]')) { cn.jShift = (cn.jShift || 0) + 1; cnRenderPanel('journal'); return; }
+  if (g('[data-j-save]')) {
+    if (!cn.jMood) { toast('Pick how you feel first.', 'warning'); return; }
+    cnJAdd(cn.jMood, (cn.jNote || '').trim(), cnJPrompt()); cn._noJ = true; cnAddLog('mood', 'Mood', 0, cn.jMood); cn._noJ = false;
+    cn.jMood = 0; cn.jNote = ''; cnRenderPanel('journal'); toast('Saved to your journal.', 'success'); return;
+  }
+  if ((el = g('[data-j-del]'))) { cnLsSet('attendly_journal_', cnJList().filter(e => String(e.t) !== el.dataset.jDel)); cnRenderPanel('journal'); return; }
+  if (g('[data-j-copyall]')) { cnCopy(cnJText(cnJList().slice(-30))); return; }
+  if (g('[data-j-dl]')) { cnSaveText('mood-journal.txt', cnJText(cnJList())); return; }
+  if (g('[data-j-clear]')) { askConfirm('Delete all entries?', 'Your whole mood journal on this device will be erased.', () => { cnLsSet('attendly_journal_', []); cnRenderPanel('journal'); }); return; }
+  if ((el = g('[data-hp-copy]'))) { cnCopy(langT(cnScripts()[+el.dataset.hpCopy])); return; }
+  if ((el = g('[data-hp-use]'))) {
+    cnShowTab('talk'); const b = document.getElementById('cn-m-body'), to = document.getElementById('cn-m-to'), cs = cnCounselor();
+    if (to && cs) { try { to.value = normEmail(cs.email); } catch (e) {} } if (b) { b.value = langT(cnScripts()[+el.dataset.hpUse]); b.focus(); } window.scrollTo(0, 0); return;
+  }
+  if (g('[data-hp-plan]')) { cn.helpView = 'plan'; cnRenderPanel('help'); window.scrollTo(0, 0); return; }
+  if (g('[data-hp-back]')) { cn.helpView = 'main'; cnRenderPanel('help'); window.scrollTo(0, 0); return; }
+  if (g('[data-sp-save]')) { cnLsSet('attendly_safetyplan_', cnSpRead()); toast('Your safety plan is saved on this device.', 'success'); return; }
+  if (g('[data-sp-copy]')) { cnCopy(cnSpText(cnSpRead())); return; }
+  if (g('[data-sp-dl]')) { cnSaveText('my-safety-plan.txt', cnSpText(cnSpRead())); return; }
+  if (g('[data-sp-clear]')) { askConfirm('Clear your safety plan?', 'Everything you wrote in it on this device will be erased.', () => { try { localStorage.removeItem('attendly_safetyplan_' + cnUid()); } catch (e) {} cnRenderPanel('help'); }); return; }
+  if (g('[data-pl-add]')) { const t = document.getElementById('pl-text'), d = document.getElementById('pl-due'); if (!t || !t.value.trim()) { toast('Write what you need to do.', 'warning'); return; } const l = cnLsGet('attendly_study_', []); l.push({ id: Date.now() + '' + Math.floor(Math.random() * 99), text: t.value.trim(), due: d ? d.value : '', done: 0 }); cnLsSet('attendly_study_', l.slice(-100)); cnRenderPanel('explore'); return; }
+  if ((el = g('[data-pl-done]'))) { cnLsSet('attendly_study_', cnLsGet('attendly_study_', []).map(x => x.id === el.dataset.plDone ? Object.assign(x, { done: el.checked ? 1 : 0 }) : x)); cnRenderPanel('explore'); return; }
+  if ((el = g('[data-pl-del]'))) { cnLsSet('attendly_study_', cnLsGet('attendly_study_', []).filter(x => x.id !== el.dataset.plDel)); cnRenderPanel('explore'); return; }
+  if ((el = g('[data-amb]'))) { if (cn.amb.id === el.dataset.amb) cnAmbStop(); else cnAmbStart(el.dataset.amb); return; }
+  if ((el = g('[data-amb-timer]'))) { cnAmbTimer(+el.dataset.ambTimer); return; }
+  if (g('[data-amb-stop]')) { cnAmbStop(); return; }
+  if (g('[data-scan-toggle]')) { const s = cn.scan; if (s.on) cnScanStop(); else { s.on = true; s.i = 0; cnScanStep(); } return; }
+});
+document.addEventListener('input', ev => {
+  const t = ev.target; if (!t) return;
+  if (t.id === 'j-note') cn.jNote = t.value;
+  if (t.matches && t.matches('[data-amb-vol]')) { cn.amb.vol = +t.value / 100; if (cn.amb.master) cn.amb.master.gain.value = cn.amb.vol; }
+});
+document.addEventListener('change', ev => { const t = ev.target; if (t && t.id === 'scan-voice') cn.scan.voice = t.checked; });
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wellInit); else wellInit();
+
 /* ---- Home ---- */
 function cnUnreadReplies() { const me = cnMyEmail(); return cn.items.filter(i => normEmail(i.to_email) === me && i.status === 'new').length; }
 function cnPanelHome() {
@@ -6241,8 +6783,9 @@ function cnPanelHome() {
     '<div class="flex flex-wrap gap-1.5 mt-3">' + (cnIsT() ? ['Private and safe', 'Counseling', 'Rest and recharge'] : ['Private and safe', 'Counseling', 'Community support']).map(t => '<span class="text-[11px] rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-slate-600 dark:text-slate-300">' + t + '</span>').join('') + '</div>' +
     '<div class="flex flex-wrap gap-2 mt-4"><button data-cn-tab="explore" class="' + CN_BTN + '">Explore pathways</button><button data-cn-tab="music" class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Calming music</button><button data-cn-calm class="' + CN_BTN2 + ' bg-white/70 dark:bg-slate-800/70">Quick calm</button></div>' +
     '<div class="flex gap-2 mt-5 flex-wrap">' + moods.map(m => '<button data-cn-mood="' + m[1] + '" class="flex flex-col items-center gap-0.5 w-14 py-2 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-teal-400"><span class="text-xl">' + m[0] + '</span><span class="text-[10px] text-slate-500 dark:text-slate-400">' + m[2] + '</span></button>').join('') + '</div></div>' +
+    '<div class="my-4 space-y-3">' + cnDailyHtml() + cnRetakeHtml() + '</div>' +
     (unread ? '<button data-cn-tab="talk" class="w-full text-left rounded-xl border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 px-4 py-3 text-sm font-medium text-teal-800 dark:text-teal-200">You have ' + unread + ' new repl' + (unread === 1 ? 'y' : 'ies') + '. Tap to read.</button>' : '') +
-    '<div class="grid grid-cols-2 gap-3">' + [['surveys', 'Surveys', 'Check how you are doing and get a plan', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['book', 'Book a time', 'Ask to meet the counselor', 'calendar-check'], ['talk', 'Talk to someone', (cnIsT() ? 'Message the counselor or the principal' : 'Message the counselor, your adviser or a teacher'), 'message-circle']].map(c =>
+    '<div class="grid grid-cols-2 gap-3">' + [['surveys', 'Surveys', 'Check how you are doing and get a plan', 'clipboard-list'], ['breathe', 'Breathe', 'A guided 4-7-8 breathing exercise', 'wind'], ['book', 'Book a time', 'Ask to meet the counselor', 'calendar-check'], ['talk', 'Talk to someone', (cnIsT() ? 'Message the counselor or the principal' : 'Message the counselor, your adviser or a teacher'), 'message-circle'], ['journal', 'Mood journal', 'Add a note about how today feels', 'notebook-pen'], ['help', 'Get help', 'A real person, hotlines and a safety plan', 'hand-helping']].map(c =>
       '<button data-cn-tab="' + c[0] + '" class="' + CN_CARD + ' !p-4 text-left hover:border-teal-400 dark:hover:border-teal-700"><i data-lucide="' + c[3] + '" class="w-5 h-5 text-teal-600 dark:text-teal-400"></i><p class="text-sm font-semibold mt-2">' + c[1] + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">' + c[2] + '</p></button>').join('') + '</div>' +
     '<div class="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/20 p-4"><p class="text-sm font-semibold text-rose-800 dark:text-rose-200">Need help right now?</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 mb-1">You are not alone. These lines are free to call. Tell a trusted adult too.</p>' + cnHotlinesHtml() + '</div>';
 }
@@ -6255,13 +6798,13 @@ function cnPanelExplore() {
       '<div class="rounded-2xl p-6 bg-gradient-to-br ' + p.grad + ' border border-slate-200 dark:border-slate-800"><div class="flex items-center gap-2 mb-2">' + cnChip(p.group, 'teal') + '<span class="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</span></div><div class="flex items-center gap-3"><i data-lucide="' + p.icon + '" class="w-7 h-7 text-teal-700 dark:text-teal-300"></i><h2 class="text-xl font-semibold">' + escapeHtml(p.title) + '</h2></div><p class="text-sm text-slate-700 dark:text-slate-300 mt-3 max-w-lg">' + escapeHtml(p.intro) + '</p></div>' +
       (p.points.length ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">What you can do</p><ul class="space-y-1.5">' + p.points.map(x => '<li class="flex gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-teal-600 shrink-0 mt-0.5"></i><span>' + escapeHtml(x) + '</span></li>').join('') + '</ul></div>' : '') +
       (p.practices ? '<div class="' + CN_CARD + ' mt-4"><p class="text-sm font-semibold mb-2">Micro-practices</p><div class="space-y-2">' + CN_PRACTICES.map((x, i) => '<div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2"><div class="min-w-0 flex-1"><p class="text-sm font-medium">' + escapeHtml(x[0]) + '</p><p class="text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(x[1]) + '</p></div><button data-cn-practice="' + i + '" class="' + CN_BTN2 + ' !py-1 text-xs shrink-0">I did it</button></div>').join('') + '</div></div>' : '') +
-      '<div class="flex flex-wrap gap-2 mt-4">' + p.actions.map((a, i) => '<button data-cn-go="' + a[1] + '" class="' + (i ? CN_BTN2 : CN_BTN) + '">' + escapeHtml(a[0]) + '</button>').join('') + '</div>';
+      (p.planner ? cnPlannerHtml() : '') + '<div class="flex flex-wrap gap-2 mt-4">' + p.actions.map((a, i) => '<button data-cn-go="' + a[1] + '" class="' + (i ? CN_BTN2 : CN_BTN) + '">' + escapeHtml(a[0]) + '</button>').join('') + '</div>';
   }
   const card = (id, i) => { const p = cnPages()[id]; return '<button data-cn-page="' + id + '" class="text-left rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-teal-400"><div class="h-20 bg-gradient-to-br ' + p.grad + ' flex items-center justify-center"><i data-lucide="' + p.icon + '" class="w-8 h-8 text-teal-700 dark:text-teal-300"></i></div><div class="p-3"><p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">' + escapeHtml(p.tag) + '</p><p class="text-sm font-semibold">' + escapeHtml(p.title) + '</p><p class="text-[11px] text-teal-700 dark:text-teal-400 mt-1">View details →</p></div></button>'; };
   return '<div class="' + CN_CARD + '"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Pillars</p><h3 class="text-base font-semibold mb-3">Four ways we support ' + (cnIsT() ? 'teachers' : 'you') + '</h3><div class="grid grid-cols-2 gap-3">' + ['grounding', 'circles', 'anchor', 'journal'].map(card).join('') + '</div></div>' +
     '<div class="' + CN_CARD + ' mt-4"><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Offerings</p><h3 class="text-base font-semibold mb-3">Care that moves with you</h3><div class="space-y-2">' +
     ['circles2', 'burnout', 'somatic', 'advocacy'].map(id => { const p = cnPages()[id]; return '<button data-cn-page="' + id + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="w-10 h-10 rounded-lg bg-gradient-to-br ' + p.grad + ' flex items-center justify-center shrink-0"><i data-lucide="' + p.icon + '" class="w-5 h-5 text-teal-700 dark:text-teal-300"></i></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(p.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(p.intro.split('. ')[0]) + '.</span></span><span class="text-[11px] text-teal-700 dark:text-teal-400 shrink-0">Learn more →</span></button>'; }).join('') + '</div>' +
-    '<p class="text-[11px] text-slate-400 mt-3">Ask the counselor which of these are running at school right now.</p></div>';
+    '<p class="text-[11px] text-slate-400 mt-3">Ask the counselor which of these are running at school right now.</p></div>' + cnGuidesCard();
 }
 
 /* ---- Surveys ---- */
@@ -6335,7 +6878,8 @@ function cnFinishSurvey() {
 
 /* ---- Breathing 4-7-8 ---- */
 const CN_PHASES = [['Breathe in', 4, 1], ['Hold', 7, 1], ['Breathe out', 8, 0.55]];
-function cnBuildStatic() {
+function cnBuildStatic() { cnBuildStatic0(); cnBuildExtras(); }
+function cnBuildStatic0() {
   document.getElementById('cn-p-breathe').innerHTML = '<div class="' + CN_CARD + ' text-center"><p class="text-sm font-semibold">4-7-8 ocean breath</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Breathe in for 4, hold for 7, breathe out slowly for 8. It helps your body settle when school feels heavy.</p>' +
     '<div class="flex justify-center my-6"><div class="relative w-48 h-48 flex items-center justify-center"><div id="cn-b-circle" class="absolute inset-0 rounded-full bg-teal-200/70 dark:bg-teal-700/40" style="transform:scale(.55);transition:transform 1s ease-in-out"></div><div class="relative text-center"><p id="cn-b-label" class="text-sm font-medium text-teal-800 dark:text-teal-200">Ready</p><p id="cn-b-count" class="text-3xl font-semibold tabular-nums">4-7-8</p></div></div></div>' +
     '<p id="cn-b-cycles" class="text-xs text-slate-500 dark:text-slate-400 mb-3">Cycles completed: 0</p><button id="cn-b-btn" data-cn-breath class="' + CN_BTN + '">Start</button></div>';
