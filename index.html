@@ -42,6 +42,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="var y=document.createElement('script');y.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(y)"></script>
 <style>
+.cn-bubble{border-radius:9999px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;line-height:1.15;color:#134e4a;background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.95),rgba(94,234,212,.38));border:1px solid rgba(45,212,191,.5);box-shadow:inset 0 -8px 14px rgba(45,212,191,.18),0 2px 6px rgba(15,118,110,.12);animation:cnfloat 5s ease-in-out infinite;transition:transform .15s}
+.cn-bubble:hover{transform:scale(1.07)}.cn-bubble.safety{background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.95),rgba(251,113,133,.34));border-color:rgba(251,113,133,.55);color:#881337}
+/* falling bubbles */
+.cn-field{position:relative;height:22rem;overflow:hidden;border-radius:.75rem;background:linear-gradient(to bottom,rgba(186,230,253,.28),rgba(204,251,241,.18))}
+.cn-fall{pointer-events:none;line-height:0;position:absolute;top:-7rem;animation:cnfall linear infinite}
+.cn-fall:hover,.cn-fall:active,.cn-fall.paused{animation-play-state:paused}
+.cn-fall .cn-bubble{animation:none;pointer-events:auto}
+@keyframes cnfall{0%{transform:translate(0,0)}25%{transform:translate(.7rem,7.25rem)}50%{transform:translate(-.6rem,14.5rem)}75%{transform:translate(.6rem,21.75rem)}100%{transform:translate(0,29.5rem)}}
+@media (prefers-reduced-motion:reduce){.cn-field{height:auto;display:flex;flex-wrap:wrap;justify-content:center;padding:1rem}.cn-fall{position:static;animation:none;margin:.4rem}}
+html[data-calm="1"] .cn-field{height:auto;display:flex;flex-wrap:wrap;justify-content:center;padding:1rem}html[data-calm="1"] .cn-fall{position:static;animation:none!important;margin:.4rem}
+@keyframes cnfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes cnpopout{0%{transform:scale(1);opacity:1}60%{transform:scale(1.45);opacity:.6}100%{transform:scale(1.7);opacity:0}}
+.cn-pop-out{animation:cnpopout .28s ease-out forwards!important}
+@media (prefers-reduced-motion:reduce){.cn-bubble,.cn-pop-out{animation:none!important}}
 html[data-tsize="1"]{font-size:112.5%}html[data-tsize="2"]{font-size:125%}
 html[data-tsize="1"] .text-\[10px\]{font-size:11.5px}html[data-tsize="1"] .text-\[11px\]{font-size:12.5px}
 html[data-tsize="2"] .text-\[10px\]{font-size:13px}html[data-tsize="2"] .text-\[11px\]{font-size:14px}
@@ -3974,7 +3988,7 @@ const LANG_FIL = {
 "No grade or section added yet": "Wala pang naidagdag na grade o section",
 "None yet": "Wala pa",
 "Overview": "Pangkalahatan",
-"Grades": "Mga Grado",
+"Grades": "Mga grado",
 "Materials": "Mga Materyales",
 "History": "Kasaysayan",
 "General average": "Pangkalahatang average",
@@ -4108,7 +4122,7 @@ const LANG_FIL = {
 "Somatic Regulation": "Pagpapakalma ng Katawan",
 "Guided breathing and grounding that tell your body it is safe, so your heart rate slows and your thoughts settle..": "Gabay na paghinga at grounding na nagsasabi sa katawan mo na ligtas ka, para bumagal ang tibok ng puso at kumalma ang isip mo.",
 "Community Advocacy": "Pagtulong sa Komunidad",
-"Direct access to counseling support, help with school concerns, and information about community resources.": "Direktang daan sa counseling, tulong sa mga problema sa school, at impormasyon tungkol sa mga tulong sa komunidad.",
+"Direct access to counseling support, help with school concerns, and information about community resources..": "Direktang daan sa counseling, tulong sa mga problema sa school, at impormasyon tungkol sa mga tulong sa komunidad.",
 "Ask the counselor which of these are running at school right now.": "Itanong sa counselor kung alin sa mga ito ang meron ngayon sa school.",
 "← Back to Explore": "← Bumalik sa Tuklasin",
 "Pillar": "Haligi",
@@ -4908,7 +4922,7 @@ const LANG_FIL = {
 "Five quick questions about work, rest, support and mood.": "Limang mabilis na tanong tungkol sa trabaho, pahinga, suporta at mood.",
 "Attendly quick check-in for teachers": "Mabilis na check-in ng Attendly para sa mga guro",
 "In the past 2 weeks, how often has your workload (lessons, papers, reports, extra duties) felt like too much?": "Sa nakaraang 2 linggo, gaano kadalas naging sobra ang trabaho mo (aralin, papeles, ulat, karagdagang tungkulin)?",
-"Workload": "Dami ng trabaho",
+"Workload": "Dami ng gawain",
 "Often, I fall behind": "Madalas, nahuhuli ako",
 "Do you have someone to talk to, and do you feel supported at school?": "May makakausap ka ba, at pakiramdam mo ba ay suportado ka sa paaralan?",
 "Support": "Suporta",
@@ -5451,9 +5465,36 @@ const LANG_FIL = {
 "Add a few entries and your patterns will show up here, like which days are harder.": "Magdagdag ng ilang tala at lalabas dito ang mga pattern mo, gaya ng kung aling mga araw ang mas mahirap.",
 "Keep checking in. After about a week, patterns will show up here.": "Magpatuloy sa pag-check in. Pagkalipas ng mga isang linggo, lalabas dito ang mga pattern.",
 "Help me right now": "Tulungan ako ngayon din",
-"Help now": "Tulong ngayon"
+"Help now": "Tulong ngayon",
+"Back to bubbles": "Bumalik sa mga bula",
+"Bubble check": "Pagsusuri gamit ang bula",
+"Bubbles": "Mga bula",
+"Friends": "Mga kaibigan",
+"Full reference": "Buong sanggunian",
+"Popped:": "Naputok na:",
+"Pop a bubble": "Pumutok ng bula",
+"Save answer": "I-save ang sagot",
+"See my result": "Tingnan ang resulta ko",
+"Source:": "Pinagmulan:",
+"Leave the bubbles?": "Aalis sa mga bula?",
+"~4 min": "~4 min",
+"Original Attendly question. Not a validated test.": "Orihinal na tanong ng Attendly. Hindi napatunayang pagsusulit.",
+"Original Attendly question, informed by the WHO description of burnout (2019). Not a validated test.": "Orihinal na tanong ng Attendly, hango sa paglalarawan ng WHO sa burnout (2019). Hindi napatunayang pagsusulit.",
+"GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)": "GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)",
+"PHQ-9 (Kroenke, Spitzer & Williams, 2001)": "PHQ-9 (Kroenke, Spitzer & Williams, 2001)",
+"PHQ-9, question 9 (Kroenke, Spitzer & Williams, 2001)": "PHQ-9, tanong 9 (Kroenke, Spitzer & Williams, 2001)",
+"Pick a topic, pop it, and answer one question about it. A gentle, quick way to check in.": "Pumili ng paksa, putukin ito, at sagutin ang isang tanong tungkol dito. Banayad at mabilis na paraan ng pag-check in.",
+"Bubbles are drifting down. Tap one to pop it and see one question about that topic. Pop as many or as few as you like. Every question shows where it comes from.": "Bumabagsak ang mga bula. Pindutin ang isa para putukin ito at makita ang isang tanong tungkol sa paksang iyon. Pumutok ng marami o kaunti, ayon sa gusto mo. Ipinapakita ng bawat tanong kung saan ito galing.",
+"This is a gentle screening, not a diagnosis. Nothing is sent unless you choose to send it.": "Banayad na screening ito, hindi diagnosis. Walang ipapadala maliban kung pipiliin mong ipadala.",
+"Want a fuller picture? These surveys go deeper:": "Gusto mo ng mas kumpletong larawan? Mas malalim ang mga survey na ito:",
+"Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others are original Attendly questions, not validated tests. A few questions give only a quick pulse, not a score.": "Ipinakita ng bawat tanong sa pagsusuri gamit ang bula ang pinagmulan nito nang putukin mo ito. Ang mga tanong sa PHQ-9 at GAD-7 ay ginamit ayon sa pagkakalathala. Ang iba ay orihinal na tanong ng Attendly, hindi napatunayang pagsusulit. Ang ilang tanong ay nagbibigay lang ng mabilis na pulso, hindi iskor.",
+"The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.": "Gumagamit ang pagsusuri gamit ang bula ng iisang tanong mula sa mga survey na ito, kaya mabilis na pulso lang ang resulta nito, hindi iskor."
 };
 const LANG_PATS = [
+[
+"^(\\d+) of (\\d+) popped$",
+"$1 sa $2 ang naputok"
+],
 [
 "^(\\d+) entr(?:y|ies)$",
 "$1 tala"
@@ -6031,6 +6072,7 @@ function cnResultNote(sv, s) {
   const di = sv.items.findIndex(it => it.diff);
   if (di >= 0 && s.ans[di] != null) h += '<p class="text-xs text-slate-500 dark:text-slate-400 mt-2"><span>You said these problems have made daily life:</span> <b>' + escapeHtml(sv.items[di].opts[s.ans[di]]) + '</b></p>';
   if (sv.scale) { const hi = sv.scoreIdx.filter(i => (s.ans[i] || 0) >= 2).length; h += '<p class="text-xs text-slate-500 dark:text-slate-400 mt-2">' + escapeHtml('You answered "' + sv.scale[2] + '" or "' + sv.scale[3] + '" on ' + hi + ' of ' + sv.scoreIdx.length + ' statements.') + '</p>'; }
+  if (sv.pulse) h += cnBubbleSuggest(sv, s);
   return h + '<p class="text-[11px] text-slate-400 mt-2">This screening cannot tell whether you have a mental health condition. If these feelings last or get in the way of daily life, consider talking to a counselor or a qualified mental health professional.</p>';
 }
 function cnIdeasHtml(sv, s, res) {
@@ -6051,12 +6093,13 @@ function cnAnswersHtml(sv, s) {
   return '<details class="mt-4 text-sm"><summary class="cursor-pointer text-sm font-semibold">See my answers</summary><ul class="mt-2 divide-y divide-slate-200 dark:divide-slate-800 text-xs text-slate-600 dark:text-slate-300">' + rows + '</ul></details>';
 }
 function cnSourceHtml(sv) {
+  if (sv.pulse) return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others are original Attendly questions, not validated tests. A few questions give only a quick pulse, not a score.</p><p>' + escapeHtml(CN_REFS.phq.cite) + '</p><p>' + escapeHtml(CN_REFS.gad.cite) + '</p><p>' + escapeHtml(CN_REFS.burn.cite) + '</p></div></details>';
   const R = CN_REFS[sv.aud === 't' ? sv.id.slice(1) : sv.id];
   return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>' + escapeHtml(R ? R.note : 'These are original Attendly reflection questions. They are not a validated test, so there is no clinical score or diagnosis.') + '</p>' + (R ? '<p>' + escapeHtml(R.cite) + '</p>' : '') + '<p>Attendly is a school tool for screening and self-reflection. It is not clinically validated and does not replace an assessment by a qualified professional.</p></div></details>';
 }
 function cnAboutHtml() {
   return '<details class="mt-4 text-xs text-slate-600 dark:text-slate-300"><summary class="cursor-pointer text-sm font-semibold">About these surveys</summary><div class="mt-3 space-y-3">' +
-    '<div><p class="font-semibold">How they are scored</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.</li><li>Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.</li><li>The other surveys are original Attendly reflection questions. They are not validated tests, so their levels are only a guide.</li></ul></div>' +
+    '<div><p class="font-semibold">How they are scored</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.</li><li>Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.</li><li>The other surveys are original Attendly reflection questions. They are not validated tests, so their levels are only a guide.</li><li>The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.</li></ul></div>' +
     '<div><p class="font-semibold">Understanding what you feel</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression symptoms: lasting sadness, loss of interest, changes in sleep, appetite or energy.</li><li>Anxiety symptoms: too much worry, restlessness, feeling on edge.</li><li>Stress: a response to demands that feel too heavy. It can ease when the demands change.</li><li>Burnout: exhaustion, mental distance from school or work, and feeling less able to cope. The World Health Organization describes it as an occupational phenomenon, not a medical condition.</li></ul></div>' +
     '<div><p class="font-semibold">When to seek professional support</p><p class="mt-1">Consider reaching out if feelings last for weeks, make school or work hard, or you feel unsafe. Start with the school counselor, a doctor or a licensed mental health professional. You do not need the right words. You can simply say, "I have not been feeling okay."</p></div>' +
     '<div><p class="font-semibold">Privacy and data</p><p class="mt-1">Your results are saved on this device, in your Progress tab. They are sent to the counselor only when you press Send, and only with your consent.</p></div>' +
@@ -6072,7 +6115,7 @@ const CN_STEPS_T = {
   worry: 'When worry spikes, try 5-4-3-2-1 grounding: name 5 things you see, 4 you feel, 3 you hear, 2 you smell and 1 you taste. Then pick one small action for the worry.'
 };
 function cnAud() { return cnIsT() ? 't' : 's'; }
-function cnSvList() { return Object.keys(CN_SURVEYS).filter(k => (CN_SURVEYS[k].aud || 's') === cnAud()); }
+function cnSvList() { return Object.keys(CN_SURVEYS).filter(k => (CN_SURVEYS[k].aud || 's') === cnAud() && !CN_SURVEYS[k].hidden); }
 const CN_STEPS = {
   load: 'Break schoolwork into 25-minute blocks with 5-minute breaks, and write your top 3 tasks for tomorrow.',
   body: 'Pick a sleep time and put your phone away 30 minutes before. Drink water, eat regular meals, and stretch your neck and shoulders.',
@@ -6311,6 +6354,7 @@ function cnHotlinesHtml(compact) {
 
 /* ---- surveys: scoring, plan, Excel, email ---- */
 function cnSurveyResult(sv, ans) {
+  if (sv.pulse) return cnPulseResult(sv, ans);
   const total = sv.scoreIdx.reduce((a, i) => a + (ans[i] || 0), 0), max = sv.scoreIdx.length * 3;
   let li = sv.levels.findIndex(l => total <= l.max); if (li < 0) li = sv.levels.length - 1;
   const level = sv.levels[li], safety = sv.safetyIdx == null ? 0 : (ans[sv.safetyIdx] || 0);
@@ -6319,7 +6363,7 @@ function cnSurveyResult(sv, ans) {
 }
 function cnPlanFor(sv, ans, res) {
   const sums = {}, cnts = {};
-  sv.items.forEach((it, i) => { if (!it.area || it.area === 'safety') return; sums[it.area] = (sums[it.area] || 0) + (ans[i] || 0); cnts[it.area] = (cnts[it.area] || 0) + 1; });
+  sv.items.forEach((it, i) => { if (!it.area || it.area === 'safety' || ans[i] == null || ans[i] < 0) return; sums[it.area] = (sums[it.area] || 0) + (ans[i] || 0); cnts[it.area] = (cnts[it.area] || 0) + 1; });
   const STEPS = sv.aud === 't' ? CN_STEPS_T : CN_STEPS;
   const areas = Object.keys(sums).filter(a => STEPS[a]).sort((a, b) => (sums[b] / cnts[b]) - (sums[a] / cnts[a]));
   const steps = [];
@@ -6354,12 +6398,13 @@ function cnWorkbookFrom(r) {
   const when = new Date(r.t), pr = { normal: 'Normal', high: 'Priority', urgent: 'Urgent' }[r.priority] || 'Normal';
   const sum = [['Field', 'Value'], [r.role === 'teacher' ? 'Teacher' : 'Student', r.name || ''], ['Username', r.username || ''], ['ID / LRN', r.sid || ''], ['Class', r.cls || ''], ['School year', r.sy || ''], ['Term', r.term || ''], ['Survey', sv.name], ['Date', when.toLocaleDateString()], ['Time', when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })],
     ['Score', r.total], ['Out of', r.max], ['Result', r.level], ['Priority', pr], ['Safety question answer', sv.safetyIdx == null ? 'Not asked' : cnItemText(sv, sv.safetyIdx, r.safety)], ['Note', r.note || ''], ['Source', sv.source], ['Reminder', 'This is a screening result, not a diagnosis.']];
-  const ans = [['No.', 'Question', 'Type', 'Response', 'In their own words', 'Score']].concat(sv.items.map((it, i) => { const c = cnAnsCell(sv, r, i); return [i + 1, it.q, c.type, c.resp, c.own, c.score]; }));
+  const ans = [['No.', 'Question', 'Type', 'Response', 'In their own words', 'Score']].concat(sv.items.map((it, i) => { const c = cnAnsCell(sv, r, i); return (sv.pulse && !((r.ans || [])[i] >= 0)) ? null : [i + 1, it.q, c.type, c.resp, c.own, c.score]; }).filter(Boolean));
   const plan = [['Step', 'Suggested action']].concat((r.plan || []).map((s, i) => [i + 1, s]));
   return [{ name: 'Summary', rows: sum, widths: [24, 60] }, { name: 'Answers', rows: ans, widths: [6, 70, 16, 34, 60, 8] }, { name: 'Plan', rows: plan, widths: [6, 110] }];
 }
 function cnInboxAnsHtml(sv, rec) {
   return sv.items.map((it, i) => {
+    if (sv.pulse && !((rec.ans || [])[i] >= 0)) return '';
     const c = cnAnsCell(sv, rec, i), v = (rec.ans || [])[i], rating = !it.type;
     const bar = rating && v >= 0 ? '<div class="h-1 rounded-full bg-slate-200 dark:bg-slate-700 mt-1.5"><div class="h-full rounded-full ' + (v >= 3 ? 'bg-rose-500' : v === 2 ? 'bg-orange-400' : v === 1 ? 'bg-amber-400' : 'bg-emerald-400') + '" style="width:' + (v + 1) * 25 + '%"></div></div>' : '';
     const body = (c.resp ? '<p class="text-xs font-medium">' + escapeHtml(c.resp) + '</p>' : '') + (c.own ? '<p class="text-xs mt-1 whitespace-pre-wrap break-words ' + (c.resp ? 'text-slate-600 dark:text-slate-300 italic' : 'font-medium') + '">' + (c.resp ? '"' + escapeHtml(c.own) + '"' : escapeHtml(c.own)) + '</p>' : '') + (!c.resp && !c.own ? '<p class="text-xs text-slate-400">No answer</p>' : '');
@@ -6415,7 +6460,7 @@ const CN_DYNAMIC = ['home', 'explore', 'surveys', 'talk', 'book', 'help', 'journ
 function renderCounseling() {
   const root = document.getElementById('cn-root'); if (!root) return;
   if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
-    cnStopBreath(); cnStopCalm(); cnAmbStop(true); cnScanStop(); cn.helpView = 'main'; cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
+    cn.bp = null; cnStopBreath(); cnStopCalm(); cnAmbStop(true); cnScanStop(); cn.helpView = 'main'; cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
     cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false };
     root.innerHTML = '<div class="space-y-4">' +
       '<div class="flex items-center gap-2"><div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 flex-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
@@ -6807,6 +6852,82 @@ function cnPanelExplore() {
     '<p class="text-[11px] text-slate-400 mt-3">Ask the counselor which of these are running at school right now.</p></div>' + cnGuidesCard();
 }
 
+/* ==================== BUBBLE CHECK: pop a bubble, answer one cited question ==================== */
+const CN_BUBBLE_CITES = {
+  gad: 'GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)',
+  phq: 'PHQ-9 (Kroenke, Spitzer & Williams, 2001)',
+  phq9: 'PHQ-9, question 9 (Kroenke, Spitzer & Williams, 2001)',
+  who: 'Original Attendly question, informed by the WHO description of burnout (2019). Not a validated test.',
+  orig: 'Original Attendly question. Not a validated test.'
+};
+const CN_BUBBLE_FULL = { gad: 'gad', phq: 'phq', phq9: 'phq', who: 'burn' };
+function cnPulseSv(T) {
+  const P = T ? 't' : '';
+  const defs = T ? [['Anxiety', 'gad', 0, 'gad'], ['Anxiety', 'gad', 1, 'gad'], ['Low mood', 'phq', 1, 'phq'], ['Low mood', 'phq', 0, 'phq'], ['Workload', 'stress', 0, 'orig'], ['Burnout', 'burn', 1, 'who'], ['Sleep', 'sleep', 0, 'orig'], ['Support', 'burn', 5, 'who'], ['Home', 'family', 0, 'orig'], ['Plans', 'future', 0, 'orig'], ['Safety', 'phq', 8, 'phq9']]
+    : [['Anxiety', 'gad', 0, 'gad'], ['Anxiety', 'gad', 1, 'gad'], ['Low mood', 'phq', 1, 'phq'], ['Low mood', 'phq', 0, 'phq'], ['Stress', 'stress', 0, 'orig'], ['Grades', 'stress', 1, 'orig'], ['Burnout', 'burn', 1, 'who'], ['Sleep', 'sleep', 0, 'orig'], ['Friends', 'burn', 5, 'who'], ['Home', 'family', 0, 'orig'], ['Future', 'future', 0, 'orig'], ['Safety', 'phq', 8, 'phq9']];
+  const items = defs.map(d => {
+    const base = CN_SURVEYS[P + d[1]], it = base.items[d[2]];
+    return { q: it.q, area: it.area, opts: base.scale, lead: base.lead, bubble: d[0], cite: d[3], safety: d[0] === 'Safety', from: d[1], tip: base.tips ? base.tips[d[2]] : '' };
+  });
+  const lv = CN_SURVEYS[T ? 'tquick' : 'quick'].levels;
+  return { id: P + 'pulse', aud: T ? 't' : 's', hidden: true, pulse: true, kind: 'survey', name: 'Bubble check', short: 'Bubbles', minutes: 2, blurb: 'Pop the bubbles you want and answer one question for each.', source: 'Attendly bubble check. Every question shows its source (screening only)', items,
+    scoreIdx: items.map((x, i) => i), safetyIdx: items.findIndex(x => x.safety), tips: items.map(x => x.tip), levels: lv.map((l, i) => ({ max: l.max, name: l.name, cls: l.cls, high: i >= 2, tip: l.tip })) };
+}
+CN_SURVEYS.pulse = cnPulseSv(false); CN_SURVEYS.tpulse = cnPulseSv(true);
+function cnPulseResult(sv, ans) {
+  const idx = sv.items.map((x, i) => i).filter(i => ans[i] != null && ans[i] >= 0), total = idx.reduce((a, i) => a + ans[i], 0), max = Math.max(3, idx.length * 3), ratio = total / max;
+  let li = ratio <= 0.25 ? 0 : ratio <= 0.5 ? 1 : ratio <= 0.75 ? 2 : 3;
+  const top = Math.max(0, ...idx.filter(i => i !== sv.safetyIdx).map(i => ans[i])); li = Math.max(li, top >= 3 ? 2 : top >= 2 ? 1 : 0);
+  const level = sv.levels[li], safety = sv.safetyIdx >= 0 && ans[sv.safetyIdx] > 0 ? ans[sv.safetyIdx] : 0;
+  return { total, max, li, level, safety, priority: safety >= 2 ? 'urgent' : (safety >= 1 || level.high ? 'high' : 'normal') };
+}
+function cnBubbleEntry() {
+  return '<button data-cn-bubbles class="w-full flex items-center gap-3 text-left rounded-lg border border-teal-300 dark:border-teal-800 bg-teal-50/60 dark:bg-teal-950/20 px-3 py-3 mb-3 hover:border-teal-500"><span class="flex -space-x-2 shrink-0" aria-hidden="true"><span class="w-7 h-7 rounded-full cn-bubble !animate-none"></span><span class="w-5 h-5 rounded-full cn-bubble !animate-none mt-3"></span><span class="w-6 h-6 rounded-full cn-bubble !animate-none"></span></span><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">Pop a bubble</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">Pick a topic, pop it, and answer one question about it. A gentle, quick way to check in.</span></span><span class="text-[11px] text-slate-400 shrink-0">~2 min</span></button>';
+}
+function cnBubbleSafetyBox() {
+  return '<div class="mb-4 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/30 p-4" role="alert"><p class="text-[11px] uppercase tracking-wide font-semibold text-rose-700 dark:text-rose-300">Please read this first</p><p class="text-sm font-semibold text-rose-800 dark:text-rose-200 mt-0.5">Thank you for being honest. Your safety matters.</p><p class="text-xs text-slate-600 dark:text-slate-300 mt-1 mb-1">Please tell a trusted adult now, and you can call these free lines at any time.</p>' + cnHotlinesHtml() + '</div>';
+}
+function cnPanelBubbles() {
+  const b = cn.bp, sv = CN_SURVEYS[cnIsT() ? 'tpulse' : 'pulse'];
+  if (b.cur != null) {
+    const it = sv.items[b.cur], a = b.ans[b.cur], full = CN_REFS[CN_BUBBLE_FULL[it.cite]];
+    return '<div class="' + CN_CARD + ' relative overflow-hidden"><div class="flex items-center justify-between mb-3"><span>' + cnChip(it.bubble, it.safety ? 'rose' : 'teal') + '</span><button data-bp-back class="text-xs text-slate-500 hover:underline">Back to bubbles</button></div><div class="cn-pop">' +
+      (it.lead ? '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">' + escapeHtml(it.lead) + '</p>' : '') + '<h3 class="text-base font-semibold mb-3">' + escapeHtml(it.q) + '</h3><div class="space-y-2">' +
+      it.opts.map((o, k) => '<button data-bp-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (a === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div></div>' +
+      '<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-4"><span class="font-semibold">Source:</span> <span>' + escapeHtml(CN_BUBBLE_CITES[it.cite]) + '</span></p>' + (full ? '<details class="text-[11px] text-slate-400 mt-1"><summary class="cursor-pointer">Full reference</summary><p class="mt-1">' + escapeHtml(full.cite) + '</p></details>' : '') +
+      '<div class="flex gap-2 mt-4"><button data-bp-done class="' + CN_BTN + '"' + (a == null ? ' disabled' : '') + '>Save answer</button></div></div>';
+  }
+  const answered = sv.items.map((x, i) => i).filter(i => b.ans[i] != null), left = sv.items.map((x, i) => i).filter(i => b.ans[i] == null);
+  const sizes = [5.75, 4.9, 5.4, 4.6, 6, 5, 5.5, 4.75, 5.6, 5.1, 5.25, 4.9], perm = [3, 8, 1, 10, 5, 0, 11, 6, 2, 9, 4, 7];
+  const safetyHigh = sv.safetyIdx >= 0 && b.ans[sv.safetyIdx] >= 1;
+  return (safetyHigh ? cnBubbleSafetyBox() : '') + '<div class="' + CN_CARD + '"><div class="flex items-start justify-between gap-3"><div><h3 class="text-base font-semibold">Pop a bubble</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bubbles are drifting down. Tap one to pop it and see one question about that topic. Pop as many or as few as you like. Every question shows where it comes from.</p></div><button data-bp-exit class="text-xs text-slate-500 hover:underline shrink-0">Cancel</button></div>' +
+    '<div class="cn-field mt-3 mb-3" role="group" aria-label="Bubbles">' + (left.length ? left.map((i, k) => { const it = sv.items[i], z = sizes[i % sizes.length], dur = 9 + (i * 1.3) % 6; return '<span class="cn-fall" style="left:calc(' + (3 + perm[i % 12] * 80 / 11).toFixed(1) + '% - ' + (z / 2 * 0.3).toFixed(2) + 'rem);animation-duration:' + dur.toFixed(1) + 's;animation-delay:-' + ((i * 1.9) % dur).toFixed(1) + 's"><button data-bp-pop="' + i + '" class="cn-bubble' + (it.safety ? ' safety' : '') + ' text-xs font-semibold" style="width:' + z + 'rem;height:' + z + 'rem" aria-label="' + escapeHtml(it.bubble) + '">' + escapeHtml(it.bubble) + '</button></span>'; }).join('') : '<p class="absolute inset-0 flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">You popped them all. Nice work.</p>') + '</div>' +
+    (answered.length ? '<div class="flex flex-wrap gap-1.5 mb-3"><span class="text-[11px] text-slate-500 dark:text-slate-400 mr-1">Popped:</span>' + answered.map(i => cnChip(sv.items[i].bubble, 'emerald')).join('') + '</div>' : '') +
+    '<p class="text-[11px] text-slate-400">This is a gentle screening, not a diagnosis. Nothing is sent unless you choose to send it.</p>' +
+    '<div class="flex flex-wrap items-center gap-3 mt-3"><button data-bp-finish class="' + CN_BTN + '"' + (answered.length ? '' : ' disabled') + '>See my result</button><span class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(answered.length + ' of ' + sv.items.length + ' popped') + '</span></div></div>';
+}
+function cnBubbleFinish() {
+  const b = cn.bp, id = cnIsT() ? 'tpulse' : 'pulse', sv = CN_SURVEYS[id], ans = sv.items.map((x, i) => b.ans[i] != null ? b.ans[i] : -1);
+  cn.bp = null; cn.sv = { id, intro: false, step: 0, ans, txt: [], done: false, sent: false, busy: false, rec: null, email: '' }; cnFinishSurvey();
+}
+function cnBubbleSuggest(sv, s) {
+  const ids = []; sv.items.forEach((it, i) => { if ((s.ans[i] || 0) >= 2 && !it.safety && ids.indexOf(it.from) < 0) ids.push(it.from); });
+  if (!ids.length) return '';
+  const P = sv.aud === 't' ? 't' : '';
+  return '<div class="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2"><p class="text-xs font-medium mb-1">Want a fuller picture? These surveys go deeper:</p><div class="flex flex-wrap gap-2">' + ids.map(x => '<button data-cn-go="survey:' + P + x + '" class="' + CN_BTN2 + ' !py-1 text-xs">' + escapeHtml(CN_SURVEYS[P + x].name) + '</button>').join('') + '</div></div>';
+}
+document.addEventListener('click', ev => {
+  const g = sel => ev.target.closest(sel); let el;
+  if (g('[data-cn-bubbles]')) { if (cnNeedUsername()) return; cn.sv = null; cn.bp = { ans: {}, cur: null }; cnRenderPanel('surveys'); window.scrollTo(0, 0); return; }
+  if (!cn.bp) return;
+  if ((el = g('[data-bp-pop]'))) { if (el.classList.contains('cn-pop-out')) return; el.classList.add('cn-pop-out'); if (el.parentNode) el.parentNode.classList.add('paused'); const i = +el.dataset.bpPop; setTimeout(() => { if (cn.bp) { cn.bp.cur = i; cnRenderPanel('surveys'); window.scrollTo(0, 0); } }, 280); return; }
+  if ((el = g('[data-bp-ans]'))) { cn.bp.ans[cn.bp.cur] = +el.dataset.bpAns; cnRenderPanel('surveys'); return; }
+  if (g('[data-bp-done]')) { cn.bp.cur = null; cnRenderPanel('surveys'); return; }
+  if (g('[data-bp-back]')) { delete cn.bp.ans[cn.bp.cur]; cn.bp.cur = null; cnRenderPanel('surveys'); return; }
+  if (g('[data-bp-finish]')) { cnBubbleFinish(); return; }
+  if (g('[data-bp-exit]')) { const n = Object.keys(cn.bp.ans).length; const out = () => { cn.bp = null; cnRenderPanel('surveys'); }; if (n) askConfirm('Leave the bubbles?', 'Your answers so far will be erased.', out); else out(); return; }
+});
+
 /* ---- Surveys ---- */
 function cnStartSurvey(id) {
   if (!CN_SURVEYS[id]) return;
@@ -6815,8 +6936,9 @@ function cnStartSurvey(id) {
 }
 function cnPanelSurveys() {
   const s = cn.sv;
+  if (!s && cn.bp) return cnPanelBubbles();
   if (!s) {
-    return '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">Surveys</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-4">Pick one. You get a result and a plan with small next steps. These are screening questions, not a diagnosis, and nothing is sent unless you choose to send it. Most surveys also have questions where you can choose an answer or write your own. Writing is always optional.</p><div class="space-y-2">' +
+    return '<div class="' + CN_CARD + '"><h3 class="text-base font-semibold">Surveys</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-4">Pick one. You get a result and a plan with small next steps. These are screening questions, not a diagnosis, and nothing is sent unless you choose to send it. Most surveys also have questions where you can choose an answer or write your own. Writing is always optional.</p>' + cnBubbleEntry() + '<div class="space-y-2">' +
       cnSvList().map(k => { const v = CN_SURVEYS[k]; return '<button data-cn-sv="' + k + '" class="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-3 hover:border-teal-400"><span class="min-w-0 flex-1"><span class="block text-sm font-semibold">' + escapeHtml(v.name) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(v.blurb) + '</span></span><span class="text-[11px] text-slate-400 shrink-0">~' + v.minutes + ' min</span></button>'; }).join('') + '</div>' +
       '<p class="text-[11px] text-slate-400 mt-3">The depression and anxiety questions follow the PHQ-9 and GAD-7, which are free to use. Wording is lightly adjusted for ' + (cnIsT() ? 'teachers' : 'students') + '.</p>' + cnAboutHtml() + '</div>';
   }
