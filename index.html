@@ -61,6 +61,30 @@ html[data-tsize="1"] .text-\[10px\]{font-size:11.5px}html[data-tsize="1"] .text-
 html[data-tsize="2"] .text-\[10px\]{font-size:13px}html[data-tsize="2"] .text-\[11px\]{font-size:14px}
 html[data-font="easy"] body,html[data-font="easy"] button,html[data-font="easy"] input,html[data-font="easy"] textarea,html[data-font="easy"] select{font-family:'Atkinson Hyperlegible',Verdana,Tahoma,sans-serif!important}
 html[data-space="1"] body{letter-spacing:.02em;word-spacing:.08em;line-height:1.7}
+.cn-bubble{position:relative}.cn-bubble::before{content:"";position:absolute;top:13%;left:19%;width:24%;height:15%;border-radius:50%;background:rgba(255,255,255,.85);transform:rotate(-32deg);pointer-events:none}
+.cn-burst{position:fixed;z-index:70;pointer-events:none;width:0;height:0}
+.cn-burst i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:rgba(45,212,191,.85);animation:cnspray .6s cubic-bezier(.2,.7,.3,1) forwards}
+.cn-burst.pink i{background:rgba(251,113,133,.85)}.cn-burst.pink b{border-color:rgba(251,113,133,.8)}
+.cn-burst b{position:absolute;left:-12px;top:-12px;width:24px;height:24px;border:2px solid rgba(45,212,191,.8);border-radius:50%;animation:cnring .5s ease-out forwards}
+@keyframes cnspray{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+@keyframes cnring{to{transform:scale(4.5);opacity:0}}
+@keyframes viewin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes cnpopin{0%{transform:scale(.94);opacity:0}60%{transform:scale(1.02);opacity:1}100%{transform:none}}
+.view-section.active{animation:viewin .35s cubic-bezier(.2,.8,.2,1)}
+.view-section.active>*{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.view-section.active>*:nth-child(2){animation-delay:.05s}.view-section.active>*:nth-child(3){animation-delay:.1s}.view-section.active>*:nth-child(4){animation-delay:.15s}.view-section.active>*:nth-child(5){animation-delay:.2s}.view-section.active>*:nth-child(n+6){animation-delay:.25s}
+[id^="cn-p-"]:not(.hidden){animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+.fixed.inset-0:not(.hidden){animation:fadein .2s ease-out}
+.fixed.inset-0:not(.hidden)>div:not(.fixed){animation:cnpopin .28s ease-out}
+.cn-lift{transition:box-shadow .2s,transform .2s,border-color .2s}.cn-lift:hover{box-shadow:0 10px 26px -14px rgba(15,118,110,.45);border-color:rgba(45,212,191,.55)}
+button,.nav-btn,.nav-btn-m{transition-property:transform,background-color,border-color,color,box-shadow,opacity;transition-duration:.15s}
+button:not(:disabled):active{transform:scale(.96)}
+.nav-btn:hover,.nav-btn-m:hover{transform:translateY(-1px)}
+.cn-sparkle{animation:cnpopin .4s ease-out}
+@media (prefers-reduced-motion:reduce){.view-section.active,.view-section.active>*,[id^="cn-p-"],.fixed.inset-0:not(.hidden),.fixed.inset-0:not(.hidden)>div:not(.fixed){animation:none!important}.cn-burst{display:none}button:not(:disabled):active,.nav-btn:hover,.nav-btn-m:hover{transform:none}}
+html[data-calm="1"] .cn-burst{display:none}
 html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-count:1!important}
 .cn-bub{position:absolute;bottom:-60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7),rgba(94,234,212,.22));border:1px solid rgba(45,212,191,.25);animation:cnrise linear infinite;pointer-events:none}
 @keyframes cnrise{from{transform:translate(0,0)}50%{transform:translate(14px,-170px)}to{transform:translate(-8px,-360px)}}
@@ -1554,6 +1578,50 @@ function toast(message, type) {
   refreshIcons();
   setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(4px)'; el.style.transition = 'all .2s'; setTimeout(() => el.remove(), 200); }, 3200);
 }
+
+/* ==================== SOUND EFFECTS (made in the browser, no files) ==================== */
+const fx = {
+  ctx: null, last: 0,
+  on() { try { return !!a11yGet().sfx && document.documentElement.dataset.calm !== '1'; } catch (e) { return false; } },
+  ac() {
+    try {
+      if (!fx.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; fx.ctx = new AC(); fx.out = fx.ctx.createGain(); fx.out.gain.value = 0.8; fx.out.connect(fx.ctx.destination); }
+      if (fx.ctx.state === 'suspended') fx.ctx.resume();
+      return fx.ctx;
+    } catch (e) { return null; }
+  },
+  tone(type, f0, f1, dur, vol, delay) {
+    const c = fx.ac(); if (!c) return; const t = c.currentTime + (delay || 0), o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(fx.out); o.start(t); o.stop(t + dur + 0.03);
+  },
+  noise(dur, vol, freq) {
+    const c = fx.ac(); if (!c) return; const n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(fx.out); s.start();
+  },
+  pop(safety) { if (!fx.on()) return; const r = 0.88 + Math.random() * 0.3; fx.noise(0.05, safety ? 0.18 : 0.3, 2600 * r); fx.tone('sine', 720 * r, 160 * r, 0.11, 0.2); fx.tone('sine', 1250 * r, 420 * r, 0.07, 0.07, 0.008); },
+  blip(soft) { if (!fx.on()) return; const r = 0.8 + Math.random() * 0.6; fx.tone('sine', 260 * r, 620 * r, 0.16, soft ? 0.035 : 0.06); },
+  tap() { if (!fx.on()) return; const t = Date.now(); if (t - fx.last < 60) return; fx.last = t; fx.tone('triangle', 560, 420, 0.05, 0.04); },
+  ok() { if (!fx.on()) return; fx.tone('sine', 660, 660, 0.18, 0.07); fx.tone('sine', 880, 880, 0.26, 0.07, 0.12); fx.tone('sine', 1320, 1320, 0.3, 0.04, 0.24); },
+  amb() {
+    clearTimeout(fx.ambT); if (!document.querySelector('.cn-field')) return;
+    if (fx.on() && !document.hidden && fx.ctx && fx.ctx.state === 'running') { fx.blip(true); if (Math.random() < 0.4) setTimeout(() => fx.blip(true), 180); }
+    fx.ambT = setTimeout(fx.amb, 1800 + Math.random() * 2600);
+  }
+};
+function cnBurst(el) {
+  try {
+    if (document.documentElement.dataset.calm === '1' || (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches)) return;
+    const r = el.getBoundingClientRect(), b = document.createElement('div'); b.className = 'cn-burst' + (el.classList.contains('safety') ? ' pink' : ''); b.style.left = (r.left + r.width / 2) + 'px'; b.style.top = (r.top + r.height / 2) + 'px';
+    let h = '<b></b>'; for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2 + Math.random() * 0.5, d = r.width * (0.55 + Math.random() * 0.4); h += '<i style="--dx:' + Math.cos(a) * d + 'px;--dy:' + Math.sin(a) * d + 'px"></i>'; }
+    b.innerHTML = h; document.body.appendChild(b); setTimeout(() => b.remove(), 700);
+  } catch (e) {}
+}
+document.addEventListener('mouseover', ev => { const el = ev.target.closest && ev.target.closest('[data-bp-pop]'); if (el && !(ev.relatedTarget && el.contains(ev.relatedTarget)) && fx.ctx) { const t = Date.now(); if (t - fx.last > 150) { fx.last = t; fx.blip(true); } } });
+document.addEventListener('click', ev => { if (ev.target.closest && ev.target.closest('button,[data-cn-tab],.nav-btn,.nav-btn-m,[data-cn-go]') && !ev.target.closest('[data-bp-pop]')) { fx.ac(); fx.tap(); } }, true);
 
 /* ==================== AUDIO CONFIRMATION ==================== */
 function beep(freq, dur) {
@@ -5488,7 +5556,10 @@ const LANG_FIL = {
 "This is a gentle screening, not a diagnosis. Nothing is sent unless you choose to send it.": "Banayad na screening ito, hindi diagnosis. Walang ipapadala maliban kung pipiliin mong ipadala.",
 "Want a fuller picture? These surveys go deeper:": "Gusto mo ng mas kumpletong larawan? Mas malalim ang mga survey na ito:",
 "Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others are original Attendly questions, not validated tests. A few questions give only a quick pulse, not a score.": "Ipinakita ng bawat tanong sa pagsusuri gamit ang bula ang pinagmulan nito nang putukin mo ito. Ang mga tanong sa PHQ-9 at GAD-7 ay ginamit ayon sa pagkakalathala. Ang iba ay orihinal na tanong ng Attendly, hindi napatunayang pagsusulit. Ang ilang tanong ay nagbibigay lang ng mabilis na pulso, hindi iskor.",
-"The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.": "Gumagamit ang pagsusuri gamit ang bula ng iisang tanong mula sa mga survey na ito, kaya mabilis na pulso lang ang resulta nito, hindi iskor."
+"The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.": "Gumagamit ang pagsusuri gamit ang bula ng iisang tanong mula sa mga survey na ito, kaya mabilis na pulso lang ang resulta nito, hindi iskor.",
+"Sounds": "Tunog",
+"Sound on": "May tunog",
+"Sound off": "Walang tunog"
 };
 const LANG_PATS = [
 [
@@ -6201,7 +6272,7 @@ function cnPages() { return cnIsT() ? CN_PAGES_T : CN_PAGES; }
 const cn = { tab: 'home', built: false, uid: null, items: [], loaded: false, loading: false, err: '', sv: null, page: null, breath: { on: false, phase: 0, left: 0, cycles: 0, timer: null }, music: { id: null, timer: null }, openThread: null,
   book: { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false }, calm: { timer: null, left: 0 }, results: [] };
 const inbox = { guidance: { filter: 'new', open: null, busy: false }, messages: { filter: 'new', open: null, busy: false } };
-const CN_CARD = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5';
+const CN_CARD = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 cn-lift';
 const CN_INP = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
 const CN_BTN = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 disabled:opacity-50';
 const CN_BTN2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg px-4 py-2';
@@ -6746,7 +6817,7 @@ function hnGo(w) { hnClose(); goToView('counseling'); if (w === 'plan') { cn.hel
 
 /* ---- Reading options: text size, easy-read font, spacing, less motion ---- */
 const A11Y_KEY = 'attendly_a11y';
-function a11yGet() { try { return Object.assign({ size: 0, font: 0, space: 0, calm: 0 }, JSON.parse(localStorage.getItem(A11Y_KEY) || '{}')); } catch (e) { return { size: 0, font: 0, space: 0, calm: 0 }; } }
+function a11yGet() { try { return Object.assign({ size: 0, font: 0, space: 0, calm: 0, sfx: 1 }, JSON.parse(localStorage.getItem(A11Y_KEY) || '{}')); } catch (e) { return { size: 0, font: 0, space: 0, calm: 0, sfx: 1 }; } }
 function a11yApply() {
   const s = a11yGet(), h = document.documentElement; h.dataset.tsize = s.size; h.dataset.font = s.font ? 'easy' : ''; h.dataset.space = s.space; h.dataset.calm = s.calm;
   if (s.font && !document.getElementById('a11y-font')) { const l = document.createElement('link'); l.id = 'a11y-font'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap'; document.head.appendChild(l); }
@@ -6756,7 +6827,7 @@ function a11yRender() {
   const p = document.getElementById('a11y-pop'); if (!p) return; const s = a11yGet();
   const tog = (k, label) => '<label class="flex items-center justify-between gap-3 text-sm py-1.5"><span>' + label + '</span><input type="checkbox" data-a11y-tog="' + k + '" ' + (s[k] ? 'checked' : '') + ' class="accent-teal-600 w-4 h-4"></label>';
   p.innerHTML = '<p class="text-sm font-semibold mb-2">Reading options</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Text size</p><div class="flex gap-2 mb-3">' + [['A', 0], ['A+', 1], ['A++', 2]].map(x => '<button data-a11y-size="' + x[1] + '" aria-pressed="' + (s.size === x[1]) + '" class="flex-1 rounded-lg border px-2 py-1.5 text-sm ' + (s.size === x[1] ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 font-semibold' : 'border-slate-300 dark:border-slate-700') + '">' + x[0] + '</button>').join('') + '</div>' +
-    tog('font', 'Easy-to-read font') + tog('space', 'More space between letters and lines') + tog('calm', 'Less motion') + '<button data-a11y-reset class="text-xs text-slate-500 hover:underline mt-2">Reset</button>';
+    tog('font', 'Easy-to-read font') + tog('space', 'More space between letters and lines') + tog('calm', 'Less motion') + tog('sfx', 'Sounds') + '<button data-a11y-reset class="text-xs text-slate-500 hover:underline mt-2">Reset</button>';
 }
 function a11yToggle() { const p = document.getElementById('a11y-pop'); if (!p) return; const open = p.classList.contains('hidden'); p.classList.toggle('hidden', !open); if (open) a11yRender(); }
 function a11yClose() { const p = document.getElementById('a11y-pop'); if (p) p.classList.add('hidden'); }
@@ -6900,13 +6971,14 @@ function cnPanelBubbles() {
   const answered = sv.items.map((x, i) => i).filter(i => b.ans[i] != null), left = sv.items.map((x, i) => i).filter(i => b.ans[i] == null);
   const sizes = [5.75, 4.9, 5.4, 4.6, 6, 5, 5.5, 4.75, 5.6, 5.1, 5.25, 4.9], perm = [3, 8, 1, 10, 5, 0, 11, 6, 2, 9, 4, 7];
   const safetyHigh = sv.safetyIdx >= 0 && b.ans[sv.safetyIdx] >= 1;
-  return (safetyHigh ? cnBubbleSafetyBox() : '') + '<div class="' + CN_CARD + '"><div class="flex items-start justify-between gap-3"><div><h3 class="text-base font-semibold">Pop a bubble</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bubbles are drifting down. Tap one to pop it and see one question about that topic. Pop as many or as few as you like. Every question shows where it comes from.</p></div><button data-bp-exit class="text-xs text-slate-500 hover:underline shrink-0">Cancel</button></div>' +
+  return (safetyHigh ? cnBubbleSafetyBox() : '') + '<div class="' + CN_CARD + '"><div class="flex items-start justify-between gap-3"><div><h3 class="text-base font-semibold">Pop a bubble</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bubbles are drifting down. Tap one to pop it and see one question about that topic. Pop as many or as few as you like. Every question shows where it comes from.</p></div><div class="flex flex-col items-end gap-1 shrink-0"><button data-bp-exit class="text-xs text-slate-500 hover:underline">Cancel</button><button data-bp-snd class="text-xs text-slate-500 hover:underline" aria-pressed="' + (a11yGet().sfx ? 'true' : 'false') + '">' + (a11yGet().sfx ? 'Sound on' : 'Sound off') + '</button></div></div>' +
     '<div class="cn-field mt-3 mb-3" role="group" aria-label="Bubbles">' + (left.length ? left.map((i, k) => { const it = sv.items[i], z = sizes[i % sizes.length], dur = 9 + (i * 1.3) % 6; return '<span class="cn-fall" style="left:calc(' + (3 + perm[i % 12] * 80 / 11).toFixed(1) + '% - ' + (z / 2 * 0.3).toFixed(2) + 'rem);animation-duration:' + dur.toFixed(1) + 's;animation-delay:-' + ((i * 1.9) % dur).toFixed(1) + 's"><button data-bp-pop="' + i + '" class="cn-bubble' + (it.safety ? ' safety' : '') + ' text-xs font-semibold" style="width:' + z + 'rem;height:' + z + 'rem" aria-label="' + escapeHtml(it.bubble) + '">' + escapeHtml(it.bubble) + '</button></span>'; }).join('') : '<p class="absolute inset-0 flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">You popped them all. Nice work.</p>') + '</div>' +
     (answered.length ? '<div class="flex flex-wrap gap-1.5 mb-3"><span class="text-[11px] text-slate-500 dark:text-slate-400 mr-1">Popped:</span>' + answered.map(i => cnChip(sv.items[i].bubble, 'emerald')).join('') + '</div>' : '') +
     '<p class="text-[11px] text-slate-400">This is a gentle screening, not a diagnosis. Nothing is sent unless you choose to send it.</p>' +
     '<div class="flex flex-wrap items-center gap-3 mt-3"><button data-bp-finish class="' + CN_BTN + '"' + (answered.length ? '' : ' disabled') + '>See my result</button><span class="text-xs text-slate-500 dark:text-slate-400">' + escapeHtml(answered.length + ' of ' + sv.items.length + ' popped') + '</span></div></div>';
 }
 function cnBubbleFinish() {
+  fx.ok();
   const b = cn.bp, id = cnIsT() ? 'tpulse' : 'pulse', sv = CN_SURVEYS[id], ans = sv.items.map((x, i) => b.ans[i] != null ? b.ans[i] : -1);
   cn.bp = null; cn.sv = { id, intro: false, step: 0, ans, txt: [], done: false, sent: false, busy: false, rec: null, email: '' }; cnFinishSurvey();
 }
@@ -6918,13 +6990,14 @@ function cnBubbleSuggest(sv, s) {
 }
 document.addEventListener('click', ev => {
   const g = sel => ev.target.closest(sel); let el;
-  if (g('[data-cn-bubbles]')) { if (cnNeedUsername()) return; cn.sv = null; cn.bp = { ans: {}, cur: null }; cnRenderPanel('surveys'); window.scrollTo(0, 0); return; }
+  if (g('[data-cn-bubbles]')) { if (cnNeedUsername()) return; cn.sv = null; cn.bp = { ans: {}, cur: null }; fx.ac(); fx.blip(); cnRenderPanel('surveys'); window.scrollTo(0, 0); clearTimeout(fx.ambT); fx.ambT = setTimeout(fx.amb, 1200); return; }
   if (!cn.bp) return;
-  if ((el = g('[data-bp-pop]'))) { if (el.classList.contains('cn-pop-out')) return; el.classList.add('cn-pop-out'); if (el.parentNode) el.parentNode.classList.add('paused'); const i = +el.dataset.bpPop; setTimeout(() => { if (cn.bp) { cn.bp.cur = i; cnRenderPanel('surveys'); window.scrollTo(0, 0); } }, 280); return; }
+  if ((el = g('[data-bp-pop]'))) { if (el.classList.contains('cn-pop-out')) return; fx.ac(); fx.pop(el.classList.contains('safety')); cnBurst(el); el.classList.add('cn-pop-out'); if (el.parentNode) el.parentNode.classList.add('paused'); const i = +el.dataset.bpPop; setTimeout(() => { if (cn.bp) { cn.bp.cur = i; cnRenderPanel('surveys'); window.scrollTo(0, 0); } }, 280); return; }
   if ((el = g('[data-bp-ans]'))) { cn.bp.ans[cn.bp.cur] = +el.dataset.bpAns; cnRenderPanel('surveys'); return; }
   if (g('[data-bp-done]')) { cn.bp.cur = null; cnRenderPanel('surveys'); return; }
   if (g('[data-bp-back]')) { delete cn.bp.ans[cn.bp.cur]; cn.bp.cur = null; cnRenderPanel('surveys'); return; }
   if (g('[data-bp-finish]')) { cnBubbleFinish(); return; }
+  if (g('[data-bp-snd]')) { a11ySet('sfx', a11yGet().sfx ? 0 : 1); cnRenderPanel('surveys'); if (a11yGet().sfx) fx.blip(); return; }
   if (g('[data-bp-exit]')) { const n = Object.keys(cn.bp.ans).length; const out = () => { cn.bp = null; cnRenderPanel('surveys'); }; if (n) askConfirm('Leave the bubbles?', 'Your answers so far will be erased.', out); else out(); return; }
 });
 
@@ -6991,6 +7064,7 @@ document.addEventListener('input', ev => {
   if (btn && it.type === 'text' && s.step < sv.items.length - 1) btn.textContent = t.value.trim() ? 'Next' : 'Skip';
 });
 function cnFinishSurvey() {
+  fx.ok();
   const s = cn.sv, sv = CN_SURVEYS[s.id];
   s.rec = cnMakeRecord(sv, s.ans, s.txt); s.done = true;
   const l = cnResults(); l.push(s.rec); cnSaveResults(l);
