@@ -326,6 +326,16 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
             <label id="signup-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
             <input id="signup-idnum" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
           </div>
+          <div id="signup-class-wrap" class="hidden grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="signup-grade">Grade level</label>
+              <select id="signup-grade" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="signup-section">Section</label>
+              <select id="signup-section" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></select>
+            </div>
+          </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
@@ -3431,6 +3441,29 @@ function showApp() {
   applyRoleNav();
   goToView(defaultViewForRole(DB.auth.role));
   refreshIcons();
+  studentClassPrompt();
+}
+// A student who has not chosen a grade level and section yet (older accounts, Google or Facebook sign-ins) is asked right away.
+function studentClassPrompt() {
+  const me = DB.auth && DB.auth.role === 'student' ? DB.students.find(x => x.id === DB.auth.userId) : null;
+  const old = document.getElementById('class-prompt');
+  if (!me || me.classId) { if (old) old.remove(); return; }
+  if (old) return;
+  const inp = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2', lbl = 'text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1';
+  const d = document.createElement('div'); d.id = 'class-prompt'; d.className = 'fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4';
+  d.innerHTML = '<div role="dialog" aria-modal="true" class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl p-5 space-y-3 shadow-xl"><h3 class="text-base font-semibold">What is your grade level and section?</h3><p class="text-xs text-slate-500 dark:text-slate-400">Your schedule, lessons and quizzes depend on this. You can change it later in your Student ID.</p>' +
+    '<div><label class="' + lbl + '" for="cp-grade">Grade level</label><select id="cp-grade" class="' + inp + '"></select></div><div><label class="' + lbl + '" for="cp-section">Section</label><select id="cp-section" class="' + inp + '"></select></div>' +
+    '<button type="button" id="cp-save" class="w-full inline-flex items-center justify-center text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2.5">Save</button><button type="button" id="cp-logout" class="w-full text-xs text-slate-500 dark:text-slate-400 hover:underline">Log out</button></div>';
+  document.body.appendChild(d);
+  classPickerFill(d.querySelector('#cp-grade'), d.querySelector('#cp-section'));
+  d.querySelector('#cp-save').addEventListener('click', () => {
+    const c = DB.classes.find(x => x.id === d.querySelector('#cp-section').value);
+    if (!c) { toast('Choose your grade level and section.', 'warning'); return; }
+    me.classId = c.id; me.section = c.section || '';
+    if (!saveDB()) return;
+    d.remove(); toast('Your grade level and section were saved.', 'success'); showApp();
+  });
+  d.querySelector('#cp-logout').addEventListener('click', () => { d.remove(); document.getElementById('logout-btn').click(); });
 }
 function logout() {
   askConfirm('Log out', 'You will need to sign in again to continue.', () => {
@@ -3465,8 +3498,25 @@ function showLoginScreen(role) {
   applyRememberedLogin();
   refreshIcons();
 }
+function classGradeNames() { return Array.from(new Set(DB.classes.map(c => c.name))).sort((a, b) => (parseInt(a.replace(/\D/g, ''), 10) || 0) - (parseInt(b.replace(/\D/g, ''), 10) || 0)); }
+function classSectionFill(secSel, grade) {
+  secSel.innerHTML = '<option value="">' + (grade ? 'Choose your section' : 'Choose your grade level first') + '</option>' + DB.classes.filter(c => c.name === grade).map(c => '<option value="' + c.id + '">' + escapeHtml(c.section || c.name) + '</option>').join('');
+  secSel.disabled = !grade;
+}
+function classPickerFill(gradeSel, secSel) {
+  gradeSel.innerHTML = '<option value="">Choose your grade level</option>' + classGradeNames().map(g => '<option value="' + escapeHtml(g) + '">' + escapeHtml(g) + '</option>').join('');
+  classSectionFill(secSel, '');
+  gradeSel.onchange = () => classSectionFill(secSel, gradeSel.value);
+}
+function signupClassInit(role) {
+  const wrap = document.getElementById('signup-class-wrap'), g = document.getElementById('signup-grade'), sc = document.getElementById('signup-section'); if (!wrap || !g || !sc) return;
+  wrap.classList.toggle('hidden', role !== 'student');
+  g.required = sc.required = role === 'student';
+  classPickerFill(g, sc);
+}
 function setLoginRole(role) {
   loginRole = role;
+  signupClassInit(role);
   document.querySelectorAll('.role-tab-btn').forEach(b => {
     const active = b.dataset.loginRole === role;
     b.className = 'role-tab-btn text-xs font-medium rounded-md px-2 py-1.5 ' + (active ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400');
@@ -3524,7 +3574,7 @@ function applyRememberedLogin() {
 function storeBrowserCredential(email, pw) {
   try { if (window.PasswordCredential && navigator.credentials) navigator.credentials.store(new PasswordCredential({ id: email, password: pw, name: email })); } catch (e) {}
 }
-function finishLogin(email, name, idNumber) {
+function finishLogin(email, name, idNumber, classId) {
   if (roleConflict(email)) { if (sb) sb.auth.signOut(); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
   const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
@@ -3537,6 +3587,7 @@ function finishLogin(email, name, idNumber) {
     list.push(account);
   }
   if (!account.email) account.email = email;
+  if (loginRole === 'student' && classId && !account.classId) { account.classId = classId; const cc = DB.classes.find(x => x.id === classId); account.section = cc ? (cc.section || '') : ''; }
   if (loginRole === 'teacher') adAutoLink(account);
   DB.auth = { role: loginRole, userId: account.id, name: account.name, loginAt: new Date().toISOString() };
   rememberLogin({ email, role: loginRole, method: loginMethod, name: account.name });
@@ -3625,6 +3676,8 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   const name = document.getElementById('signup-name').value.trim();
   const email = normEmail(document.getElementById('signup-email').value);
   const idNumber = document.getElementById('signup-idnum').value.trim();
+  let classId = '';
+  if (loginRole === 'student') { classId = document.getElementById('signup-section').value; if (!classId) { toast('Choose your grade level and section.', 'warning'); return; } }
   const pw = document.getElementById('signup-password').value;
   const pw2 = document.getElementById('signup-password-confirm').value;
   if (!name || !email || !idNumber) { toast('Fill in your name, email and ID number.', 'warning'); return; }
@@ -3643,7 +3696,7 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   if (byId) byId.name = name;
   loginMethod = 'password';
   storeBrowserCredential(email, pw);
-  finishLogin(email, name, idNumber);
+  finishLogin(email, name, idNumber, classId);
 });
 
 document.getElementById('admin-access-link').addEventListener('click', () => {
@@ -3750,6 +3803,17 @@ function unlinkSubjectIfUnused(t, name) {
   if ((t.schedule || []).some(e => subjKey(e.subject) === subjKey(name))) return;
   const sub = findPortalSubject(name);
   if (sub && sub.ownerIds) sub.ownerIds = sub.ownerIds.filter(id => id !== t.id);
+  pruneSubjects();
+}
+// A subject stays while someone still teaches it (a saved period on a teacher or on the school list), a teacher account owns it, or it has materials or grades.
+function pruneSubjects() {
+  const used = new Set(), live = new Set(DB.teachers.map(t => t.id));
+  DB.teachers.concat(adPeople().filter(p => !p.accountId)).forEach(t => (t.schedule || []).forEach(e => { const sb0 = findPortalSubject(e.subject); if (sb0) used.add(sb0.id); }));
+  DB.posts.forEach(p => used.add(p.subjectId));
+  DB.grades.forEach(g => used.add(g.subjectId));
+  const keep = DB.subjects.filter(x => used.has(x.id) || (x.ownerIds || []).some(id => live.has(id)));
+  if (keep.length === DB.subjects.length) return false;
+  DB.subjects = keep; return true;
 }
 // One-time catch-up for subjects that existed before the two lists were joined.
 function syncSubjectsOnce(t) {
@@ -5723,7 +5787,15 @@ const LANG_FIL = {
 "All student accounts deleted.": "Nabura ang lahat ng account ng mag-aaral.",
 "All accounts deleted.": "Nabura ang lahat ng account.",
 "Choose the school schedule as an Excel (.xlsx) or CSV file.": "Piliin ang schedule ng paaralan bilang Excel (.xlsx) o CSV file.",
-"No teacher schedule could be found in that file. Use the template, the school's Individual Teacher's Program workbook, or a timetable with the days across the top.": "Walang nakitang schedule ng guro sa file na iyon. Gamitin ang template, ang Individual Teacher's Program workbook ng paaralan, o isang timetable na may mga araw sa itaas."
+"No teacher schedule could be found in that file. Use the template, the school's Individual Teacher's Program workbook, or a timetable with the days across the top.": "Walang nakitang schedule ng guro sa file na iyon. Gamitin ang template, ang Individual Teacher's Program workbook ng paaralan, o isang timetable na may mga araw sa itaas.",
+"Grade level": "Baitang",
+"Choose your grade level": "Piliin ang baitang mo",
+"Choose your section": "Piliin ang seksyon mo",
+"Choose your grade level first": "Piliin muna ang baitang mo",
+"Choose your grade level and section.": "Piliin ang baitang at seksyon mo.",
+"What is your grade level and section?": "Anong baitang at seksyon mo?",
+"Your schedule, lessons and quizzes depend on this. You can change it later in your Student ID.": "Nakadepende rito ang schedule, aralin at pagsusulit mo. Maaari mo itong baguhin mamaya sa Student ID mo.",
+"Your grade level and section were saved.": "Na-save ang baitang at seksyon mo."
 };
 const LANG_PATS = [
 [
@@ -7932,6 +8004,7 @@ document.getElementById('login-scan-badge').addEventListener('click', () => {
 
 /* ==================== ADMIN CONSOLE ==================== */
 function renderAdminView() {
+  if (pruneSubjects()) saveDB();
   renderCounselorSetting();
   document.getElementById('admin-stat-teachers').textContent = DB.teachers.length;
   document.getElementById('admin-stat-students').textContent = DB.students.length;
@@ -7969,6 +8042,7 @@ function removeTeacherAccount(id) {
   DB.teachers = DB.teachers.filter(x => x.id !== id);
   (DB.subjects || []).forEach(sb0 => { if (sb0.ownerIds) sb0.ownerIds = sb0.ownerIds.filter(x => x !== id); });
   if (t.email && normEmail(DB.settings.counselorEmail) === normEmail(t.email)) DB.settings.counselorEmail = '';
+  pruneSubjects();
 }
 function removeStudentAccount(id) {
   if (!DB.students.some(x => x.id === id)) return;
@@ -8695,6 +8769,14 @@ function lcE(s) { return escapeHtml(s == null ? '' : String(s)); }
 function lcV(id) { const el = document.getElementById(id); return el ? el.value : ''; }
 function lcSafeUrl(u) { u = (u || '').trim(); return /^https?:\/\//i.test(u) ? u : ''; }
 function lcMe() { return DB.auth && DB.auth.role === 'student' ? DB.students.find(s => s.id === DB.auth.userId) || null : null; }
+// A student sees the subjects scheduled for their own section this term, plus any with materials for them or grades of theirs.
+function lcStudentSubjects(stu) {
+  const ids = new Set(), cls = stu && stu.classId;
+  if (cls) DB.teachers.concat(adPeople().filter(p => !p.accountId)).forEach(t => (t.schedule || []).forEach(e => { if (entryHasClass(e, cls) && termOk(e)) { const sb0 = findPortalSubject(e.subject); if (sb0) ids.add(sb0.id); } }));
+  DB.posts.forEach(p => { if (p.subjectId && lcVisible(p, stu)) ids.add(p.subjectId); });
+  DB.grades.forEach(g => { if (stu && g.studentId === stu.id) ids.add(g.subjectId); });
+  return DB.subjects.filter(x => ids.has(x.id)).sort((a, b) => a.name.localeCompare(b.name));
+}
 function lcSubName(id) { const s = DB.subjects.find(x => x.id === id); return s ? s.name : 'Unknown subject'; }
 function lcVisible(p, stu) { return !p.classId || (stu && stu.classId === p.classId); }
 function lcGrade(subjectId, studentId) { return DB.grades.find(g => g.subjectId === subjectId && g.studentId === studentId) || null; }
@@ -8790,7 +8872,7 @@ function renderLearning(force) {
   refreshIcons();
 }
 function lcStudentOverview(stu) {
-  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const subs = lcStudentSubjects(stu);
   const posts = DB.posts.filter(p => lcVisible(p, stu)).sort(lcNewest);
   const open = posts.filter(p => (p.type === 'homework' || p.type === 'quiz') && !lcMySub(p.id, stu.id)).sort((a, b) => (a.due || '9').localeCompare(b.due || '9'));
   const avgs = subs.map(s => lcAvg(lcGrade(s.id, stu.id))).filter(x => x !== null);
@@ -8823,7 +8905,7 @@ function lcStudentOverview(stu) {
   return h;
 }
 function lcStudentGrades(stu) {
-  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const subs = lcStudentSubjects(stu);
   const avgs = [];
   const rows = subs.map(s => {
     const g = lcGrade(s.id, stu.id), a = lcAvg(g);
@@ -8850,7 +8932,7 @@ function lcHistRow(p, stu) {
   return '<tr><td class="' + lcTd + ' font-medium">' + lcE(p.title) + (x && x.feedback ? '<br><span class="' + lcMuted + '">Feedback: ' + lcE(x.feedback) + '</span>' : '') + '</td><td class="' + lcTd + '">' + lcChip(LC_TYPES[p.type]) + '</td><td class="' + lcTd + '">' + (gradable ? lcFmtDate(p.due) : '-') + '</td><td class="' + lcTd + '">' + (x && x.submittedAt ? lcE(lcFmtTs(x.submittedAt)) : '-') + '</td><td class="' + lcTd + '">' + status + '</td></tr>';
 }
 function lcStudentHistory(stu) {
-  const subs = DB.subjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const subs = lcStudentSubjects(stu);
   if (lcHistSub && !subs.some(x => x.id === lcHistSub)) lcHistSub = '';
   if (!lcHistSub) {
     if (!subs.length) return lcH('History') + lcEmpty('No subjects yet. Your teacher will add them.');
@@ -8876,7 +8958,7 @@ function lcStudentMaterials(stu) {
   return lcH('Learning materials') + '<div class="grid grid-cols-2 gap-3 max-w-md"><div><label class="' + lcLbl + '">Type</label><select class="' + lcInp + '" onchange="lcSet(\'fType\',this.value)"><option value="all">All types</option>' +
     Object.keys(LC_TYPES).map(k => '<option value="' + k + '"' + (lcFilterType === k ? ' selected' : '') + '>' + LC_TYPES[k] + '</option>').join('') + '</select></div>' +
     '<div><label class="' + lcLbl + '">Subject</label><select class="' + lcInp + '" onchange="lcSet(\'fSub\',this.value)"><option value="all">All subjects</option>' +
-    DB.subjects.map(s => '<option value="' + s.id + '"' + (lcFilterSub === s.id ? ' selected' : '') + '>' + lcE(s.name) + '</option>').join('') + '</select></div></div>' +
+    lcStudentSubjects(stu).map(s => '<option value="' + s.id + '"' + (lcFilterSub === s.id ? ' selected' : '') + '>' + lcE(s.name) + '</option>').join('') + '</select></div></div>' +
     (list.length ? '<div class="' + lcCard + ' !p-0 overflow-x-auto"><table class="w-full"><tr><th class="' + lcTh + '">Title</th><th class="' + lcTh + '">Type</th><th class="' + lcTh + '">Subject</th><th class="' + lcTh + '">Due</th><th class="' + lcTh + '">Status</th><th class="' + lcTh + '"></th></tr>' + list.map(p => {
       const s = lcMySub(p.id, stu.id), gradable = p.type === 'homework' || p.type === 'quiz';
       const status = !gradable ? 'Available' : s ? (s.score !== null && s.score !== undefined ? 'Scored ' + s.score + (s.total ? ' of ' + s.total : '') : 'Submitted') : 'Not submitted';
