@@ -605,16 +605,34 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
           <div id="ad-s-list"></div>
         </div>
         <div id="ad-p-upload" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h2 class="text-sm font-semibold">Upload the school schedule</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Choose the school's Individual Teacher's Program workbook (.xlsx). Every teacher's program is read, with Term 1, 2 and 3 sheets. You see a preview first, and nothing is saved until you press Import.</p>
-          <input id="ad-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
-          <div id="ad-prev"></div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">Step 1</p>
+          <h2 class="text-sm font-semibold">What term is it now?</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Pick the current term first. Teachers and students switch to it right away on every device.</p>
+          <div id="ad-term-pick" class="grid grid-cols-3 gap-2 max-w-md mb-5"></div>
+          <div id="ad-step2" class="hidden">
+            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">Step 2</p>
+            <h2 class="text-sm font-semibold">Upload the schedule</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Choose any Excel file (.xlsx) or CSV file with the school schedule. It can be the Individual Teacher's Program, a list with one class period per row (teacher, subject, grade, section, day, start, end), or one timetable per teacher. You see a preview first, and nothing is saved until you press Import. After that you can edit every period in the By teacher and By section tabs.</p>
+            <input id="ad-file" type="file" accept=".xlsx,.xlsm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" class="w-full text-sm">
+            <button type="button" id="ad-template" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-2">Download a blank template</button>
+            <div id="ad-prev"></div>
+          </div>
           <p id="ad-upload-info" class="text-xs text-slate-500 dark:text-slate-400 mt-4"></p>
           <button type="button" id="ad-clear-all" class="text-xs font-medium text-rose-500 mt-2 underline">Remove the whole school schedule</button>
         </div>
       </section>
 
       <section data-view="admin-people" class="view-section p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded-xl p-5">
+          <h2 class="text-sm font-semibold">Delete accounts</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Remove many accounts at once. The uploaded school schedule stays, and each teacher's periods are ready again when they sign up.</p>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="adm-del-all-teachers" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-lg px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30">Delete all teachers</button>
+            <button type="button" id="adm-del-all-students" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-lg px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30">Delete all students</button>
+            <button type="button" id="adm-del-all" class="inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg px-3 py-2">Delete all accounts</button>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">This clears the accounts in Attendly. Email and password logins stay in Supabase (Authentication, Users) until you delete them there.</p>
+        </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
             <h2 class="text-sm font-semibold mb-3">Teacher directory</h2>
@@ -5677,7 +5695,35 @@ const LANG_FIL = {
 "Facebook sign-in is not turned on yet. Please use email and password, or ask the school to turn it on.": "Hindi pa naka-on ang Facebook sign-in. Gumamit muna ng email at password, o hilingin sa paaralan na i-on ito.",
 "Google sign-in is not turned on yet. Please use email and password, or ask the school to turn it on.": "Hindi pa naka-on ang Google sign-in. Gumamit muna ng email at password, o hilingin sa paaralan na i-on ito.",
 "Sign-in was cancelled.": "Kinansela ang sign-in.",
-"Sign-in did not work. Please try again.": "Hindi gumana ang sign-in. Subukan ulit."
+"Sign-in did not work. Please try again.": "Hindi gumana ang sign-in. Subukan ulit.",
+"Step 1": "Hakbang 1",
+"Step 2": "Hakbang 2",
+"What term is it now?": "Anong termino na ngayon?",
+"Pick the current term first. Teachers and students switch to it right away on every device.": "Piliin muna ang kasalukuyang termino. Agad itong lilipat ang mga guro at mag-aaral sa bawat device.",
+"(now)": "(ngayon)",
+"Upload the schedule": "I-upload ang schedule",
+"Choose any Excel file (.xlsx) or CSV file with the school schedule. It can be the Individual Teacher's Program, a list with one class period per row (teacher, subject, grade, section, day, start, end), or one timetable per teacher. You see a preview first, and nothing is saved until you press Import. After that you can edit every period in the By teacher and By section tabs.": "Pumili ng kahit anong Excel file (.xlsx) o CSV file na may schedule ng paaralan. Puwede itong Individual Teacher's Program, isang listahan na may isang klase bawat hanay (guro, asignatura, baitang, seksyon, araw, simula, katapusan), o isang timetable bawat guro. May preview muna, at walang masi-save hangga't hindi mo pinipindot ang Import. Pagkatapos, maaari mong i-edit ang bawat klase sa mga tab na Ayon sa guro at Ayon sa seksyon.",
+"Download a blank template": "I-download ang blangkong template",
+"Delete accounts": "Burahin ang mga account",
+"Remove many accounts at once. The uploaded school schedule stays, and each teacher's periods are ready again when they sign up.": "Magbura ng maraming account nang sabay. Mananatili ang na-upload na schedule ng paaralan, at handa ulit ang mga klase ng bawat guro kapag nag-sign up sila.",
+"Delete all teachers": "Burahin ang lahat ng guro",
+"Delete all students": "Burahin ang lahat ng mag-aaral",
+"Delete all accounts": "Burahin ang lahat ng account",
+"This clears the accounts in Attendly. Email and password logins stay in Supabase (Authentication, Users) until you delete them there.": "Binubura nito ang mga account sa Attendly. Mananatili sa Supabase (Authentication, Users) ang mga email at password login hanggang burahin mo rin ang mga iyon doon.",
+"No account yet · schedule ready": "Wala pang account · handa na ang schedule",
+"Remove from school list": "Alisin sa listahan ng paaralan",
+"Removed from the school list.": "Naalis sa listahan ng paaralan.",
+"There are no teacher accounts.": "Walang account ng guro.",
+"There are no student accounts.": "Walang account ng mag-aaral.",
+"There are no accounts to delete.": "Walang account na buburahin.",
+"This deletes every teacher account. Their profiles and own schedules are removed. The uploaded school schedule stays and is ready again when each teacher signs up. Lessons and grades they posted stay for the students. This cannot be undone.": "Buburahin nito ang lahat ng account ng guro. Matatanggal ang kanilang profile at sariling schedule. Mananatili ang na-upload na schedule ng paaralan at handa ulit kapag nag-sign up ang bawat guro. Mananatili para sa mga mag-aaral ang mga aralin at marka na ipinost nila. Hindi na ito mababawi.",
+"This deletes every student account, with their attendance, grades and submissions. This cannot be undone.": "Buburahin nito ang lahat ng account ng mag-aaral, kasama ang attendance, marka at mga pasa nila. Hindi na ito mababawi.",
+"This deletes every teacher and student account, with the students' attendance, grades and submissions. The uploaded school schedule stays and is ready again when each teacher signs up. This cannot be undone.": "Buburahin nito ang lahat ng account ng guro at mag-aaral, kasama ang attendance, marka at mga pasa ng mga mag-aaral. Mananatili ang na-upload na schedule ng paaralan at handa ulit kapag nag-sign up ang bawat guro. Hindi na ito mababawi.",
+"All teacher accounts deleted.": "Nabura ang lahat ng account ng guro.",
+"All student accounts deleted.": "Nabura ang lahat ng account ng mag-aaral.",
+"All accounts deleted.": "Nabura ang lahat ng account.",
+"Choose the school schedule as an Excel (.xlsx) or CSV file.": "Piliin ang schedule ng paaralan bilang Excel (.xlsx) o CSV file.",
+"No teacher schedule could be found in that file. Use the template, the school's Individual Teacher's Program workbook, or a timetable with the days across the top.": "Walang nakitang schedule ng guro sa file na iyon. Gamitin ang template, ang Individual Teacher's Program workbook ng paaralan, o isang timetable na may mga araw sa itaas."
 };
 const LANG_PATS = [
 [
@@ -5995,6 +6041,14 @@ const LANG_PATS = [
 [
 "^Delete (.+)\\? Their profile, attendance, grades and submissions are removed\\. This cannot be undone\\.$",
 "Burahin si $1? Matatanggal ang profile, attendance, grado at mga naipasa niya. Hindi na ito maibabalik."
+],
+[
+"^Remove (.+) from the school list\\? Their uploaded schedule is removed too\\. This cannot be undone\\.$",
+"Alisin si $1 sa listahan ng paaralan? Matatanggal din ang na-upload na schedule nila. Hindi na ito mababawi."
+],
+[
+"^Now Term (\\d)\\. Teachers and students see it right away\\.$",
+"Termino $1 na ngayon. Makikita ito agad ng mga guro at mag-aaral."
 ]
 ].map(p => [new RegExp(p[0]), p[1]]);
 const LANG_KEY = 'attendly_lang';
@@ -7888,9 +7942,11 @@ function renderAdminView() {
   document.getElementById('admin-term-chip').textContent = 'Term ' + DB.settings.currentTerm + ' \u00b7 SY ' + (DB.settings.schoolYear || '-');
 
   const tBody = document.getElementById('admin-teachers-body');
-  document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0);
+  const adGhosts = adPeople().filter(p => !p.accountId);
+  document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0 || adGhosts.length > 0);
   tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5">' + escapeHtml(t.name) + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.email || '—') +
-    '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-teacher="' + t.id + '" title="Delete teacher" aria-label="Delete teacher" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('');
+    '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-teacher="' + t.id + '" title="Delete teacher" aria-label="Delete teacher" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('') +
+    adGhosts.slice().sort(adByName).map(p => '<tr><td class="py-2.5">' + escapeHtml(p.name) + '</td><td class="py-2.5"><span class="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet · schedule ready</span></td><td class="py-2.5 text-slate-500 dark:text-slate-400">—</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(p.advisoryClassId) || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-ghost="' + p.id + '" title="Remove from school list" aria-label="Remove from school list" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('');
 
   const sBody = document.getElementById('admin-students-body');
   document.getElementById('admin-students-empty').classList.toggle('hidden', DB.students.length > 0);
@@ -7936,6 +7992,38 @@ document.addEventListener('click', ev => {
   }
 });
 
+function removeAllStudents() {
+  const ids = new Set(DB.students.map(x => x.id));
+  ids.forEach(markRemoved);
+  DB.students = [];
+  DB.logs = DB.logs.filter(l => !ids.has(l.studentId));
+  DB.grades = DB.grades.filter(g => !ids.has(g.studentId));
+  DB.submissions = DB.submissions.filter(x => !ids.has(x.studentId));
+}
+function removeAllTeachers() { DB.teachers.slice().forEach(t => removeTeacherAccount(t.id)); }
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('#adm-del-all-teachers,#adm-del-all-students,#adm-del-all,[data-adm-del-ghost]'); if (!b) return;
+  if (!DB.auth || DB.auth.role !== 'admin') return;
+  const run = (title, msg, fn) => askConfirm(title, msg, () => { fn(); saveDB(); renderAdminView(); });
+  if (b.dataset.admDelGhost) {
+    const rec = adPeople().find(r => r.id === b.dataset.admDelGhost && !r.accountId); if (!rec) return;
+    run('Remove from school list', 'Remove ' + rec.name + ' from the school list? Their uploaded schedule is removed too. This cannot be undone.', () => { adProg().people = adProg().people.filter(r => r.id !== rec.id); toast('Removed from the school list.', 'success'); });
+    return;
+  }
+  if (b.id === 'adm-del-all-teachers') {
+    if (!DB.teachers.length) { toast('There are no teacher accounts.', 'info'); return; }
+    run('Delete all teachers', 'This deletes every teacher account. Their profiles and own schedules are removed. The uploaded school schedule stays and is ready again when each teacher signs up. Lessons and grades they posted stay for the students. This cannot be undone.', () => { removeAllTeachers(); toast('All teacher accounts deleted.', 'success'); });
+    return;
+  }
+  if (b.id === 'adm-del-all-students') {
+    if (!DB.students.length) { toast('There are no student accounts.', 'info'); return; }
+    run('Delete all students', 'This deletes every student account, with their attendance, grades and submissions. This cannot be undone.', () => { removeAllStudents(); toast('All student accounts deleted.', 'success'); });
+    return;
+  }
+  if (!DB.teachers.length && !DB.students.length) { toast('There are no accounts to delete.', 'info'); return; }
+  run('Delete all accounts', 'This deletes every teacher and student account, with the students\' attendance, grades and submissions. The uploaded school schedule stays and is ready again when each teacher signs up. This cannot be undone.', () => { removeAllTeachers(); removeAllStudents(); toast('All accounts deleted.', 'success'); });
+});
+
 /* ==================== ADMIN: SCHOOL SCHEDULE (upload, term, edit) ==================== */
 // The principal uploads the school's "Individual Teacher's Program" workbook once. Each period is saved on the teacher
 // (or on the school list when that teacher has no account yet) and students see it through their section.
@@ -7962,7 +8050,9 @@ function adParseCell(raw) {
   let times = null;
   const pm = /\(\s*(\d{1,2}\s*[:.]\s*\d{2})\s*-\s*(\d{1,2}\s*[:.]\s*\d{2})\s*\)\s*$/.exec(t);
   if (pm) { times = [pm[1], pm[2]]; t = t.slice(0, pm.index).trim(); }
-  const m = /^(?:GRADE\s*)?(\d{1,2})\s*[-\s]\s*(.+)$/i.exec(t); if (!m) return null;
+  let m = /^(?:GRADE\s*)?(\d{1,2})\s*[-\s]\s*(.+)$/i.exec(t);
+  if (!m) { const rv = /^(.+?)\s*[-(,]\s*(?:GRADE\s*)?(\d{1,2})\s*[-\s]?\s*([A-Za-zñÑ]+)\)?$/i.exec(t); if (rv) m = [rv[0], rv[2], rv[3] + ' - ' + rv[1]]; }
+  if (!m) return null;
   const grade = +m[1]; if (grade < 7 || grade > 12) return null;
   let rest = m[2].trim(), sec = '';
   const sm = /^([A-Za-zñÑ]+)\s*-\s*(.+)$/.exec(rest);
@@ -7996,7 +8086,7 @@ function adBlocks(sheets) {
 function adBlockPeriods(b) {
   const slots = []; let prev = null;
   for (let r = b.hi + 1; r < b.end; r++) {
-    const t = adTimes((b.rows[r] || [])[0]); if (!t.length) continue;
+    const t = adTimes((b.rows[r] || [])[b.tcol || 0]); if (!t.length) continue;
     const base = t[0][0] * 60 + t[0][1], c = [base, base + 720].filter(x => x < 1440);
     let s;
     if (prev === null) s = (t[0][0] >= 5 && t[0][0] <= 12) ? base : base + 720;
@@ -8031,11 +8121,15 @@ function adClassIdFor(grade, secRaw) {
   const any = DB.classes.filter(x => norm(x) === n || (TP_SECTION_ALIAS[n] && norm(x) === TP_SECTION_ALIAS[n]));
   return any.length === 1 ? { id: any[0].id, moved: true } : null;
 }
-function adParseWorkbook(sheets) {
-  const blocks = adBlocks(sheets), people = new Map(), unmatched = new Set(), moved = new Set(), gw = new Map(), terms = new Set();
+function adFindSy(sheets) {
   let sy = '';
   sheets.forEach(sh => sh.rows.slice(0, 25).forEach(r => r.forEach(c => { const m = /\bS\.?\s*Y\.?\s*(\d{4})\s*-\s*(\d{4})/i.exec(String(c == null ? '' : c)); if (m && !sy) sy = m[1] + '-' + m[2]; })));
-  blocks.forEach(b => {
+  return sy;
+}
+// Turns "who teaches what, and when" (from any file layout) into the preview the principal checks before importing.
+function adAssemble(items, sy) {
+  const people = new Map(), unmatched = new Set(), moved = new Set(), gw = new Map(), terms = new Set();
+  items.forEach(b => {
     const key = nameKey(b.name); if (!key) return;
     let p = people.get(key);
     if (!p) { p = { key, name: adTitle(b.name), advisoryId: '', advisoryNote: '', terms: new Set(), entries: new Map() }; people.set(key, p); }
@@ -8046,7 +8140,7 @@ function adParseWorkbook(sheets) {
       if (r) { p.advisoryId = r.id; if (r.moved) moved.add('Advisory ' + b.advisory.trim() + ' used as ' + classLabel(r.id)); }
       else unmatched.add('Advisory ' + b.advisory.trim());
     }
-    adBlockPeriods(b).forEach(pd => {
+    b.periods.forEach(pd => {
       let cls = null, gwKey = '';
       if (pd.sec) {
         const r = adClassIdFor(pd.grade, pd.sec);
@@ -8066,14 +8160,141 @@ function adParseWorkbook(sheets) {
     });
   });
   const list = Array.from(people.values()).map(p => ({ key: p.key, name: p.name, advisoryId: p.advisoryId, terms: Array.from(p.terms).sort(), list: Array.from(p.entries.values()) })).sort(adByName);
-  return { people: list, gw: Array.from(gw.values()).sort((a, b) => a.grade - b.grade || a.subject.localeCompare(b.subject)), unmatched: Array.from(unmatched).sort(), moved: Array.from(moved), terms: Array.from(terms).sort(), blocks: blocks.length, sy };
+  return { people: list, gw: Array.from(gw.values()).sort((a, b) => a.grade - b.grade || a.subject.localeCompare(b.subject)), unmatched: Array.from(unmatched).sort(), moved: Array.from(moved), terms: Array.from(terms).sort(), blocks: items.length, sy: sy || '' };
+}
+function adParseWorkbook(sheets) {
+  const items = adBlocks(sheets).map(b => ({ name: b.name, advisory: b.advisory, term: b.term, periods: adBlockPeriods(b) }));
+  return adAssemble(items, adFindSy(sheets));
+}
+/* ---- any other layout: a list (one period per row), or one timetable per teacher ---- */
+function adBaseTerm(name) { const n = String(name || ''); return /1st|first|term\s*1/i.test(n) ? 1 : /2nd|second|term\s*2/i.test(n) ? 2 : /3rd|third|term\s*3/i.test(n) ? 3 : (Number(DB.settings.currentTerm) || 2); }
+// "Mon", "Monday", "MWF", "TTh", "Mon-Fri", "Lunes" ... all become a list of school days.
+function adDays(str) {
+  str = String(str == null ? '' : str).trim(); if (!str) return [];
+  const names = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', lun: 'Mon', mar: 'Tue', miy: 'Wed', huw: 'Thu', biy: 'Fri' }, out = [];
+  const rng = /\b(mon|tue|wed|thu|fri)[a-z]*\s*(?:-|–|to|hanggang)\s*(mon|tue|wed|thu|fri)[a-z]*/i.exec(str);
+  if (rng) { const x = SCHOOL_DAYS.indexOf(names[rng[1].toLowerCase()]), y = SCHOOL_DAYS.indexOf(names[rng[2].toLowerCase()]); for (let i = Math.min(x, y); i <= Math.max(x, y); i++) out.push(SCHOOL_DAYS[i]); return out; }
+  const re = /\b(mon|tue|wed|thu|fri|lun|miy|huw|biy)[a-z]*/gi; let m;
+  while ((m = re.exec(str))) { const d = names[m[1].toLowerCase()]; if (!out.includes(d)) out.push(d); }
+  if (out.length) return out;
+  const c = str.replace(/th/gi, 'H').replace(/[^A-Za-z]/g, '').toUpperCase();
+  if (/^[MTWHF]+$/.test(c)) c.split('').forEach(ch => { const d = { M: 'Mon', T: 'Tue', W: 'Wed', H: 'Thu', F: 'Fri' }[ch]; if (!out.includes(d)) out.push(d); });
+  return out;
+}
+// Clock times in school files often carry no AM/PM ("1:30" means 1:30 PM). Excel time cells arrive as fractions of a day.
+function adClock(v, after) {
+  v = String(v == null ? '' : v).trim(); if (!v) return null;
+  const frac = /^0?\.\d+$/.test(v), t = normTime(v); if (!t) return null;
+  let m = minOf(t);
+  if (!frac && !/[ap]m/i.test(v)) { const h = Math.floor(m / 60); if (h >= 1 && h <= 4) m += 720; }
+  if (after != null && m <= after && m + 720 < 1440) m += 720;
+  return m;
+}
+function adRange(str) {
+  const m = /(\d{1,2})\s*[:.]\s*(\d{2})\s*(am|pm)?\s*(?:-|–|—|to)\s*(\d{1,2})\s*[:.]\s*(\d{2})\s*(am|pm)?/i.exec(String(str == null ? '' : str)); if (!m) return null;
+  const a = adClock(m[1] + ':' + m[2] + (m[3] || ''), null); if (a == null) return null;
+  const z = adClock(m[4] + ':' + m[5] + (m[6] || ''), a); if (z == null) return null;
+  return [a, z];
+}
+const AD_COLS = [['teacher', /^(teacher|teacher'?s?\s*name|name\s*of\s*teacher|faculty|instructor|guro|name)\b/i], ['subject', /^(subject|course|learning\s*area|asignatura)/i], ['grade', /^(grade|year\s*level|level|baitang)/i], ['section', /^(section|class|seksyon)/i], ['day', /^(days?|araw)\b/i], ['start', /^(start|from|time\s*in|begin|simula)/i], ['end', /^(end|to|until|time\s*out|finish)\b/i], ['time', /^(time|oras|period)/i], ['term', /^(term|quarter|sem)/i], ['adv', /^advis/i]];
+function adParseTable(sheets) {
+  const byKey = new Map();
+  sheets.forEach(sh => {
+    const rows = sh.rows, generic = /^(sheet\s*\d*|schedule|program|data|list)$/i.test(String(sh.name).trim());
+    let cols = null, hi = -1;
+    for (let r = 0; r < Math.min(rows.length, 25) && !cols; r++) {
+      const c = {};
+      (rows[r] || []).forEach((cell, ci) => {
+        const t = String(cell == null ? '' : cell).trim().replace(/[:*]+$/, ''); if (!t) return;
+        for (const kv of AD_COLS) if (c[kv[0]] == null && kv[1].test(t)) { c[kv[0]] = ci; break; }
+      });
+      if (c.subject != null && c.day != null && (c.start != null || c.time != null) && (c.teacher != null || !generic)) { cols = c; hi = r; }
+    }
+    if (!cols) return;
+    let last = '';
+    for (let r = hi + 1; r < rows.length; r++) {
+      const row = rows[r] || [], get = k => (cols[k] == null ? '' : String(row[cols[k]] == null ? '' : row[cols[k]]).trim());
+      let tn = cols.teacher != null ? get('teacher') : String(sh.name).trim();
+      if (cols.teacher != null) { if (tn) last = tn; else tn = last; }
+      const subj = get('subject'), days = adDays(get('day'));
+      if (!tn || !subj || !days.length) continue;
+      let st = null, en = null;
+      if (cols.start != null) { st = adClock(get('start')); if (st != null) { en = get('end') ? adClock(get('end'), st) : null; if (en == null) en = st + 60; } }
+      else { const rg = adRange(get('time')); if (rg) { st = rg[0]; en = rg[1]; } }
+      if (st == null) continue;
+      let gradeRaw = get('grade'), secRaw = get('section'), grade = 0;
+      const gm = /^(?:grade\s*)?(\d{1,2})\s*[-\s]\s*([A-Za-zñÑ][A-Za-zñÑ .\/&+,-]*)$/i.exec(gradeRaw);
+      if (gm && !secRaw) { grade = +gm[1]; secRaw = gm[2]; } else grade = +((gradeRaw.match(/\d+/) || [0])[0]);
+      if (!grade) { const sm = /^(?:grade\s*)?(\d{1,2})\s*[-\s]\s*(.+)$/i.exec(secRaw); if (sm) { grade = +sm[1]; secRaw = sm[2]; } }
+      if (grade < 7 || grade > 12) continue;
+      let secs = secRaw.split(/[\/+&,|]|\band\b/i).map(x => x.trim()).filter(Boolean); if (!secs.length) secs = [''];
+      const tm = get('term').match(/[123]/), term = tm ? +tm[0] : adBaseTerm(sh.name), subject = adSubject(subj);
+      const k = nameKey(tn) + '|' + term;
+      if (!byKey.has(k)) byKey.set(k, { name: tn, advisory: '', term, periods: [] });
+      const it = byKey.get(k); if (!it.advisory && get('adv')) it.advisory = get('adv');
+      days.forEach(day => secs.forEach(sec => it.periods.push({ grade, sec, subject, day, st, en })));
+    }
+  });
+  return adAssemble(Array.from(byKey.values()), adFindSy(sheets));
+}
+function adParseGrids(sheets) {
+  const items = [];
+  sheets.forEach(sh => {
+    const rows = sh.rows, heads = [];
+    rows.forEach((r, i) => {
+      const days = {};
+      (r || []).forEach((c, ci) => { const t = String(c == null ? '' : c).trim(); const hit = /^[A-Za-z]+\.?$/.test(t) ? SCHOOL_DAYS.find(x => x.toLowerCase() === t.slice(0, 3).toLowerCase()) : null; if (hit && !Object.keys(days).some(k => days[k] === hit)) days[ci] = hit; });
+      if (Object.keys(days).length >= 3) heads.push({ hi: i, days });
+    });
+    heads.forEach((h, k) => {
+      const from = k ? heads[k - 1].hi + 1 : 0, end = k + 1 < heads.length ? heads[k + 1].hi : rows.length;
+      let name = '', adv = '', term = null;
+      for (let i = h.hi - 1; i >= Math.max(from, h.hi - 8); i--) (rows[i] || []).forEach((c, ci) => {
+        const t = String(c == null ? '' : c).trim(); if (!t) return;
+        const m = /^(?:name\s*of\s*teacher|teacher'?s?(?:\s*name)?|name|faculty|instructor)\s*:\s*(.*)$/i.exec(t);
+        if (m && !name) name = m[1].trim() || String((rows[i] || [])[ci + 1] == null ? '' : rows[i][ci + 1]).trim() || String((rows[i] || [])[ci + 2] == null ? '' : rows[i][ci + 2]).trim();
+        const tm = /\bterm\s*([123])\b/i.exec(t); if (tm && !term) term = +tm[1];
+        const am = /^advis(?:o|e)ry\s*:\s*(.*)$/i.exec(t); if (am && !adv) adv = am[1].trim() || String((rows[i] || [])[ci + 1] == null ? '' : rows[i][ci + 1]).trim();
+      });
+      if (!name && !/^(sheet\s*\d*|schedule|program|data|list|term\s*\d.*|1st.*|2nd.*|3rd.*)$/i.test(String(sh.name).trim())) name = String(sh.name).trim();
+      if (!name) return;
+      const tcol = Math.max(0, Math.min.apply(null, Object.keys(h.days).map(Number)) - 1);
+      const periods = adBlockPeriods({ rows, hi: h.hi, end, days: h.days, tcol });
+      if (periods.length) items.push({ name, advisory: adv, term: term || adBaseTerm(sh.name), periods });
+    });
+  });
+  return adAssemble(items, adFindSy(sheets));
+}
+function adParseAny(sheets) {
+  const a = adParseWorkbook(sheets); if (a.people.length) return a;
+  const b = adParseTable(sheets); if (b.people.length) return b;
+  const c = adParseGrids(sheets); if (c.people.length) return c;
+  return a;
 }
 // A teacher account is matched to a person in the file by name; two teachers who could both be the same person are left for the principal to choose.
+const AD_PART = ['DE', 'DEL', 'DELA', 'DELOS', 'DELAS', 'LA', 'LOS', 'SAN', 'STA', 'SANTA', 'VAN', 'VON', 'DI', 'DA'];
+const AD_TITLE = ['MR', 'MRS', 'MS', 'MISS', 'DR', 'ENGR', 'ATTY', 'SIR', 'MAAM', 'JR', 'SR', 'II', 'III', 'IV'];
+// jdelacruz@gmail.com, juan.cruz@..., cruzj@... all look like "Juan Dela Cruz"; maria.delacruz@... does not.
+function adEmailMatches(name, email) {
+  let local = String(email || '').toLowerCase().split('@')[0].replace(/[^a-zñ]/g, ''); if (local.length < 4) return false;
+  const all = nameKey(name).split(/[\s\-]+/).filter(Boolean).filter(t => !AD_TITLE.includes(t));
+  all.filter(t => AD_PART.includes(t)).forEach(t => { local = local.replace(t.toLowerCase(), ''); });
+  const toks = all.filter(t => !AD_PART.includes(t)).map(t => t.toLowerCase().replace(/[^a-zñ]/g, '')).filter(Boolean);
+  if (toks.length < 2) return false;
+  const named = toks.filter(t => t.length >= 3 && local.includes(t));
+  if (named.length >= 2) return true;
+  if (named.length === 1) {
+    const rest = local.replace(named[0], '');
+    if (rest.length >= 1 && rest.length <= 2) { const inits = toks.filter(t => t !== named[0]).map(t => t[0]); return rest.split('').every(ch => inits.includes(ch)); }
+  }
+  return false;
+}
+function adMatch(personName, t) { return tpNameMatches(personName, t.name) || adEmailMatches(personName, t.email); }
 function adAutoAccounts(people) {
   const cand = new Map(), claims = new Map(), out = {};
   people.forEach(p => {
     const rec = adPeople().find(r => r.key === p.key && r.accountId), linked = rec ? DB.teachers.find(t => t.id === rec.accountId) : null;
-    const l = linked ? [linked] : DB.teachers.filter(t => tpNameMatches(p.name, t.name));
+    const l = linked ? [linked] : DB.teachers.filter(t => adMatch(p.name, t));
     cand.set(p.key, l); l.forEach(t => claims.set(t.id, (claims.get(t.id) || 0) + 1));
   });
   people.forEach(p => { const l = cand.get(p.key); out[p.key] = (l.length === 1 && claims.get(l[0].id) === 1) ? l[0].id : ''; });
@@ -8086,9 +8307,9 @@ function adLinkRec(rec, t) {
   if (rec.advisoryClassId && !t.advisoryClassId) t.advisoryClassId = rec.advisoryClassId;
 }
 function adAutoLink(t) {
-  if (!t || !t.name) return false;
-  const recs = adPeople().filter(r => !r.accountId && tpNameMatches(r.name, t.name));
-  if (recs.length !== 1 || DB.teachers.some(o => o.id !== t.id && tpNameMatches(recs[0].name, o.name))) return false;
+  if (!t || (!t.name && !t.email)) return false;
+  const recs = adPeople().filter(r => !r.accountId && adMatch(r.name, t));
+  if (recs.length !== 1 || DB.teachers.some(o => o.id !== t.id && adMatch(recs[0].name, o))) return false;
   adLinkRec(recs[0], t); return true;
 }
 function adUnlink(t) {
@@ -8133,7 +8354,11 @@ function adApplyImport(parsed, choice, selTerms, useSy, fileName) {
 const adInp = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2';
 const adBtn = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2';
 const adBtn2 = 'inline-flex items-center justify-center gap-1.5 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800';
-let adTab = 'live', adSel = { teacher: '', section: '', term: 'cur' }, adPending = null;
+let adTab = 'live', adSel = { teacher: '', section: '', term: 'cur' }, adPending = null, adAsked = false;
+function adRenderTermPick() {
+  const box = document.getElementById('ad-term-pick'); if (!box) return;
+  box.innerHTML = [1, 2, 3].map(n => { const now = Number(DB.settings.currentTerm) === n, on = now && adAsked; return '<button type="button" data-ad-pick="' + n + '" aria-pressed="' + on + '" class="rounded-xl border-2 px-3 py-3 text-sm font-semibold ' + (on ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300') + '">Term ' + n + (now ? '<span class="block text-[10px] font-normal text-slate-500 dark:text-slate-400">(now)</span>' : '') + '</button>'; }).join('');
+}
 function adTermLabel(e) { return !e.term || e.term === 'all' ? 'All terms' : 'Term ' + e.term; }
 function adTermVisible(e, view) {
   if (view === 'all') return true;
@@ -8238,7 +8463,7 @@ function renderAdminSchedule() {
   if (adTab === 'live') renderLiveBoard();
   if (adTab === 'teachers') adRenderTeachers();
   if (adTab === 'sections') adRenderSections();
-  if (adTab === 'upload') { adRenderUploadInfo(); adRenderPreview(); }
+  if (adTab === 'upload') { adRenderTermPick(); document.getElementById('ad-step2').classList.toggle('hidden', !adAsked); adRenderUploadInfo(); adRenderPreview(); }
 }
 function adEditor(ownerId, entryId, pre) {
   pre = pre || {};
@@ -8307,7 +8532,15 @@ document.addEventListener('click', ev => {
   if (!DB || !DB.auth || DB.auth.role !== 'admin') return;
   const g = sel => ev.target.closest(sel);
   let b;
-  if ((b = g('[data-ad-tab]'))) { adTab = b.dataset.adTab; renderAdminSchedule(); return; }
+  if ((b = g('[data-ad-tab]'))) { if (b.dataset.adTab === 'upload' && adTab !== 'upload' && !adPending) adAsked = false; adTab = b.dataset.adTab; renderAdminSchedule(); return; }
+  if ((b = g('[data-ad-pick]'))) {
+    const n = Number(b.dataset.adPick) || 2; DB.settings.currentTerm = n; adAsked = true;
+    saveDB(); renderAdminView(); toast('Now Term ' + n + '. Teachers and students see it right away.', 'success'); return;
+  }
+  if (g('#ad-template')) {
+    downloadXlsx([['Teacher', 'Subject', 'Grade', 'Section', 'Day', 'Start', 'End', 'Term'], ['Juan Dela Cruz', 'Mathematics', 12, 'Beethoven', 'Mon', '07:30', '08:30', ''], ['Juan Dela Cruz', 'Mathematics', 12, 'Beethoven', 'Wed', '07:30', '08:30', ''], ['Maria Santos', 'Science', 12, 'Mozart', 'Tue', '09:00', '10:00', '']], 'school-schedule-template.xlsx', 'Schedule', [24, 22, 8, 16, 8, 10, 10, 8]);
+    return;
+  }
   if ((b = g('[data-ad-edit]'))) { const p = b.dataset.adEdit.split('|'); adEditor(p[0], p[1]); return; }
   if ((b = g('[data-ad-del]'))) { const p = b.dataset.adDel.split('|'); adRemove(p[0], p[1]); return; }
   if (g('#ad-t-add')) { adEditor('', '', {}); return; }
@@ -8355,15 +8588,27 @@ document.addEventListener('change', ev => {
   if (t.id === 'ad-file') {
     const file = t.files && t.files[0]; if (!file) return;
     if (/\.xls$/i.test(file.name)) { toast('Please save the file as .xlsx (Excel Workbook) and try again.', 'warning'); t.value = ''; return; }
-    if (!/\.xlsx$/i.test(file.name)) { toast('Choose the school schedule as an Excel (.xlsx) file.', 'warning'); t.value = ''; return; }
-    const reader = new FileReader();
-    reader.onload = e2 => readXlsxBook(e2.target.result, { fillDown: true }).then(sheets => {
-      const parsed = adParseWorkbook(sheets);
-      if (!parsed.people.length) { adPending = null; adRenderPreview(); toast('No teacher programs were found. The file should be the school\'s Individual Teacher\'s Program workbook.', 'warning'); return; }
+    const isX = /\.xls[xm]$/i.test(file.name), isC = /\.(csv|tsv|txt)$/i.test(file.name);
+    if (!isX && !isC) { toast('Choose the school schedule as an Excel (.xlsx) or CSV file.', 'warning'); t.value = ''; return; }
+    const done = sheets => {
+      const parsed = adParseAny(sheets);
+      if (!parsed.people.length) { adPending = null; adRenderPreview(); toast('No teacher schedule could be found in that file. Use the template, the school\'s Individual Teacher\'s Program workbook, or a timetable with the days across the top.', 'warning'); return; }
       adPending = { parsed, fileName: file.name, choice: adAutoAccounts(parsed.people), terms: new Set(parsed.terms), useSy: true };
       adRenderPreview();
-    }).catch(() => { toast('That Excel file could not be read.', 'error'); });
-    reader.readAsArrayBuffer(file);
+    };
+    const reader = new FileReader();
+    if (isX) {
+      reader.onload = e2 => readXlsxBook(e2.target.result, { fillDown: true }).then(done).catch(() => { toast('That Excel file could not be read.', 'error'); });
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = e2 => {
+        const lines = String(e2.target.result).replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+        if (!lines.length) { toast('That file is empty.', 'warning'); return; }
+        const d = [',', '\t', ';'].sort((x, y) => lines[0].split(y).length - lines[0].split(x).length)[0];
+        done([{ name: file.name.replace(/\.[^.]+$/, ''), rows: lines.map(l => splitCsvLine(l, d)) }]);
+      };
+      reader.readAsText(file);
+    }
   }
 });
 
