@@ -274,7 +274,7 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
         <form id="login-form" class="space-y-3">
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="login-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="login-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email, like name@deped.gov.ph.</p>
+            <input id="login-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="login-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email. If it does not work, the admin can add your Gmail.</p>
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
@@ -319,7 +319,7 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="signup-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="signup-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email, like name@deped.gov.ph.</p>
+            <input id="signup-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="signup-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email. If it does not work, the admin can add your Gmail.</p>
           </div>
           <div>
             <label id="signup-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
@@ -1258,10 +1258,18 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
 <div id="modal-edit-teacher" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
   <form id="edit-teacher-form" class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5 space-y-3">
     <h3 class="text-sm font-semibold">Edit teacher</h3>
+    <div class="flex items-center gap-3">
+      <img id="edit-teacher-photo-preview" class="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" src="" alt="">
+      <div class="min-w-0 flex-1">
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-photo">Profile picture</label>
+        <input id="edit-teacher-photo" type="file" accept="image/*" class="w-full text-xs">
+        <button type="button" id="edit-teacher-photo-clear" class="text-xs text-rose-600 dark:text-rose-400 mt-1 underline underline-offset-2">Remove picture</button>
+      </div>
+    </div>
     <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-name">Name</label>
       <input id="edit-teacher-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
-    <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-email">DepEd email</label>
-      <input id="edit-teacher-email" type="email" placeholder="name@deped.gov.ph" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+    <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-email">Email (DepEd or Gmail)</label>
+      <input id="edit-teacher-email" type="email" placeholder="name@deped.gov.ph or name@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
     <p id="edit-teacher-note" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
     <div class="flex gap-2 justify-end">
       <button type="button" data-close-modal="modal-edit-teacher" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
@@ -1805,6 +1813,7 @@ function goToView(view) {
   if (view === 'learning') renderLearning();
   if (view === 'settings') renderSettings();
   if (view === 'admin' || view.indexOf('admin-') === 0) renderAdminView();
+  mcSync();
 }
 document.querySelectorAll('.nav-btn, .nav-btn-m').forEach(b => b.addEventListener('click', () => goToView(b.dataset.view)));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => goToView(b.dataset.goto)));
@@ -3486,7 +3495,7 @@ function logout() {
     DB.auth = null;
     entrySet(null);
     saveDB();
-    try { helpNowSync(); hnClose(); cnAmbStop(true); cnScanStop(); } catch (e) {}
+    try { helpNowSync(); hnClose(); cnAmbStop(true); cnScanStop(); spReset(); spRender(); } catch (e) {}
     try { if (sb) sb.auth.signOut().catch(() => {}); } catch (e) {}
     renderAuthGate();
     toast('Signed out.', 'success');
@@ -3533,17 +3542,18 @@ function signupClassInit(role) {
 const TEACHER_DOMAIN = '@deped.gov.ph';
 const DEPED_TEACHERS = ['erma.tuazon@deped.gov.ph', 'rommel.pascual004@deped.gov.ph', 'noemi.zablan@deped.gov.ph', 'jenna.perez@deped.gov.ph', 'pepito.cabuhat@deped.gov.ph', 'jeriel.paguio@deped.gov.ph'];
 const TEACHER_ONLY_LISTED = false; // true = only the emails above may register as teachers
-const DEPED_MSG = 'Teachers must use their DepEd email, like name@deped.gov.ph.';
+const DEPED_MSG = 'Use your DepEd email (name@deped.gov.ph). If it does not work, ask the admin to add your Gmail first.';
 function depedOk(email) {
   email = normEmail(email);
   if (!email.endsWith(TEACHER_DOMAIN) || email.length <= TEACHER_DOMAIN.length) return false;
   return !TEACHER_ONLY_LISTED || DEPED_TEACHERS.includes(email);
 }
-function teacherEmailBlocked(email) {
-  if (loginRole !== 'teacher') return false;
-  if (depedOk(email)) return false;
-  return !DB.teachers.some(a => normEmail(a.email) === normEmail(email));
+// A teacher may use a DepEd email, or any email the admin has put on that teacher (an account or an uploaded-schedule name).
+function teacherEmailAllowed(email) {
+  email = normEmail(email);
+  return depedOk(email) || DB.teachers.some(a => normEmail(a.email) === email) || adPeople().some(r => r.email && normEmail(r.email) === email);
 }
+function teacherEmailBlocked(email) { return loginRole === 'teacher' && !teacherEmailAllowed(email); }
 function nameFromDeped(email) {
   const local = normEmail(email).split('@')[0].replace(/[0-9]+/g, '');
   const parts = local.split(/[._-]+/).filter(Boolean);
@@ -3728,7 +3738,7 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   const pw = document.getElementById('signup-password').value;
   const pw2 = document.getElementById('signup-password-confirm').value;
   if (!name || !email || !idNumber) { toast('Fill in your name, email and ID number.', 'warning'); return; }
-  if (loginRole === 'teacher' && !depedOk(email)) { toast(DEPED_MSG, 'warning'); return; }
+  if (teacherEmailBlocked(email)) { toast(DEPED_MSG, 'warning'); return; }
   if (pw.length < 6) { toast('Choose a password of at least 6 characters.', 'warning'); return; }
   if (pw !== pw2) { toast('Passwords do not match.', 'warning'); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
@@ -4124,7 +4134,7 @@ const LANG_FIL = {
 "Classroom": "Classroom",
 "Attendance": "Pagdalo",
 "Subjects": "Mga asignatura",
-"Teachers": "Mga Guro",
+"Teachers": "Mga guro",
 "Messages": "Mga Mensahe",
 "Settings": "Mga Setting",
 "Log out": "Mag-log out",
@@ -4905,7 +4915,7 @@ const LANG_FIL = {
 "That file is not a valid Attendly backup.": "Hindi valid na Attendly backup ang file na iyon.",
 "That file could not be read as a valid Attendly backup.": "Hindi mabasa ang file bilang valid na Attendly backup.",
 "That photo could not be read.": "Hindi mabasa ang larawang iyon.",
-"That photo could not be read. Try a different image.": "Hindi mabasa ang larawang iyon. Subukan ang ibang larawan.",
+"That photo could not be read. Try a different image.": "Hindi mabasa ang larawan. Subukan ang ibang larawan.",
 "That picture could not be read. Try a PNG or JPG.": "Hindi mabasa ang larawang iyon. Subukan ang PNG o JPG.",
 "That subject is already in your list.": "Nasa listahan mo na ang subject na iyon.",
 "That time is already booked for someone else. Reply to suggest another time.": "Naka-book na ang oras na iyon para sa iba. Sumagot para magmungkahi ng ibang oras.",
@@ -5855,7 +5865,40 @@ const LANG_FIL = {
 "That email is already used by someone else.": "Ginagamit na ng iba ang email na iyon.",
 "Enter the teacher's name.": "Ilagay ang pangalan ng guro.",
 "This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.": "Wala pang account ang gurong ito. Kapag may nag-sign up gamit ang email na ito, mapupunta sa bagong account ang schedule.",
-"If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.": "Kung hindi makapag-log in ang guro gamit ang lumang email, puwede siyang mag-sign up ulit gamit ang bago at mananatili ang schedule."
+"If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.": "Kung hindi makapag-log in ang guro gamit ang lumang email, puwede siyang mag-sign up ulit gamit ang bago at mananatili ang schedule.",
+"Profile picture": "Larawan sa profile",
+"Remove picture": "Alisin ang larawan",
+"Use your DepEd email (name@deped.gov.ph). If it does not work, ask the admin to add your Gmail first.": "Gamitin ang iyong DepEd email (name@deped.gov.ph). Kung hindi ito gumana, ipalagay muna sa admin ang iyong Gmail.",
+"Teachers use their DepEd email. If it does not work, the admin can add your Gmail.": "Gamitin ng mga guro ang kanilang DepEd email. Kung hindi ito gumana, puwedeng idagdag ng admin ang iyong Gmail.",
+"Email (DepEd or Gmail)": "Email (DepEd o Gmail)",
+"Enter a valid email address.": "Maglagay ng tamang email address.",
+"If a teacher's DepEd email does not work, put their Gmail here. They can then sign up or log in with it and keep the same schedule.": "Kung hindi gumana ang DepEd email ng guro, ilagay dito ang kanyang Gmail. Makakapag-sign up o makakapag-log in na siya gamit ito at mananatili ang schedule.",
+"Chat": "Chat",
+"New message": "Bagong mensahe",
+"Open chat": "Buksan ang chat",
+"Close chat": "Isara ang chat",
+"No chats yet. Start one with the button below.": "Wala pang chat. Magsimula gamit ang pindutan sa ibaba.",
+"Your school has not set up a counselor yet. Ask the admin to add one.": "Wala pang counselor na naitakda ang paaralan. Ipalagay sa admin.",
+"Only you and the person you choose can read it.": "Ikaw at ang taong pipiliin mo lang ang makakabasa nito.",
+"Connect to the internet to chat.": "Kumonekta sa internet para makapag-chat.",
+"Playlist": "Playlist",
+"Calm mix": "Calm mix",
+"Music for rest, focus and sleep · 9 tracks": "Musika para sa pahinga, focus at tulog · 9 na kanta",
+"Shuffle": "Shuffle",
+"Repeat": "Ulitin",
+"Focus": "Focus",
+"Calm": "Kalma",
+"Sleep timer": "Sleep timer",
+"Off": "Patayin",
+"Pick a track to start listening.": "Pumili ng kanta para makinig.",
+"Previous": "Nakaraan",
+"Play": "I-play",
+"Pause": "I-pause",
+"This track could not play. Skipping to the next one.": "Hindi ma-play ang kantang ito. Lilipat sa susunod.",
+"This track could not play. Try another one.": "Hindi ma-play ang kantang ito. Subukan ang iba.",
+"Music needs an internet connection.": "Kailangan ng internet para sa musika.",
+"No tracks here.": "Walang kanta rito.",
+"Seek": "Seek"
 };
 const LANG_PATS = [
 [
@@ -6835,7 +6878,7 @@ const CN_DYNAMIC = ['home', 'explore', 'surveys', 'talk', 'book', 'help', 'journ
 function renderCounseling() {
   const root = document.getElementById('cn-root'); if (!root) return;
   if (!cn.built || cn.uid !== (DB.auth && DB.auth.userId)) {
-    cn.bp = null; cnStopBreath(); cnStopCalm(); cnAmbStop(true); cnScanStop(); cn.helpView = 'main'; cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
+    cn.bp = null; cnStopBreath(); cnStopCalm(); cnAmbStop(true); cnScanStop(); spReset(true); cn.helpView = 'main'; cn.uid = DB.auth && DB.auth.userId; cn.built = true; cn.tab = 'home'; cn.items = []; cn.loaded = false; cn.sv = null; cn.page = null; cn.editUser = false;
     cn.book = { step: 1, type: '', format: 'person', date: '', time: '', topic: cnTopics()[0], note: '', sent: false, busy: false };
     root.innerHTML = '<div class="space-y-4">' +
       '<div class="flex items-center gap-2"><div id="cn-tabs" class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 flex-1">' + CN_TABS.map(t => '<button data-cn-tab="' + t[0] + '" class="cn-tab shrink-0 inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-3 py-1.5"><i data-lucide="' + t[2] + '" class="w-3.5 h-3.5"></i>' + t[1] + '</button>').join('') + '</div>' +
@@ -6850,7 +6893,7 @@ function renderCounseling() {
   cnLoad();
 }
 function cnShowTab(name) {
-  cn.tab = name;
+  cn.tab = name; try { spBody(); } catch (e) {}
   document.querySelectorAll('#cn-root [data-cn-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.cnPanel !== name));
   document.querySelectorAll('#cn-root .cn-tab').forEach(b => {
     const a = b.dataset.cnTab === name;
@@ -6876,6 +6919,7 @@ function cnRefreshLive() {
   if (!cn.built) return;
   if (cn.tab === 'home') cnRenderPanel('home');
   if (cn.tab === 'talk') cnRenderConvos();
+  mcSync();
   if (cn.tab === 'book' && !cn.book.sent) { const l = document.getElementById('cn-appts'); if (l) l.innerHTML = cnApptList(); }
   const a = document.querySelector('.view-section.active');
   if (a && a.dataset.view === 'guidance') renderInbox('guidance');
@@ -7087,6 +7131,104 @@ function cnBuildExtras() {
   cnAmbUi(); cnScanUi();
 }
 
+/* ---- Floating mini chat (Counseling menu, students and teachers) ---- */
+const mc = { open: false, view: 'list', thread: null, busy: false, timer: null };
+function mcAllowed() {
+  const a = document.querySelector('.view-section.active');
+  return !!(DB && DB.auth && (DB.auth.role === 'student' || DB.auth.role === 'teacher') && !isCounselor() && a && a.dataset.view === 'counseling');
+}
+function mcUnread() { const me = cnMyEmail(); return cn.items.filter(i => normEmail(i.to_email) === me && i.status === 'new').length; }
+function mcBuild() {
+  if (document.getElementById('mc-fab')) return;
+  const f = document.createElement('button'); f.id = 'mc-fab'; f.type = 'button'; f.setAttribute('aria-label', 'Open chat');
+  f.className = 'hidden fixed bottom-4 right-4 z-30 w-14 h-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg flex items-center justify-center';
+  f.innerHTML = '<i data-lucide="message-circle" class="w-6 h-6"></i><span id="mc-badge" class="hidden absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center"></span>';
+  document.body.appendChild(f);
+  const d = document.createElement('div'); d.id = 'mc-panel'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'Chat');
+  d.className = 'hidden fixed bottom-20 right-4 z-30 w-[min(92vw,22rem)] h-[min(70vh,30rem)] flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden';
+  document.body.appendChild(d);
+}
+function mcSync() {
+  mcBuild(); try { spBody(); } catch (e) {}
+  const f = document.getElementById('mc-fab'), d = document.getElementById('mc-panel'), ok = mcAllowed();
+  f.classList.toggle('hidden', !ok);
+  if (!ok) { mc.open = false; clearInterval(mc.timer); mc.timer = null; }
+  d.classList.toggle('hidden', !(ok && mc.open)); d.classList.toggle('flex', ok && mc.open);
+  const n = ok ? mcUnread() : 0, b = document.getElementById('mc-badge');
+  b.textContent = n > 9 ? '9+' : String(n); b.classList.toggle('hidden', !n);
+  if (ok && mc.open) mcRender();
+}
+function mcOther(t, me) { const r = t.root; return normEmail(r.from_email) === me ? (r.to_name || r.to_email) : (r.from_name || r.from_email); }
+function mcRender() {
+  const d = document.getElementById('mc-panel'); if (!d) return;
+  const me = cnMyEmail(), head = (title, back) => '<div class="flex items-center gap-2 px-3 py-2.5 bg-teal-600 text-white shrink-0">' + (back ? '<button data-mc-back aria-label="Back" class="p-1 rounded-md hover:bg-teal-700"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>' : '<i data-lucide="message-circle" class="w-4 h-4"></i>') + '<p class="text-sm font-semibold flex-1 truncate">' + escapeHtml(title) + '</p><button data-mc-close aria-label="Close chat" class="p-1 rounded-md hover:bg-teal-700"><i data-lucide="x" class="w-4 h-4"></i></button></div>';
+  let h = '';
+  if (cn.err) h = head('Chat') + '<div class="p-4 text-xs text-rose-600">' + escapeHtml(cn.err) + '</div>';
+  else if (mc.view === 'new') {
+    const T = cnIsT(), r = T ? null : cnRecipients(), opt = (t, tag) => '<option value="' + escapeHtml(normEmail(t.email)) + '">' + escapeHtml((t.name || t.email) + (tag ? ' (' + tag + ')' : '')) + '</option>';
+    const sel = T ? cnTSelect('mc-to') : '<select id="mc-to" class="' + CN_INP + '">' + r.first.map(o => opt(o[1], o[0])).join('') + (r.rest.length ? '<optgroup label="Teachers">' + r.rest.map(t => opt(t)).join('') + '</optgroup>' : '') + '</select>';
+    const none = T ? !cnTRecipients().length : !(r.first.length || r.rest.length);
+    h = head('New message', true) + (none ? '<p class="p-4 text-xs text-slate-500 dark:text-slate-400">Your school has not set up a counselor yet. Ask the admin to add one.</p>' :
+      '<div class="p-3 space-y-2 overflow-y-auto"><label class="block text-xs font-medium" for="mc-to">To</label>' + sel + '<label class="block text-xs font-medium" for="mc-body">Message</label><textarea id="mc-body" rows="5" maxlength="1000" placeholder="Write what you want them to know..." class="' + CN_INP + '"></textarea><p class="text-[11px] text-slate-500 dark:text-slate-400">Only you and the person you choose can read it.</p><button data-mc-send class="' + CN_BTN + ' w-full">Send message</button></div>');
+  } else if (mc.view === 'thread') {
+    const t = cnThreads(me).find(x => x.id === mc.thread);
+    if (!t) { mc.view = 'list'; return mcRender(); }
+    h = head(mcOther(t, me), true) + '<div id="mc-msgs" class="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50 dark:bg-slate-950/40">' + t.msgs.map(m => { const mine = normEmail(m.from_email) === me; return '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '"><div class="max-w-[85%] rounded-2xl px-3 py-2 text-sm ' + (mine ? 'bg-teal-600 text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700') + '"><p class="whitespace-pre-wrap break-words">' + escapeHtml(m.body || cnPreview(m)) + '</p><p class="text-[10px] mt-1 ' + (mine ? 'text-teal-100' : 'text-slate-400') + '">' + cnWhen(m.created_at) + '</p></div></div>'; }).join('') + '</div>' +
+      '<div class="flex gap-2 p-2 border-t border-slate-200 dark:border-slate-800 shrink-0"><input id="mc-reply" type="text" maxlength="1000" placeholder="Write a reply..." class="' + CN_INP + '"><button data-mc-reply class="' + CN_BTN + ' shrink-0 !px-3" aria-label="Send"><i data-lucide="send" class="w-4 h-4"></i></button></div>';
+  } else {
+    const th = cn.loaded ? cnThreads(me) : [];
+    h = head('Chat') + '<div class="flex-1 overflow-y-auto p-2">' + (!cn.loaded ? '<p class="p-3 text-xs text-slate-500">' + (sb ? 'Loading...' : 'Connect to the internet to chat.') + '</p>' :
+      th.length ? th.map(t => { const newIn = t.msgs.some(m => normEmail(m.to_email) === me && m.status === 'new'); return '<button data-mc-open="' + t.id + '" class="w-full text-left rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-start gap-2"><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(mcOther(t, me)) + '</span><span class="block text-xs text-slate-500 dark:text-slate-400 truncate">' + escapeHtml(cnPreview(t.last)) + '</span></span>' + (newIn ? '<span class="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></span>' : '') + '</button>'; }).join('') : '<p class="p-3 text-xs text-slate-500 dark:text-slate-400">No chats yet. Start one with the button below.</p>') + '</div>' +
+      '<div class="p-2 border-t border-slate-200 dark:border-slate-800 shrink-0"><button data-mc-new class="' + CN_BTN + ' w-full"><i data-lucide="square-pen" class="w-4 h-4"></i>New message</button></div>';
+  }
+  const keep = { to: (document.getElementById('mc-to') || {}).value, body: (document.getElementById('mc-body') || {}).value, reply: (document.getElementById('mc-reply') || {}).value, focus: document.activeElement && document.activeElement.id };
+  d.innerHTML = h;
+  if (mc.view === 'new') { const to = document.getElementById('mc-to'), b = document.getElementById('mc-body'); if (to && keep.to) to.value = keep.to; if (b && keep.body) b.value = keep.body; if (b && keep.focus === 'mc-body') b.focus(); }
+  if (mc.view === 'thread') { const rp = document.getElementById('mc-reply'); if (rp && keep.reply) rp.value = keep.reply; if (rp && keep.focus === 'mc-reply') rp.focus(); const m = document.getElementById('mc-msgs'); if (m) m.scrollTop = m.scrollHeight; }
+  refreshIcons();
+}
+function mcOpen(on) {
+  mc.open = on; if (on) { mc.view = 'list'; mc.thread = null; cnLoad(); clearInterval(mc.timer); mc.timer = setInterval(() => { if (mc.open) cnLoad(); }, 15000); } else { clearInterval(mc.timer); mc.timer = null; }
+  mcSync();
+}
+document.addEventListener('click', async ev => {
+  const g = sel => ev.target.closest(sel);
+  if (g('#mc-fab')) { mcOpen(!mc.open); return; }
+  if (!g('#mc-panel')) return;
+  let el;
+  if (g('[data-mc-close]')) { mcOpen(false); return; }
+  if (g('[data-mc-back]')) { mc.view = 'list'; mc.thread = null; mcRender(); return; }
+  if (g('[data-mc-new]')) { mc.view = 'new'; mcRender(); return; }
+  if ((el = g('[data-mc-open]'))) {
+    mc.thread = el.dataset.mcOpen; mc.view = 'thread';
+    const me = cnMyEmail(); Promise.all(cn.items.filter(i => (i.thread_id || i.id) === mc.thread && normEmail(i.to_email) === me && i.status === 'new').map(i => cnSetStatus(i.id, 'seen'))).then(mcSync);
+    mcSync(); return;
+  }
+  if (g('[data-mc-reply]')) {
+    const inp = document.getElementById('mc-reply'); if (!inp || !inp.value.trim() || mc.busy) return;
+    mc.busy = true; const ok = await cnReply(mc.thread, inp.value); mc.busy = false;
+    if (ok) { inp.value = ''; mcRender(); if (cn.tab === 'talk') cnRenderConvos(); }
+    return;
+  }
+  if (g('[data-mc-send]')) {
+    const to = document.getElementById('mc-to').value, body = document.getElementById('mc-body').value.trim();
+    if (!to) { toast('Choose who to send it to.', 'warning'); return; }
+    if (!body) { toast('Write a message first.', 'warning'); return; }
+    if (mc.busy) return;
+    const T = cnIsT(), trc = T ? cnTRecipients().find(x => x.key === to) : null;
+    if (T && !trc) { toast('Choose the counselor or the principal.', 'warning'); return; }
+    const t = T ? trc.p : DB.teachers.find(x => normEmail(x.email) === to), me = cnAcct() || {};
+    mc.busy = true;
+    const r = await cnSend({ kind: 'message', to_email: T ? normEmail(t.email) : to, to_name: t ? t.name : '', subject: T ? 'Message from a teacher' : 'Message from a student', body, meta: T ? { cls: 'Teacher' } : { cls: classLabel(me.classId), username: cnUsername() } });
+    mc.busy = false;
+    if (r) { toast('Message sent.', 'success'); mc.thread = r.id; mc.view = 'thread'; mcRender(); if (cn.tab === 'talk') cnRenderConvos(); }
+  }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.target && ev.target.id === 'mc-reply' && ev.key === 'Enter') { ev.preventDefault(); const b = document.querySelector('[data-mc-reply]'); if (b) b.click(); }
+  if (ev.key === 'Escape' && mc.open) mcOpen(false);
+});
+
 /* ---- Help me right now: one tap from any page ---- */
 cn.hn = { on: false, timer: null };
 function hnBuild() {
@@ -7103,7 +7245,7 @@ function hnBuild() {
     '<div id="hn-actions" class="flex flex-wrap gap-2 mt-4 justify-center"></div></div>';
   document.body.appendChild(d);
 }
-function helpNowSync() { const f = document.getElementById('help-fab'); if (f) f.classList.toggle('hidden', !(typeof DB !== 'undefined' && DB && DB.auth && DB.auth.role)); }
+function helpNowSync() { const f = document.getElementById('help-fab'); if (f) f.classList.toggle('hidden', !(typeof DB !== 'undefined' && DB && DB.auth && DB.auth.role)); mcSync(); }
 function hnCycle() {
   if (!cn.hn.on) return; const c = document.getElementById('hn-circle'), l = document.getElementById('hn-label'); if (!c) return;
   c.style.transition = 'transform 4s ease-in-out'; c.style.transform = 'scale(1.05)'; l.textContent = langT('Breathe in');
@@ -7383,9 +7525,7 @@ function cnBuildStatic0() {
   document.getElementById('cn-p-breathe').innerHTML = '<div class="' + CN_CARD + ' text-center"><p class="text-sm font-semibold">4-7-8 ocean breath</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Breathe in for 4, hold for 7, breathe out slowly for 8. It helps your body settle when school feels heavy.</p>' +
     '<div class="flex justify-center my-6"><div class="relative w-48 h-48 flex items-center justify-center"><div id="cn-b-circle" class="absolute inset-0 rounded-full bg-teal-200/70 dark:bg-teal-700/40" style="transform:scale(.55);transition:transform 1s ease-in-out"></div><div class="relative text-center"><p id="cn-b-label" class="text-sm font-medium text-teal-800 dark:text-teal-200">Ready</p><p id="cn-b-count" class="text-3xl font-semibold tabular-nums">4-7-8</p></div></div></div>' +
     '<p id="cn-b-cycles" class="text-xs text-slate-500 dark:text-slate-400 mb-3">Cycles completed: 0</p><button id="cn-b-btn" data-cn-breath class="' + CN_BTN + '">Start</button></div>';
-  document.getElementById('cn-p-music').innerHTML = '<div class="' + CN_CARD + '"><p class="text-sm font-semibold">Calming music</p><p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Pick a track. It plays from YouTube and needs internet. Set a timer if you want it to stop by itself.</p>' +
-    '<div id="cn-m-player" class="hidden mb-3"><div class="aspect-video rounded-lg overflow-hidden bg-black"><iframe id="cn-m-frame" class="w-full h-full" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" title="Calming music"></iframe></div><div class="flex items-center gap-2 mt-2 flex-wrap"><span class="text-xs text-slate-500">Stop after:</span>' + [15, 30, 60].map(m => '<button data-cn-timer="' + m + '" class="cn-timer text-xs rounded-full border border-slate-300 dark:border-slate-700 px-2.5 py-1">' + m + ' min</button>').join('') + '<button data-cn-mstop class="ml-auto text-xs text-rose-600 hover:underline">Stop music</button></div><p id="cn-m-timer" class="text-[11px] text-slate-400 mt-1"></p></div>' +
-    '<div class="space-y-1.5">' + CN_TRACKS.map((t, i) => '<button data-cn-track="' + i + '" class="cn-track w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 hover:border-teal-400"><i data-lucide="play" class="w-4 h-4 text-teal-600 shrink-0"></i><span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate">' + escapeHtml(t.title) + '</span><span class="block text-[11px] text-slate-500 dark:text-slate-400">' + escapeHtml(t.tag) + '</span></span></button>').join('') + '</div></div>';
+  document.getElementById('cn-p-music').innerHTML = spShell(); spRender();
   if (!document.getElementById('cn-calm')) {
     const d = document.createElement('div'); d.id = 'cn-calm'; d.className = 'hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-sky-100 via-teal-50 to-indigo-100 dark:from-slate-950 dark:via-teal-950 dark:to-slate-900';
     d.innerHTML = '<button data-cn-calm-close class="absolute top-4 right-4 text-sm text-slate-600 dark:text-slate-300 underline">Close</button><p class="text-[11px] uppercase tracking-widest text-teal-700 dark:text-teal-300 font-semibold">Quick calm</p>' +
@@ -7458,26 +7598,139 @@ function cnCalmEnd() {
 }
 function cnStopCalm() { clearInterval(cn.calm.timer); cn.calm.timer = null; const el = document.getElementById('cn-calm'); if (el) el.classList.add('hidden'); }
 
-/* ---- Music ---- */
-function cnPlayTrack(i) {
+/* ---- Music (Spotify-style player over the YouTube player API) ---- */
+const SP_CAT = { '77ZozI0rw7w': 'calm', '_4kHxtiuML0': 'focus', 'xRcWlA1I9z0': 'focus', '9Zq79uu_o5E': 'calm', 'tNjOqzkJ2CE': 'sleep', 'Pg6t-HMj2jg': 'calm', '1ZYbU82GVz4': 'sleep', 'I3OJUwILelU': 'focus', 'z-qigE1ym40': 'sleep' };
+const SP_GRAD = [['#7c3aed', '#1e1b4b'], ['#0ea5e9', '#082f49'], ['#f59e0b', '#451a03'], ['#14b8a6', '#042f2e'], ['#6366f1', '#1e1b4b'], ['#ec4899', '#500724'], ['#10b981', '#022c22'], ['#f97316', '#431407'], ['#06b6d4', '#083344']];
+const SP_ACC = '#1ed38a';
+const sp = { cat: 'all', idx: -1, playing: false, shuffle: false, repeat: false, player: null, apiLoading: false, cbs: [], tick: null, errs: 0, timer: null, until: 0, state: 'idle' };
+function spBody() {
+  const a = document.querySelector('.view-section.active');
+  document.body.classList.toggle('sp-active', !!(sp.idx >= 0 && cn.tab === 'music' && a && a.dataset.view === 'counseling'));
+}
+function spVis() { return CN_TRACKS.map((t, i) => i).filter(i => sp.cat === 'all' || SP_CAT[CN_TRACKS[i].id] === sp.cat); }
+function spFmt(sec) { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+function spShell() {
+  return '<style>@keyframes spEq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}.sp-eq i{display:inline-block;width:3px;height:14px;background:' + SP_ACC + ';border-radius:2px;transform-origin:bottom;animation:spEq .9s ease-in-out infinite}.sp-eq i:nth-child(2){animation-delay:.2s}.sp-eq i:nth-child(3){animation-delay:.4s}.sp-eq.off i{animation:none;transform:scaleY(.3)}@media (prefers-reduced-motion:reduce){.sp-eq i{animation:none}}body.sp-active #help-fab,body.sp-active #mc-fab{bottom:6.25rem!important}body.sp-active #mc-panel{bottom:10.5rem!important}#sp-seek{accent-color:' + SP_ACC + '}.sp-row:hover{background:rgba(255,255,255,.08)}</style>' +
+    '<div id="sp-root" class="rounded-2xl overflow-hidden text-white" style="background:#121212">' +
+    '<div id="sp-hero" class="px-4 pt-5 pb-4" style="background:linear-gradient(180deg,#0f766e 0%,#121212 100%)"><div class="flex items-end gap-4"><div class="w-28 h-28 sm:w-36 sm:h-36 rounded-lg shadow-2xl flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34d399,#0e7490 60%,#312e81)"><i data-lucide="music-2" class="w-12 h-12 text-white/90"></i></div><div class="min-w-0"><p class="text-[11px] font-semibold uppercase tracking-wider text-white/80">Playlist</p><h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">Calm mix</h2><p class="text-xs text-white/70 mt-1">Music for rest, focus and sleep · ' + CN_TRACKS.length + ' tracks</p></div></div>' +
+    '<div id="sp-ctl" class="flex items-center gap-3 mt-4"></div></div>' +
+    '<div id="sp-vwrap" class="hidden px-4 pb-3"><div class="aspect-video rounded-lg overflow-hidden bg-black"><div id="sp-yt" class="w-full h-full"></div></div></div>' +
+    '<div class="px-4 pb-2 flex gap-2 overflow-x-auto" id="sp-chips"></div>' +
+    '<div id="sp-list" class="px-2 pb-2"></div>' +
+    '<div id="sp-now" class="sticky bottom-0 border-t border-white/10 px-3 py-2.5" style="background:#181818"></div></div>';
+}
+function spRender() {
+  const root = document.getElementById('sp-root'); if (!root) return;
+  const cur = sp.idx >= 0 ? CN_TRACKS[sp.idx] : null, gr = SP_GRAD[(sp.idx >= 0 ? sp.idx : 3) % SP_GRAD.length];
+  document.getElementById('sp-hero').style.background = 'linear-gradient(180deg,' + gr[0] + ' 0%,#121212 100%)';
+  const btn = 'w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-transform';
+  document.getElementById('sp-ctl').innerHTML =
+    '<button data-sp-main aria-label="' + (sp.playing ? 'Pause' : 'Play') + '" class="w-14 h-14 rounded-full flex items-center justify-center hover:scale-105 transition-transform text-black" style="background:' + SP_ACC + '"><i data-lucide="' + (sp.playing ? 'pause' : 'play') + '" class="w-6 h-6" style="fill:currentColor"></i></button>' +
+    '<button data-sp-shuffle aria-label="Shuffle" aria-pressed="' + sp.shuffle + '" class="' + btn + '" style="color:' + (sp.shuffle ? SP_ACC : 'rgba(255,255,255,.7)') + '"><i data-lucide="shuffle" class="w-5 h-5"></i></button>' +
+    '<button data-sp-repeat aria-label="Repeat" aria-pressed="' + sp.repeat + '" class="' + btn + '" style="color:' + (sp.repeat ? SP_ACC : 'rgba(255,255,255,.7)') + '"><i data-lucide="repeat" class="w-5 h-5"></i></button>' +
+    '<div class="ml-auto flex items-center gap-1.5 flex-wrap justify-end"><span class="text-[11px] text-white/60 flex items-center gap-1"><i data-lucide="moon" class="w-3.5 h-3.5"></i>Sleep timer</span>' + [15, 30, 60].map(m => { const on = sp.until && sp.timerMin === m; return '<button data-sp-timer="' + m + '" class="text-[11px] rounded-full px-2.5 py-1 border ' + (on ? 'text-black font-semibold' : 'text-white/80 border-white/25 hover:border-white/60') + '" style="' + (on ? 'background:' + SP_ACC + ';border-color:' + SP_ACC : '') + '">' + m + ' min</button>'; }).join('') + (sp.until ? '<button data-sp-timer="0" class="text-[11px] text-white/60 underline">Off</button>' : '') + '</div>';
+  document.getElementById('sp-vwrap').classList.toggle('hidden', sp.idx < 0);
+  const chips = [['all', 'All'], ['focus', 'Focus'], ['sleep', 'Sleep'], ['calm', 'Calm']];
+  document.getElementById('sp-chips').innerHTML = chips.map(c => '<button data-sp-cat="' + c[0] + '" class="shrink-0 text-xs font-medium rounded-full px-3.5 py-1.5 ' + (sp.cat === c[0] ? 'text-black' : 'text-white bg-white/10 hover:bg-white/20') + '" style="' + (sp.cat === c[0] ? 'background:#fff' : '') + '">' + c[1] + '</button>').join('');
+  document.getElementById('sp-list').innerHTML = spVis().map((i, n) => {
+    const t = CN_TRACKS[i], on = i === sp.idx, g = SP_GRAD[i % SP_GRAD.length];
+    return '<button data-sp-play="' + i + '" class="sp-row w-full flex items-center gap-3 text-left rounded-md px-2 py-2"><span class="w-5 text-center text-xs tabular-nums text-white/60 shrink-0">' + (on ? '<span class="sp-eq' + (sp.playing ? '' : ' off') + '"><i></i><i></i><i></i></span>' : (n + 1)) + '</span>' +
+      '<span class="w-11 h-11 rounded shrink-0 overflow-hidden" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')"><img src="https://i.ytimg.com/vi/' + t.id + '/mqdefault.jpg" alt="" loading="lazy" class="w-full h-full object-cover" onerror="this.style.display=\'none\'"></span>' +
+      '<span class="min-w-0 flex-1"><span class="block text-sm font-medium truncate" style="' + (on ? 'color:' + SP_ACC : '') + '">' + escapeHtml(t.title) + '</span><span class="block text-[11px] text-white/60 truncate">' + escapeHtml(t.tag) + '</span></span></button>';
+  }).join('') || '<p class="px-3 py-4 text-xs text-white/60">No tracks here.</p>';
+  const dis = sp.idx < 0 ? ' opacity-40 pointer-events-none' : '';
+  document.getElementById('sp-now').innerHTML = cur ?
+    '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded shrink-0 overflow-hidden" style="background:linear-gradient(135deg,' + gr[0] + ',' + gr[1] + ')"><img src="https://i.ytimg.com/vi/' + cur.id + '/mqdefault.jpg" alt="" class="w-full h-full object-cover" onerror="this.style.display=\'none\'"></div><div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate">' + escapeHtml(cur.title) + '</p><p class="text-[11px] text-white/60 truncate" id="sp-sub">' + escapeHtml(sp.state === 'buffering' ? 'Loading...' : cur.tag) + '</p></div>' +
+    '<button data-sp-prev aria-label="Previous" class="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white"><i data-lucide="skip-back" class="w-5 h-5" style="fill:currentColor"></i></button>' +
+    '<button data-sp-main aria-label="' + (sp.playing ? 'Pause' : 'Play') + '" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"><i data-lucide="' + (sp.playing ? 'pause' : 'play') + '" class="w-5 h-5" style="fill:currentColor"></i></button>' +
+    '<button data-sp-next aria-label="Next" class="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white"><i data-lucide="skip-forward" class="w-5 h-5" style="fill:currentColor"></i></button></div>' +
+    '<div class="flex items-center gap-2 mt-2"><span id="sp-cur" class="text-[10px] text-white/60 tabular-nums w-8 text-right">0:00</span><input id="sp-seek" type="range" min="0" max="1000" value="0" aria-label="Seek" class="flex-1 h-1"><span id="sp-dur" class="text-[10px] text-white/60 tabular-nums w-8">0:00</span></div>' +
+    (sp.until ? '<p class="text-[11px] text-white/50 mt-1.5 text-center" id="sp-tnote"></p>' : '')
+    : '<p class="text-xs text-white/60 text-center py-1">Pick a track to start listening.</p>';
+  spTick(); spBody(); refreshIcons();
+}
+function spTick() {
+  const p = sp.player, seek = document.getElementById('sp-seek'); if (!seek || !p || !p.getDuration) return;
+  try {
+    const d = p.getDuration() || 0, c = p.getCurrentTime() || 0, live = !d || d > 36000;
+    document.getElementById('sp-cur').textContent = live ? 'LIVE' : spFmt(c); document.getElementById('sp-dur').textContent = live ? '' : spFmt(d);
+    if (document.activeElement !== seek) seek.value = live ? 1000 : Math.round(c / d * 1000);
+    seek.disabled = live;
+  } catch (e) {}
+  const n = document.getElementById('sp-tnote'); if (n && sp.until) n.textContent = 'Stops in ' + Math.max(1, Math.ceil((sp.until - Date.now()) / 60000)) + ' min';
+}
+function spLoadApi(cb) {
+  if (window.YT && YT.Player) { cb(); return; }
+  sp.cbs.push(cb); if (sp.apiLoading) return; sp.apiLoading = true;
+  const prev = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = () => { try { if (prev) prev(); } catch (e) {} const c = sp.cbs; sp.cbs = []; c.forEach(f => f()); };
+  const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api';
+  sc.onerror = () => { sp.apiLoading = false; sp.cbs = []; sp.idx = -1; spRender(); toast('Music needs an internet connection.', 'warning'); };
+  document.head.appendChild(sc);
+}
+function spState(e) {
+  const S = window.YT && YT.PlayerState; if (!S) return;
+  sp.playing = e.data === S.PLAYING || e.data === S.BUFFERING;
+  sp.state = e.data === S.BUFFERING ? 'buffering' : (e.data === S.PLAYING ? 'playing' : 'paused');
+  if (e.data === S.PLAYING) sp.errs = 0;
+  if (e.data === S.ENDED) { if (sp.repeat) { sp.player.seekTo(0, true); sp.player.playVideo(); return; } spNext(); return; }
+  spRender();
+}
+function spErr() { sp.errs++; if (sp.errs > 3) { sp.playing = false; spRender(); toast('This track could not play. Try another one.', 'warning'); return; } toast('This track could not play. Skipping to the next one.', 'warning'); spNext(); }
+function spPlay(i) {
   const t = CN_TRACKS[i]; if (!t) return;
-  document.getElementById('cn-m-frame').src = 'https://www.youtube-nocookie.com/embed/' + t.id + '?autoplay=1&playsinline=1&rel=0';
-  document.getElementById('cn-m-player').classList.remove('hidden');
-  cn.music.id = t.id; cnAddLog('music', t.title, 0);
-  document.querySelectorAll('#cn-p-music .cn-track').forEach((b, k) => b.classList.toggle('border-teal-500', k === i));
+  sp.idx = i; sp.state = 'buffering'; cn.music.id = t.id; cnAddLog('music', t.title, 0);
+  spRender();
+  spLoadApi(() => {
+    const cur = CN_TRACKS[sp.idx]; if (!cur || !document.getElementById('sp-yt') && !sp.player) return;
+    if (sp.player && sp.player.loadVideoById) sp.player.loadVideoById(cur.id);
+    else sp.player = new YT.Player('sp-yt', { videoId: cur.id, width: '100%', height: '100%', playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0 }, events: { onReady: ev => { try { ev.target.playVideo(); } catch (e) {} }, onStateChange: spState, onError: spErr } });
+    clearInterval(sp.tick); sp.tick = setInterval(spTick, 500);
+  });
 }
+function spNext() {
+  const l = spVis(); if (!l.length) return;
+  let n;
+  if (sp.shuffle && l.length > 1) { do { n = l[Math.floor(Math.random() * l.length)]; } while (n === sp.idx); }
+  else { const k = l.indexOf(sp.idx); n = l[(k + 1) % l.length]; }
+  spPlay(n);
+}
+function spPrev() {
+  const l = spVis(); if (!l.length) return;
+  try { if (sp.player && sp.player.getCurrentTime() > 3) { sp.player.seekTo(0, true); return; } } catch (e) {}
+  const k = l.indexOf(sp.idx); spPlay(l[(k <= 0 ? l.length : k) - 1]);
+}
+function spToggle() {
+  if (sp.idx < 0) { const l = spVis(); if (l.length) spPlay(sp.shuffle ? l[Math.floor(Math.random() * l.length)] : l[0]); return; }
+  try { if (sp.playing) sp.player.pauseVideo(); else sp.player.playVideo(); } catch (e) {}
+}
+function cnPlayTrack(i) { spPlay(i); }
 function cnStopMusic() {
-  clearTimeout(cn.music.timer); cn.music = { id: null, timer: null };
-  const f = document.getElementById('cn-m-frame'); if (f) f.src = 'about:blank';
-  const p = document.getElementById('cn-m-player'); if (p) p.classList.add('hidden');
-  document.querySelectorAll('#cn-p-music .cn-track').forEach(b => b.classList.remove('border-teal-500'));
+  clearTimeout(sp.timer); sp.timer = null; sp.until = 0; sp.timerMin = 0; clearInterval(sp.tick); sp.tick = null;
+  try { if (sp.player && sp.player.stopVideo) sp.player.stopVideo(); } catch (e) {}
+  sp.idx = -1; sp.playing = false; sp.state = 'idle'; cn.music = { id: null, timer: null }; spRender();
 }
+function spReset(drop) { try { if (sp.player && sp.player.stopVideo) sp.player.stopVideo(); } catch (e) {} if (drop) sp.player = null; clearTimeout(sp.timer); sp.timer = null; sp.until = 0; clearInterval(sp.tick); sp.tick = null; sp.idx = -1; sp.playing = false; sp.state = 'idle'; sp.errs = 0; }
 function cnSetTimer(m) {
-  clearTimeout(cn.music.timer);
-  cn.music.timer = setTimeout(() => { cnStopMusic(); toast('Music stopped. Rest well.', 'success'); }, m * 60000);
-  document.getElementById('cn-m-timer').textContent = 'Music will stop in ' + m + ' minutes.';
-  document.querySelectorAll('#cn-p-music .cn-timer').forEach(b => { const on = +b.dataset.cnTimer === m; b.classList.toggle('bg-teal-600', on); b.classList.toggle('text-white', on); });
+  clearTimeout(sp.timer); sp.timer = null; sp.until = 0; sp.timerMin = 0;
+  if (m) { sp.timerMin = m; sp.until = Date.now() + m * 60000; sp.timer = setTimeout(() => { cnStopMusic(); toast('Music stopped. Rest well.', 'success'); }, m * 60000); }
+  spRender();
 }
+document.addEventListener('click', ev => {
+  const g = sel => ev.target.closest(sel); let el;
+  if (!g('#sp-root')) return;
+  if ((el = g('[data-sp-play]'))) { const i = +el.dataset.spPlay; if (i === sp.idx) spToggle(); else spPlay(i); return; }
+  if (g('[data-sp-main]')) { spToggle(); return; }
+  if (g('[data-sp-next]')) { spNext(); return; }
+  if (g('[data-sp-prev]')) { spPrev(); return; }
+  if (g('[data-sp-shuffle]')) { sp.shuffle = !sp.shuffle; spRender(); return; }
+  if (g('[data-sp-repeat]')) { sp.repeat = !sp.repeat; spRender(); return; }
+  if ((el = g('[data-sp-cat]'))) { sp.cat = el.dataset.spCat; spRender(); return; }
+  if ((el = g('[data-sp-timer]'))) { cnSetTimer(+el.dataset.spTimer); return; }
+});
+document.addEventListener('input', ev => {
+  if (ev.target && ev.target.id === 'sp-seek' && sp.player) { try { const d = sp.player.getDuration(); if (d && d < 36000) sp.player.seekTo(d * ev.target.value / 1000, true); } catch (e) {} }
+});
 
 /* ---- Progress and my results (this device only) ---- */
 function cnPanelProgress() {
@@ -7705,9 +7958,6 @@ document.addEventListener('click', async ev => {
   if ((el = g('[data-cn-copyplan]'))) { const r = cnResults().find(x => x.id === el.dataset.cnCopyplan) || (cn.sv && cn.sv.rec); if (r) cnCopy(cnPlanText(r)); return; }
   if ((el = g('[data-cn-dl]'))) { const r = cnResults().find(x => x.id === el.dataset.cnDl) || (cn.sv && cn.sv.rec); if (r) { cnDownloadRec(cnFillRec(Object.assign({}, r, { username: cnUsername() || r.username }))); } return; }
   if (g('[data-cn-breath]')) { cn.breath.on ? cnStopBreath() : cnStartBreath(); return; }
-  if ((el = g('[data-cn-track]'))) { cnPlayTrack(+el.dataset.cnTrack); return; }
-  if ((el = g('[data-cn-timer]'))) { cnSetTimer(+el.dataset.cnTimer); return; }
-  if (g('[data-cn-mstop]')) { cnStopMusic(); return; }
   if (g('[data-cn-refresh]')) { cnLoad(); return; }
   if (g('[data-cn-sendmsg]')) {
     const to = document.getElementById('cn-m-to').value, body = document.getElementById('cn-m-body').value.trim();
@@ -8079,10 +8329,10 @@ function renderAdminView() {
   document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0 || adGhosts.length > 0);
   const EDIT_BTN = id => '<button data-adm-edit-teacher="' + id + '" title="Edit email" aria-label="Edit email" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>';
   const DEL_BTN = (attr, id, title) => '<button ' + attr + '="' + id + '" title="' + title + '" aria-label="' + title + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>';
-  tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5 pr-2 align-top"><div class="font-medium">' + escapeHtml(t.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(t.email || '—') + '</div></td>' +
+  tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5 pr-2 align-top"><div class="flex items-start gap-2.5"><img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-9 h-9 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" alt=""><div class="min-w-0"><div class="font-medium">' + escapeHtml(t.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(t.email || '—') + '</div></div></div></td>' +
     '<td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td>' +
     '<td class="py-2.5 text-right whitespace-nowrap align-top">' + EDIT_BTN(t.id) + DEL_BTN('data-adm-del-teacher', t.id, 'Delete teacher') + '</td></tr>').join('') +
-    adGhosts.slice().sort(adByName).map(p => '<tr><td class="py-2.5 pr-2 align-top"><div class="font-medium">' + escapeHtml(p.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(p.email || 'No email yet') + '</div><span class="inline-block mt-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet · schedule ready</span></td>' +
+    adGhosts.slice().sort(adByName).map(p => '<tr><td class="py-2.5 pr-2 align-top"><div class="flex items-start gap-2.5"><img src="' + (p.photo || initialsAvatar(p.name)) + '" class="w-9 h-9 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" alt=""><div class="min-w-0"><div class="font-medium">' + escapeHtml(p.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(p.email || 'No email yet') + '</div><span class="inline-block mt-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet · schedule ready</span></div></div></td>' +
     '<td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">—</td><td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(classLabel(p.advisoryClassId) || '—') + '</td>' +
     '<td class="py-2.5 text-right whitespace-nowrap align-top">' + EDIT_BTN('g:' + p.id) + DEL_BTN('data-adm-del-ghost', p.id, 'Remove from school list') + '</td></tr>').join('');
 
@@ -8132,7 +8382,8 @@ document.addEventListener('click', ev => {
 });
 
 /* ---- admin: edit a teacher's email (and name) ---- */
-let editTeacherRef = null;
+let editTeacherRef = null, editTeacherPhoto;
+function editPhotoShow(name, photo) { document.getElementById('edit-teacher-photo-preview').src = photo || initialsAvatar(name || '?'); }
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-adm-edit-teacher]'); if (!b) return;
   if (!DB.auth || DB.auth.role !== 'admin') return;
@@ -8142,9 +8393,21 @@ document.addEventListener('click', ev => {
   document.getElementById('edit-teacher-name').value = rec.name || '';
   document.getElementById('edit-teacher-name').disabled = false;
   document.getElementById('edit-teacher-email').value = rec.email || '';
-  document.getElementById('edit-teacher-note').textContent = ghost ? 'This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.' : 'If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.';
+  editTeacherPhoto = undefined; document.getElementById('edit-teacher-photo').value = ''; editPhotoShow(rec.name, rec.photo);
+  document.getElementById('edit-teacher-note').textContent = ghost ? 'This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.' : 'If a teacher\'s DepEd email does not work, put their Gmail here. They can then sign up or log in with it and keep the same schedule.';
   openModal('modal-edit-teacher');
   document.getElementById('edit-teacher-email').focus();
+});
+document.getElementById('edit-teacher-photo').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  imageFileToDataUrl(f, 320, url => {
+    if (!url) { toast('That photo could not be read. Try a different image.', 'error'); return; }
+    editTeacherPhoto = url; editPhotoShow('', url);
+  });
+});
+document.getElementById('edit-teacher-photo-clear').addEventListener('click', () => {
+  editTeacherPhoto = ''; document.getElementById('edit-teacher-photo').value = '';
+  editPhotoShow(document.getElementById('edit-teacher-name').value, '');
 });
 document.getElementById('edit-teacher-form').addEventListener('submit', e => {
   e.preventDefault();
@@ -8153,12 +8416,13 @@ document.getElementById('edit-teacher-form').addEventListener('submit', e => {
   const rec = ghost ? adPeople().find(r => r.id === id && !r.accountId) : DB.teachers.find(x => x.id === id); if (!rec) return;
   const email = normEmail(document.getElementById('edit-teacher-email').value);
   const name = document.getElementById('edit-teacher-name').value.trim();
-  if (email && !(email.endsWith(TEACHER_DOMAIN) && email.length > TEACHER_DOMAIN.length)) { toast(DEPED_MSG, 'warning'); return; }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Enter a valid email address.', 'warning'); return; }
   if (email && (DB.teachers.some(x => x.id !== id && normEmail(x.email) === email) || DB.students.some(x => normEmail(x.email) === email) || adPeople().some(r => r.id !== id && normEmail(r.email) === email))) { toast('That email is already used by someone else.', 'warning'); return; }
   if (!name) { toast('Enter the teacher\'s name.', 'warning'); return; }
   const changed = normEmail(rec.email) !== email;
   rec.email = email;
   rec.name = name;
+  if (editTeacherPhoto !== undefined) rec.photo = editTeacherPhoto;
   if (!ghost && changed) rec.emailPending = !!email;
   if (ghost && email) { const t = DB.teachers.find(x => normEmail(x.email) === email); if (t) adAutoLink(t); }
   saveDB(); closeModal('modal-edit-teacher'); editTeacherRef = null; renderAdminView(); toast('Teacher updated.', 'success');
@@ -8476,6 +8740,7 @@ function adLinkRec(rec, t) {
   t.schedule = t.schedule || [];
   (rec.schedule || []).forEach(e => { if (!t.schedule.some(x => x.id === e.id)) t.schedule.push(e); ensurePortalSubject(e.subject, t.id); });
   rec.schedule = []; rec.accountId = t.id;
+  if (rec.photo && !t.photo) t.photo = rec.photo;
   if (rec.advisoryClassId && !t.advisoryClassId) t.advisoryClassId = rec.advisoryClassId;
 }
 function adAutoLink(t) {
