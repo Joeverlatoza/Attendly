@@ -267,7 +267,6 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
 
         <div class="space-y-2 mb-3">
           <button type="button" id="btn-google" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800"><svg class="w-4 h-4" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continue with Google</button>
-          <button type="button" id="btn-facebook" class="w-full inline-flex items-center justify-center gap-2 text-sm font-medium bg-[#1877F2] hover:bg-[#166fe0] text-white rounded-lg px-3 py-2.5"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.400l-.5 3.500h-2.900v8.400A12 12 0 0 0 24 12z"/></svg>Continue with Facebook</button>
           <p class="text-[11px] text-center text-slate-400">or use your email</p>
         </div>
 
@@ -275,7 +274,7 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
         <form id="login-form" class="space-y-3">
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="login-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="login-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="login-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email, like name@deped.gov.ph.</p>
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Password</label>
@@ -320,7 +319,7 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
           </div>
           <div>
             <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Email</label>
-            <input id="signup-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
+            <input id="signup-email" name="email" autocomplete="username" type="email" required placeholder="you@gmail.com" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"><p id="signup-email-hint" class="hidden text-xs text-slate-500 dark:text-slate-400 mt-1">Teachers use their DepEd email, like name@deped.gov.ph.</p>
           </div>
           <div>
             <label id="signup-idnum-label" class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Teacher ID</label>
@@ -651,7 +650,7 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
               <table class="w-full text-sm">
                 <thead>
                   <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                    <th class="py-2 font-medium">Name</th><th class="py-2 font-medium">Email</th><th class="py-2 font-medium">Teacher ID</th><th class="py-2 font-medium">Advisory</th><th class="py-2 w-8"><span class="sr-only">Delete</span></th>
+                    <th class="py-2 font-medium">Name and email</th><th class="py-2 font-medium hidden sm:table-cell">Teacher ID</th><th class="py-2 font-medium hidden sm:table-cell">Advisory</th><th class="py-2 w-16"><span class="sr-only">Edit or delete</span></th>
                   </tr>
                 </thead>
                 <tbody id="admin-teachers-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -1253,6 +1252,22 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
       </div>
     </form>
   </div>
+</div>
+
+<!-- EDIT TEACHER MODAL -->
+<div id="modal-edit-teacher" class="hidden fixed inset-0 z-40 bg-slate-950/40 flex items-center justify-center p-4">
+  <form id="edit-teacher-form" class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-5 space-y-3">
+    <h3 class="text-sm font-semibold">Edit teacher</h3>
+    <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-name">Name</label>
+      <input id="edit-teacher-name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+    <div><label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1" for="edit-teacher-email">DepEd email</label>
+      <input id="edit-teacher-email" type="email" placeholder="name@deped.gov.ph" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2"></div>
+    <p id="edit-teacher-note" class="text-[11px] text-slate-500 dark:text-slate-400"></p>
+    <div class="flex gap-2 justify-end">
+      <button type="button" data-close-modal="modal-edit-teacher" class="text-sm font-medium border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+      <button type="submit" class="text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-2">Save</button>
+    </div>
+  </form>
 </div>
 
 <!-- CONFIRM MODAL -->
@@ -3515,12 +3530,36 @@ function signupClassInit(role) {
   g.required = sc.required = role === 'student';
   classPickerFill(g, sc);
 }
+const TEACHER_DOMAIN = '@deped.gov.ph';
+const DEPED_TEACHERS = ['erma.tuazon@deped.gov.ph', 'rommel.pascual004@deped.gov.ph', 'noemi.zablan@deped.gov.ph', 'jenna.perez@deped.gov.ph', 'pepito.cabuhat@deped.gov.ph', 'jeriel.paguio@deped.gov.ph'];
+const TEACHER_ONLY_LISTED = false; // true = only the emails above may register as teachers
+const DEPED_MSG = 'Teachers must use their DepEd email, like name@deped.gov.ph.';
+function depedOk(email) {
+  email = normEmail(email);
+  if (!email.endsWith(TEACHER_DOMAIN) || email.length <= TEACHER_DOMAIN.length) return false;
+  return !TEACHER_ONLY_LISTED || DEPED_TEACHERS.includes(email);
+}
+function teacherEmailBlocked(email) {
+  if (loginRole !== 'teacher') return false;
+  if (depedOk(email)) return false;
+  return !DB.teachers.some(a => normEmail(a.email) === normEmail(email));
+}
+function nameFromDeped(email) {
+  const local = normEmail(email).split('@')[0].replace(/[0-9]+/g, '');
+  const parts = local.split(/[._-]+/).filter(Boolean);
+  return parts.length >= 2 ? parts.map(w => w[0].toUpperCase() + w.slice(1)).join(' ') : '';
+}
 function setLoginRole(role) {
   loginRole = role;
   signupClassInit(role);
   document.querySelectorAll('.role-tab-btn').forEach(b => {
     const active = b.dataset.loginRole === role;
     b.className = 'role-tab-btn text-xs font-medium rounded-md px-2 py-1.5 ' + (active ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400');
+  });
+  ['login-email', 'signup-email'].forEach(id => {
+    const i = document.getElementById(id), h = document.getElementById(id + '-hint');
+    if (i) i.placeholder = role === 'teacher' ? 'name@deped.gov.ph' : 'you@gmail.com';
+    if (h) h.classList.toggle('hidden', role !== 'teacher');
   });
   document.getElementById('signup-idnum-label').textContent = role === 'teacher' ? 'Teacher ID' : 'Student ID / LRN';
   document.getElementById('reset-idnum-label').textContent = role === 'teacher' ? 'Teacher ID' : 'Student ID / LRN';
@@ -3555,7 +3594,7 @@ function roleConflict(email) {
 /* ---- remember the last account so nobody retypes it ---- */
 const LAST_LOGIN_KEY = 'attendly_last_login_v1';
 let loginMethod = 'password';
-function getRemembered() { try { return JSON.parse(localStorage.getItem(LAST_LOGIN_KEY) || 'null'); } catch (e) { return null; } }
+function getRemembered() { try { const r = JSON.parse(localStorage.getItem(LAST_LOGIN_KEY) || 'null'); return r && r.method === 'facebook' ? null : r; } catch (e) { return null; } }
 function rememberLogin(rec) { try { localStorage.setItem(LAST_LOGIN_KEY, JSON.stringify(rec)); } catch (e) {} }
 function forgetRemembered() { try { localStorage.removeItem(LAST_LOGIN_KEY); } catch (e) {} }
 function methodLabel(m) { return m === 'google' ? 'Google' : m === 'facebook' ? 'Facebook' : 'Email and password'; }
@@ -3576,6 +3615,7 @@ function storeBrowserCredential(email, pw) {
   try { if (window.PasswordCredential && navigator.credentials) navigator.credentials.store(new PasswordCredential({ id: email, password: pw, name: email })); } catch (e) {}
 }
 function finishLogin(email, name, idNumber, classId) {
+  if (teacherEmailBlocked(email)) { if (sb) sb.auth.signOut(); toast(DEPED_MSG, 'error'); renderAuthGate(); return; }
   if (roleConflict(email)) { if (sb) sb.auth.signOut(); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
   const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
@@ -3588,6 +3628,7 @@ function finishLogin(email, name, idNumber, classId) {
     list.push(account);
   }
   if (!account.email) account.email = email;
+  if (account.emailPending) delete account.emailPending;
   if (loginRole === 'student' && classId && !account.classId) { account.classId = classId; const cc = DB.classes.find(x => x.id === classId); account.section = cc ? (cc.section || '') : ''; }
   if (loginRole === 'teacher') adAutoLink(account);
   DB.auth = { role: loginRole, userId: account.id, name: account.name, loginAt: new Date().toISOString() };
@@ -3604,6 +3645,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   const email = normEmail(document.getElementById('login-email').value);
   const pw = document.getElementById('login-password').value;
   if (!email || !pw) { toast('Enter your email and password.', 'warning'); return; }
+  if (teacherEmailBlocked(email)) { toast(DEPED_MSG, 'warning'); return; }
   const r = await sb.auth.signInWithPassword({ email, password: pw });
   if (r.error) {
     const list = loginRole === 'teacher' ? DB.teachers : DB.students;
@@ -3635,7 +3677,7 @@ async function socialSignIn(kind, hint) {
 document.getElementById('lr-continue').addEventListener('click', () => {
   const r = getRemembered();
   if (!r) return;
-  if (r.method === 'google' || r.method === 'facebook') { setLoginRole(r.role); socialSignIn(r.method, r.email); }
+  if (r.method === 'google') { setLoginRole(r.role); socialSignIn(r.method, r.email); }
   else document.getElementById('login-password').focus();
 });
 document.getElementById('lr-forget').addEventListener('click', () => {
@@ -3645,7 +3687,6 @@ document.getElementById('lr-forget').addEventListener('click', () => {
   document.getElementById('login-email').focus();
 });
 document.getElementById('btn-google').addEventListener('click', () => socialSignIn('google'));
-document.getElementById('btn-facebook').addEventListener('click', () => socialSignIn('facebook'));
 async function handleOAuthReturn() {
   const role = localStorage.getItem('attendly_oauth_role');
   if (!sb || !role) return;
@@ -3671,6 +3712,11 @@ async function handleOAuthReturn() {
   finishLogin(email, m.full_name || m.name);
 }
 
+document.getElementById('signup-email').addEventListener('input', () => {
+  if (loginRole !== 'teacher') return;
+  const n = document.getElementById('signup-name'), e = document.getElementById('signup-email').value;
+  if (n && !n.value.trim() && depedOk(e)) n.value = nameFromDeped(e);
+});
 document.getElementById('signup-form').addEventListener('submit', async e => {
   e.preventDefault();
   if (needSb()) return;
@@ -3682,11 +3728,12 @@ document.getElementById('signup-form').addEventListener('submit', async e => {
   const pw = document.getElementById('signup-password').value;
   const pw2 = document.getElementById('signup-password-confirm').value;
   if (!name || !email || !idNumber) { toast('Fill in your name, email and ID number.', 'warning'); return; }
+  if (loginRole === 'teacher' && !depedOk(email)) { toast(DEPED_MSG, 'warning'); return; }
   if (pw.length < 6) { toast('Choose a password of at least 6 characters.', 'warning'); return; }
   if (pw !== pw2) { toast('Passwords do not match.', 'warning'); return; }
   const list = loginRole === 'teacher' ? DB.teachers : DB.students;
   const idKey = loginRole === 'teacher' ? 'teacherId' : 'studentId';
-  if (list.some(a => normEmail(a.email) === email)) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
+  if (list.some(a => normEmail(a.email) === email && !a.emailPending)) { toast('An account with that email already exists. Log in instead.', 'warning'); return; }
   if (roleConflict(email)) return;
   const byId = list.find(a => (a[idKey] || '').trim().toLowerCase() === idNumber.toLowerCase());
   if (byId && byId.email) { toast('That ID is already registered to an account. Log in instead.', 'warning'); return; }
@@ -5796,7 +5843,19 @@ const LANG_FIL = {
 "Choose your grade level and section.": "Piliin ang baitang at seksyon mo.",
 "What is your grade level and section?": "Anong baitang at seksyon mo?",
 "Your schedule, lessons and quizzes depend on this. You can change it later in your Student ID.": "Nakadepende rito ang schedule, aralin at pagsusulit mo. Maaari mo itong baguhin mamaya sa Student ID mo.",
-"Your grade level and section were saved.": "Na-save ang baitang at seksyon mo."
+"Your grade level and section were saved.": "Na-save ang baitang at seksyon mo.",
+"Teachers use their DepEd email, like name@deped.gov.ph.": "Gamitin ng mga guro ang kanilang DepEd email, tulad ng name@deped.gov.ph.",
+"Teachers must use their DepEd email, like name@deped.gov.ph.": "Dapat gamitin ng mga guro ang kanilang DepEd email, tulad ng name@deped.gov.ph.",
+"Edit teacher": "I-edit ang guro",
+"DepEd email": "DepEd email",
+"Name and email": "Pangalan at email",
+"Edit email": "I-edit ang email",
+"No email yet": "Wala pang email",
+"Teacher updated.": "Na-update ang guro.",
+"That email is already used by someone else.": "Ginagamit na ng iba ang email na iyon.",
+"Enter the teacher's name.": "Ilagay ang pangalan ng guro.",
+"This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.": "Wala pang account ang gurong ito. Kapag may nag-sign up gamit ang email na ito, mapupunta sa bagong account ang schedule.",
+"If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.": "Kung hindi makapag-log in ang guro gamit ang lumang email, puwede siyang mag-sign up ulit gamit ang bago at mananatili ang schedule."
 };
 const LANG_PATS = [
 [
@@ -8018,9 +8077,14 @@ function renderAdminView() {
   const tBody = document.getElementById('admin-teachers-body');
   const adGhosts = adPeople().filter(p => !p.accountId);
   document.getElementById('admin-teachers-empty').classList.toggle('hidden', DB.teachers.length > 0 || adGhosts.length > 0);
-  tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5">' + escapeHtml(t.name) + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.email || '—') +
-    '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-teacher="' + t.id + '" title="Delete teacher" aria-label="Delete teacher" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('') +
-    adGhosts.slice().sort(adByName).map(p => '<tr><td class="py-2.5">' + escapeHtml(p.name) + '</td><td class="py-2.5"><span class="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet · schedule ready</span></td><td class="py-2.5 text-slate-500 dark:text-slate-400">—</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(classLabel(p.advisoryClassId) || '—') + '</td><td class="py-2.5 text-right"><button data-adm-del-ghost="' + p.id + '" title="Remove from school list" aria-label="Remove from school list" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>').join('');
+  const EDIT_BTN = id => '<button data-adm-edit-teacher="' + id + '" title="Edit email" aria-label="Edit email" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>';
+  const DEL_BTN = (attr, id, title) => '<button ' + attr + '="' + id + '" title="' + title + '" aria-label="' + title + '" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>';
+  tBody.innerHTML = DB.teachers.map(t => '<tr><td class="py-2.5 pr-2 align-top"><div class="font-medium">' + escapeHtml(t.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(t.email || '—') + '</div></td>' +
+    '<td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(t.teacherId || '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(classLabel(t.advisoryClassId) || '—') + '</td>' +
+    '<td class="py-2.5 text-right whitespace-nowrap align-top">' + EDIT_BTN(t.id) + DEL_BTN('data-adm-del-teacher', t.id, 'Delete teacher') + '</td></tr>').join('') +
+    adGhosts.slice().sort(adByName).map(p => '<tr><td class="py-2.5 pr-2 align-top"><div class="font-medium">' + escapeHtml(p.name) + '</div><div class="text-xs text-slate-500 dark:text-slate-400 break-all">' + escapeHtml(p.email || 'No email yet') + '</div><span class="inline-block mt-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet · schedule ready</span></td>' +
+    '<td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">—</td><td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(classLabel(p.advisoryClassId) || '—') + '</td>' +
+    '<td class="py-2.5 text-right whitespace-nowrap align-top">' + EDIT_BTN('g:' + p.id) + DEL_BTN('data-adm-del-ghost', p.id, 'Remove from school list') + '</td></tr>').join('');
 
   const sBody = document.getElementById('admin-students-body');
   document.getElementById('admin-students-empty').classList.toggle('hidden', DB.students.length > 0);
@@ -8065,6 +8129,38 @@ document.addEventListener('click', ev => {
     const st = DB.students.find(x => x.id === bs.dataset.admDelStudent); if (!st) return;
     askConfirm('Delete student account', 'Delete ' + st.name + '? Their profile, attendance, grades and submissions are removed. This cannot be undone.', () => { removeStudentAccount(st.id); saveDB(); renderAdminView(); toast('Student deleted.', 'success'); });
   }
+});
+
+/* ---- admin: edit a teacher's email (and name) ---- */
+let editTeacherRef = null;
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-adm-edit-teacher]'); if (!b) return;
+  if (!DB.auth || DB.auth.role !== 'admin') return;
+  const ref = b.dataset.admEditTeacher, ghost = ref.indexOf('g:') === 0, id = ghost ? ref.slice(2) : ref;
+  const rec = ghost ? adPeople().find(r => r.id === id && !r.accountId) : DB.teachers.find(x => x.id === id); if (!rec) return;
+  editTeacherRef = { ghost, id };
+  document.getElementById('edit-teacher-name').value = rec.name || '';
+  document.getElementById('edit-teacher-name').disabled = ghost;
+  document.getElementById('edit-teacher-email').value = rec.email || '';
+  document.getElementById('edit-teacher-note').textContent = ghost ? 'This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.' : 'If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.';
+  openModal('modal-edit-teacher');
+  document.getElementById('edit-teacher-email').focus();
+});
+document.getElementById('edit-teacher-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!editTeacherRef || !DB.auth || DB.auth.role !== 'admin') return;
+  const { ghost, id } = editTeacherRef;
+  const rec = ghost ? adPeople().find(r => r.id === id && !r.accountId) : DB.teachers.find(x => x.id === id); if (!rec) return;
+  const email = normEmail(document.getElementById('edit-teacher-email').value);
+  const name = document.getElementById('edit-teacher-name').value.trim();
+  if (email && !(email.endsWith(TEACHER_DOMAIN) && email.length > TEACHER_DOMAIN.length)) { toast(DEPED_MSG, 'warning'); return; }
+  if (email && (DB.teachers.some(x => x.id !== id && normEmail(x.email) === email) || DB.students.some(x => normEmail(x.email) === email) || adPeople().some(r => r.id !== id && normEmail(r.email) === email))) { toast('That email is already used by someone else.', 'warning'); return; }
+  if (!ghost && !name) { toast('Enter the teacher\'s name.', 'warning'); return; }
+  const changed = normEmail(rec.email) !== email;
+  rec.email = email;
+  if (!ghost) { rec.name = name; if (changed) rec.emailPending = !!email; }
+  if (ghost && email) { const t = DB.teachers.find(x => normEmail(x.email) === email); if (t) adAutoLink(t); }
+  saveDB(); closeModal('modal-edit-teacher'); editTeacherRef = null; renderAdminView(); toast('Teacher updated.', 'success');
 });
 
 function removeAllStudents() {
@@ -8383,7 +8479,7 @@ function adLinkRec(rec, t) {
 }
 function adAutoLink(t) {
   if (!t || (!t.name && !t.email)) return false;
-  const recs = adPeople().filter(r => !r.accountId && adMatch(r.name, t));
+  const recs = adPeople().filter(r => !r.accountId && (adMatch(r.name, t) || (r.email && normEmail(r.email) === normEmail(t.email))));
   if (recs.length !== 1 || DB.teachers.some(o => o.id !== t.id && adMatch(recs[0].name, o))) return false;
   adLinkRec(recs[0], t); return true;
 }
