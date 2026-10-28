@@ -3077,8 +3077,9 @@ function renderRoster() {
   if (rosterSelectedClassId && rosterSelectedClassId !== '__unassigned__' && !myClasses.some(c => c.id === rosterSelectedClassId)) rosterSelectedClassId = null;
 
   const unassignedCount = DB.students.filter(s => !s.classId).length;
+  if (rosterSelectedClassId === '__unassigned__' && getMyTeacher()) rosterSelectedClassId = null;
   let listHtml = '';
-  if (unassignedCount > 0) {
+  if (unassignedCount > 0 && !getMyTeacher()) {
     const active = rosterSelectedClassId === '__unassigned__';
     listHtml += '<div data-class-row="__unassigned__" class="group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer border border-dashed border-amber-300 dark:border-amber-800 ' +
       (active ? 'bg-amber-50 dark:bg-amber-950/30' : 'hover:bg-amber-50/60 dark:hover:bg-amber-950/20') + '">' +
@@ -5898,7 +5899,20 @@ const LANG_FIL = {
 "This track could not play. Try another one.": "Hindi ma-play ang kantang ito. Subukan ang iba.",
 "Music needs an internet connection.": "Kailangan ng internet para sa musika.",
 "No tracks here.": "Walang kanta rito.",
-"Seek": "Seek"
+"Seek": "Seek",
+"Voice": "Boses",
+"Hear it": "Pakinggan",
+"Pick a soft voice. The voices come from your phone, so you may see different names.": "Pumili ng malambot na boses. Galing sa phone mo ang mga boses, kaya maaaring iba ang makita mong pangalan.",
+"Your adviser": "Iyong adviser",
+"Subject teacher": "Guro sa subject",
+"Adviser": "Adviser",
+"Role": "Tungkulin",
+"Your adviser and subject teacher": "Iyong adviser at guro sa subject",
+"Subjects you have with this teacher": "Mga subject mo sa gurong ito",
+"Your section": "Iyong section",
+"Choose your grade level and section to see your teachers": "Piliin ang iyong baitang at section para makita ang iyong mga guro",
+"No teachers are assigned to your section yet.": "Wala pang gurong nakatalaga sa iyong section.",
+"Add your grade level and section to see your teachers.": "Idagdag ang iyong baitang at section para makita ang iyong mga guro."
 };
 const LANG_PATS = [
 [
@@ -7110,9 +7124,43 @@ const CN_SCAN = ['Get comfortable. Close your eyes if you like, and take a slow 
 function cnScanHtml() {
   return '<div id="cn-scan" class="' + CN_CARD + ' mt-4 text-center"><p class="text-sm font-semibold">Guided body scan</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">About 3 minutes. It guides you from your head down to your toes, one part at a time.</p>' +
     '<p id="scan-text" aria-live="polite" class="text-sm min-h-[3.5rem] mt-4 max-w-xs mx-auto"></p><div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 mt-2 mb-3 overflow-hidden max-w-xs mx-auto"><div id="scan-bar" class="h-full bg-teal-500" style="width:0%"></div></div>' +
-    '<label class="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 mb-3"><input type="checkbox" id="scan-voice" ' + (cn.scan.voice ? 'checked' : '') + ' class="accent-teal-600"> Read it aloud to me</label><div><button data-scan-toggle class="' + CN_BTN + '">Start</button></div></div>';
+    '<label class="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 mb-3"><input type="checkbox" id="scan-voice" ' + (cn.scan.voice ? 'checked' : '') + ' class="accent-teal-600"> Read it aloud to me</label>' +
+    '<div id="scan-voice-box" class="max-w-xs mx-auto mb-3 text-left"><label for="scan-voice-sel" class="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Voice</label><div class="flex gap-2"><select id="scan-voice-sel" class="' + CN_INP + '"></select><button type="button" data-scan-try class="' + CN_BTN2 + ' shrink-0">Hear it</button></div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Pick a soft voice. The voices come from your phone, so you may see different names.</p></div>' +
+    '<div><button data-scan-toggle class="' + CN_BTN + '">Start</button></div></div>';
 }
-function cnScanSay(t) { try { if (cn.scan.voice && window.speechSynthesis) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(langT(t)); u.rate = 0.85; u.lang = APP_LANG === 'fil' ? 'fil-PH' : 'en-US'; speechSynthesis.speak(u); } } catch (e) {} }
+const SCAN_VOICE_KEY = 'attendly_scan_voice';
+const SCAN_SOFT = /natural|neural|online|aria|jenny|libby|sonia|samantha|karen|moira|tessa|serena|zira|susan|catherine|allison|ava\b|joanna|kendra|ivy|emma|amy|salli|kimberly|victoria|fiona|nicole|female|woman|blessica|rosa|google|siri/i;
+const SCAN_HARSH = /\bmale\b|\bman\b|david|mark\b|alex\b|daniel|fred|george|james|guy\b|ryan|jorge|diego|albert|ralph|bruce|junior|rishi|espeak|compact|bad news|whisper|zarvox|trinoids|hysterical|bells|boing|cellos|organ|bubbles|deranged|good news|pipe/i;
+function cnScanLang() { return APP_LANG === 'fil' ? ['fil', 'tl'] : ['en']; }
+function cnScanVoices() {
+  let all = []; try { all = (window.speechSynthesis && speechSynthesis.getVoices()) || []; } catch (e) {}
+  const lg = cnScanLang(), okLang = v => lg.some(l => String(v.lang || '').toLowerCase().replace('_', '-').startsWith(l));
+  let list = all.filter(okLang);
+  if (!list.length && APP_LANG === 'fil') list = all.filter(v => /^en/i.test(v.lang));
+  const sc = v => (SCAN_HARSH.test(v.name) ? -10 : 0) + (SCAN_SOFT.test(v.name) ? 4 : 0) + (/natural|neural|online/i.test(v.name) ? 3 : 0) + (/en[-_](US|PH)|fil/i.test(v.lang) ? 1 : 0) + (v.localService ? 0 : 1);
+  return list.slice().sort((a, b) => sc(b) - sc(a) || a.name.localeCompare(b.name));
+}
+function cnScanPick() {
+  const list = cnScanVoices(); let saved = ''; try { saved = localStorage.getItem(SCAN_VOICE_KEY) || ''; } catch (e) {}
+  return list.find(v => v.voiceURI === saved) || list[0] || null;
+}
+function cnScanVoiceUi() {
+  const sel = document.getElementById('scan-voice-sel'), box = document.getElementById('scan-voice-box'); if (!sel) return;
+  const list = cnScanVoices(), cur = cnScanPick();
+  if (box) box.classList.toggle('hidden', !list.length);
+  sel.innerHTML = list.map(v => '<option value="' + escapeHtml(v.voiceURI) + '"' + (cur && v.voiceURI === cur.voiceURI ? ' selected' : '') + '>' + escapeHtml(v.name) + '</option>').join('');
+}
+function cnScanSpeak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const v = cnScanPick(), parts = String(text).match(/[^.!?]+[.!?]*/g) || [text];
+  parts.map(x => x.trim()).filter(Boolean).forEach(x => {
+    const u = new SpeechSynthesisUtterance(x); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = APP_LANG === 'fil' ? 'fil-PH' : 'en-US';
+    u.rate = 0.8; u.pitch = 1.08; u.volume = 0.9; speechSynthesis.speak(u);
+  });
+}
+function cnScanSay(t) { try { if (cn.scan.voice) cnScanSpeak(langT(t)); } catch (e) {} }
+try { if (window.speechSynthesis) speechSynthesis.addEventListener('voiceschanged', cnScanVoiceUi); } catch (e) {}
 function cnScanUi() {
   const s = cn.scan, t = document.getElementById('scan-text'), b = document.getElementById('scan-bar'), btn = document.querySelector('[data-scan-toggle]'); if (!t) return;
   t.textContent = s.on ? langT(CN_SCAN[s.i]) : (s.i >= CN_SCAN.length ? langT('Well done. You can do this any time.') : '');
@@ -7128,7 +7176,7 @@ function cnBuildExtras() {
   const m = document.getElementById('cn-p-music'), b = document.getElementById('cn-p-breathe');
   if (m) m.insertAdjacentHTML('beforeend', cnAmbHtml());
   if (b) b.insertAdjacentHTML('beforeend', cnScanHtml());
-  cnAmbUi(); cnScanUi();
+  cnAmbUi(); cnScanUi(); cnScanVoiceUi();
 }
 
 /* ---- Floating mini chat (Counseling menu, students and teachers) ---- */
@@ -7324,6 +7372,7 @@ document.addEventListener('click', ev => {
   if ((el = g('[data-amb]'))) { if (cn.amb.id === el.dataset.amb) cnAmbStop(); else cnAmbStart(el.dataset.amb); return; }
   if ((el = g('[data-amb-timer]'))) { cnAmbTimer(+el.dataset.ambTimer); return; }
   if (g('[data-amb-stop]')) { cnAmbStop(); return; }
+  if (g('[data-scan-try]')) { cnScanSpeak(langT('Get comfortable. Close your eyes if you like, and take a slow breath in and out.')); return; }
   if (g('[data-scan-toggle]')) { const s = cn.scan; if (s.on) cnScanStop(); else { s.on = true; s.i = 0; cnScanStep(); } return; }
 });
 document.addEventListener('input', ev => {
@@ -7331,7 +7380,11 @@ document.addEventListener('input', ev => {
   if (t.id === 'j-note') cn.jNote = t.value;
   if (t.matches && t.matches('[data-amb-vol]')) { cn.amb.vol = +t.value / 100; if (cn.amb.master) cn.amb.master.gain.value = cn.amb.vol; }
 });
-document.addEventListener('change', ev => { const t = ev.target; if (t && t.id === 'scan-voice') cn.scan.voice = t.checked; });
+document.addEventListener('change', ev => {
+  const t = ev.target; if (!t) return;
+  if (t.id === 'scan-voice') cn.scan.voice = t.checked;
+  if (t.id === 'scan-voice-sel') { try { localStorage.setItem(SCAN_VOICE_KEY, t.value); } catch (e) {} cnScanSpeak(langT('Take one more slow breath. When you are ready, open your eyes and stretch.')); }
+});
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wellInit); else wellInit();
 
 /* ---- Home ---- */
@@ -8185,41 +8238,45 @@ function teacherAllInfo(t) {
   const sections = Array.from(secs.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }) || (a.section || '').localeCompare(b.section || ''));
   return { subjects: Array.from(subj).sort(), sections, advisory: t.advisoryClassId ? classLabel(t.advisoryClassId) : '' };
 }
+// A student sees only the teachers of their own section: the subject teachers and the adviser.
+function tchForStudent(t, st) {
+  const cid = st && st.classId;
+  const subs = cid ? Array.from(new Set((t.schedule || []).filter(e => e.subject && entryHasClass(e, cid) && termOk(e)).map(e => e.subject))).sort() : [];
+  const adviser = !!(cid && t.advisoryClassId === cid);
+  return { subjects: subs, adviser, mine: adviser || subs.length > 0 };
+}
 function renderTeachersView() {
   const list = document.getElementById('tch-list'), st = meStudent();
   if (!list) return;
-  document.getElementById('tch-sub').textContent = adAllTeachers().length + ' teacher' + (adAllTeachers().length === 1 ? '' : 's') + (st && st.classId ? ' · your section: ' + classLabel(st.classId) : '') + ' · tap a teacher to see the full profile';
   const q = (document.getElementById('tch-search').value || '').trim().toLowerCase();
-  const mine = t => !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
-  const rows = adAllTeachers().map(t => { const info = teacherAllInfo(t); return { t, info, mine: mine(t) }; })
-    .filter(r => !q || (r.t.name + ' ' + r.info.subjects.join(' ') + ' ' + r.info.sections.map(c => classLabel(c.id)).join(' ') + ' ' + r.info.advisory).toLowerCase().includes(q))
-    .sort((a, b) => (b.mine - a.mine) || (a.t.name || '').localeCompare(b.t.name || ''));
+  const all = st && st.classId ? adAllTeachers().map(t => ({ t, f: tchForStudent(t, st) })).filter(r => r.f.mine) : [];
+  document.getElementById('tch-sub').textContent = st && st.classId ? all.length + ' teacher' + (all.length === 1 ? '' : 's') + ' · your section: ' + classLabel(st.classId) + ' · tap a teacher to see the full profile' : 'Choose your grade level and section to see your teachers';
+  const rows = all.filter(r => !q || (r.t.name + ' ' + r.f.subjects.join(' ')).toLowerCase().includes(q))
+    .sort((a, b) => (b.f.adviser - a.f.adviser) || (a.t.name || '').localeCompare(b.t.name || ''));
   list.innerHTML = rows.length ? rows.map(r => {
-    const t = r.t, info = r.info;
+    const t = r.t, f = r.f;
     return '<button type="button" onclick="tchProfile(\'' + t.id + '\')" class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 rounded-xl p-4"><div class="flex items-start gap-3">' +
       '<img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-12 h-12 rounded-full object-cover bg-slate-100 dark:bg-slate-800 shrink-0" alt="">' +
-      '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + escapeHtml(t.name) + (r.mine ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 align-middle">Your teacher</span>' : '') + '</p>' +
-      '<p class="text-xs text-slate-500 dark:text-slate-400">' + [t.teacherId ? 'ID ' + escapeHtml(t.teacherId) : '', info.advisory ? 'Advisory: ' + escapeHtml(info.advisory) : ''].filter(Boolean).join(' · ') + '</p></div></div>' +
-      '<dl class="mt-3 space-y-1.5 text-xs"><div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Subjects</dt><dd class="flex flex-wrap gap-1">' + (info.subjects.length ? info.subjects.map(x => '<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + escapeHtml(x) + '</span>').join('') : '<span class="text-slate-700 dark:text-slate-200">None yet</span>') + '</dd></div>' +
-      '<div class="flex gap-2"><dt class="w-20 shrink-0 text-slate-400">Sections</dt><dd class="text-slate-700 dark:text-slate-200">' + (info.sections.length ? info.sections.map(c => escapeHtml(classLabel(c.id))).join('<br>') : 'None yet') + '</dd></div></dl></button>';
-  }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">' + (q ? 'No teacher matches your search.' : 'No teachers have registered yet.') + '</p>';
+      '<div class="min-w-0 flex-1"><p class="text-sm font-semibold">' + escapeHtml(t.name) + (f.adviser ? ' <span class="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 align-middle">Your adviser</span>' : '') + '</p>' +
+      '<p class="text-xs text-slate-500 dark:text-slate-400">' + (f.subjects.length ? 'Subject teacher' : 'Adviser') + '</p></div></div>' +
+      (f.subjects.length ? '<div class="mt-3 flex flex-wrap gap-1">' + f.subjects.map(x => '<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs">' + escapeHtml(x) + '</span>').join('') + '</div>' : '') + '</button>';
+  }).join('') : '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-8">' + (q ? 'No teacher matches your search.' : (st && st.classId ? 'No teachers are assigned to your section yet.' : 'Add your grade level and section to see your teachers.')) + '</p>';
 }
 function tchProfile(id) {
   const t = adOwner(id); if (!t) return;
-  const st = meStudent(), info = teacherAllInfo(t), mine = !!(st && st.classId && ((t.schedule || []).some(e => entryHasClass(e, st.classId)) || t.advisoryClassId === st.classId));
+  const st = meStudent(), f = tchForStudent(t, st);
   const old = document.getElementById('tch-prof'); if (old) old.remove();
   const row = (k, v) => '<div class="py-2 border-b border-slate-100 dark:border-slate-800"><p class="text-[11px] uppercase tracking-wide text-slate-400">' + k + '</p><div class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">' + v + '</div></div>';
   const d = document.createElement('div'); d.id = 'tch-prof';
   d.className = 'fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4';
   d.innerHTML = '<div class="w-full sm:max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl p-5">' +
-    '<div class="flex items-center gap-3"><img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-800" alt=""><div class="min-w-0 flex-1"><p class="text-base font-semibold">' + escapeHtml(t.name) + '</p>' + (mine ? '<span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">Your teacher</span>' : '') + '</div>' +
+    '<div class="flex items-center gap-3"><img src="' + (t.photo || initialsAvatar(t.name)) + '" class="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-800" alt=""><div class="min-w-0 flex-1"><p class="text-base font-semibold">' + escapeHtml(t.name) + '</p>' + (f.adviser ? '<span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">Your adviser</span>' : '') + '</div>' +
     '<button type="button" id="tch-prof-x" class="text-sm text-slate-500 underline shrink-0">Close</button></div>' +
     '<div class="mt-4">' +
-    row('Teacher ID', t.teacherId ? escapeHtml(t.teacherId) : '-') +
     row('Email', t.email ? escapeHtml(t.email) : '-') +
-    row('Advisory class', info.advisory ? escapeHtml(info.advisory) : 'None') +
-    row('Subjects', info.subjects.length ? info.subjects.map(x => '<span class="inline-block mr-1 mb-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">' + escapeHtml(x) + '</span>').join('') : 'None yet') +
-    row('Sections', info.sections.length ? info.sections.map(c => escapeHtml(classLabel(c.id))).join('<br>') : 'None yet') +
+    row('Role', f.adviser ? 'Your adviser' + (f.subjects.length ? ' and subject teacher' : '') : 'Subject teacher') +
+    (f.subjects.length ? row('Subjects you have with this teacher', f.subjects.map(x => '<span class="inline-block mr-1 mb-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">' + escapeHtml(x) + '</span>').join('')) : '') +
+    (st && st.classId ? row('Your section', escapeHtml(classLabel(st.classId))) : '') +
     '</div></div>';
   d.addEventListener('click', ev => { if (ev.target === d || ev.target.closest('#tch-prof-x')) d.remove(); });
   document.body.appendChild(d);
@@ -9197,8 +9254,7 @@ function lcFieldFocused(root) {
 function lcTeacherClasses() {
   const t = getMyTeacher(), ids = new Set();
   if (t) { (t.schedule || []).forEach(e => (e.classIds || []).forEach(i => ids.add(i))); if (t.advisoryClassId) ids.add(t.advisoryClassId); }
-  const mine = DB.classes.filter(c => ids.has(c.id));
-  return mine.length ? mine : DB.classes;
+  return DB.classes.filter(c => ids.has(c.id));
 }
 function lcClassOptions(selected, classes) {
   const groups = {};
