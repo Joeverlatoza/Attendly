@@ -8140,7 +8140,7 @@ document.addEventListener('click', ev => {
   const rec = ghost ? adPeople().find(r => r.id === id && !r.accountId) : DB.teachers.find(x => x.id === id); if (!rec) return;
   editTeacherRef = { ghost, id };
   document.getElementById('edit-teacher-name').value = rec.name || '';
-  document.getElementById('edit-teacher-name').disabled = ghost;
+  document.getElementById('edit-teacher-name').disabled = false;
   document.getElementById('edit-teacher-email').value = rec.email || '';
   document.getElementById('edit-teacher-note').textContent = ghost ? 'This teacher has no account yet. When someone signs up with this email, the schedule is attached to the new account.' : 'If the teacher cannot log in with the old email, they can sign up again with the new one and keep the same schedule.';
   openModal('modal-edit-teacher');
@@ -8155,10 +8155,11 @@ document.getElementById('edit-teacher-form').addEventListener('submit', e => {
   const name = document.getElementById('edit-teacher-name').value.trim();
   if (email && !(email.endsWith(TEACHER_DOMAIN) && email.length > TEACHER_DOMAIN.length)) { toast(DEPED_MSG, 'warning'); return; }
   if (email && (DB.teachers.some(x => x.id !== id && normEmail(x.email) === email) || DB.students.some(x => normEmail(x.email) === email) || adPeople().some(r => r.id !== id && normEmail(r.email) === email))) { toast('That email is already used by someone else.', 'warning'); return; }
-  if (!ghost && !name) { toast('Enter the teacher\'s name.', 'warning'); return; }
+  if (!name) { toast('Enter the teacher\'s name.', 'warning'); return; }
   const changed = normEmail(rec.email) !== email;
   rec.email = email;
-  if (!ghost) { rec.name = name; if (changed) rec.emailPending = !!email; }
+  rec.name = name;
+  if (!ghost && changed) rec.emailPending = !!email;
   if (ghost && email) { const t = DB.teachers.find(x => normEmail(x.email) === email); if (t) adAutoLink(t); }
   saveDB(); closeModal('modal-edit-teacher'); editTeacherRef = null; renderAdminView(); toast('Teacher updated.', 'success');
 });
