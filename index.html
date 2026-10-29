@@ -628,6 +628,12 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Choose any Excel file (.xlsx) or CSV file with the school schedule. It can be the Individual Teacher's Program, a list with one class period per row (teacher, subject, grade, section, day, start, end), or one timetable per teacher. You see a preview first, and nothing is saved until you press Import. After that you can edit every period in the By teacher and By section tabs.</p>
             <input id="ad-file" type="file" accept=".xlsx,.xlsm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" class="w-full text-sm">
             <button type="button" id="ad-template" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-2">Download a blank template</button>
+            <div class="mt-4 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <label class="text-sm font-medium block" for="ad-gen-file">General Class Program (optional, recommended)</label>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Add the school's General Class Program too. Each teacher's classes, sections and times then follow it exactly, so teachers and students always see the same schedule. Teachers it cannot match keep what is in the teacher file.</p>
+              <input id="ad-gen-file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-sm">
+              <p id="ad-gen-note" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+            </div>
             <div id="ad-prev"></div>
           </div>
           <p id="ad-upload-info" class="text-xs text-slate-500 dark:text-slate-400 mt-4"></p>
@@ -9193,6 +9199,32 @@ function adUnlink(t) {
   rec.accountId = ''; rec.schedule = (t.schedule || []).filter(e => e.src === 'admin');
   if (t.advisoryClassId) rec.advisoryClassId = t.advisoryClassId;
 }
+// The General Class Program is the authority: a teacher's classes, sections and times are taken from it, so teachers and students see the same thing.
+let adGen = null;
+function adMergeGeneral(raw, G) {
+  if (!G) return raw;
+  const people = raw.people, terms = new Set(raw.terms); let used = 0;
+  const out = people.map(p => {
+    const last = nameKey(p.name).split(' ').filter(Boolean).pop() || '', tok = (nameKey(p.name)[0] || '') + '. ' + last;
+    if (people.some(q => q !== p && teacherMatches(tok, q.name))) return p;
+    const pr = programForTeacher(G, { name: p.name }); if (!pr.entries.length) return p;
+    const list = []; const pTerms = new Set(p.terms);
+    pr.entries.forEach(e => {
+      const ids = e.classIds.filter(id => DB.classes.some(c => c.id === id)); if (!ids.length) return;
+      const jh = ids.every(isJuniorHigh), t = jh ? 'all' : Number(e.term) || 'all';
+      if (t !== 'all') { terms.add(t); pTerms.add(t); }
+      const from = t === 'all' ? new Set(p.terms.length ? p.terms : raw.terms) : new Set([t]);
+      const subj = adSubject(e.subject), k = [subj.toLowerCase(), e.day, e.start, e.end, t].join('|'), ex = list.find(x => x.k === k);
+      if (ex) ids.forEach(id => { if (!ex.cls.includes(id)) ex.cls.push(id); });
+      else list.push({ k, subject: subj, cls: ids.slice(), gw: '', day: e.day, start: e.start, end: e.end, term: t, from });
+    });
+    if (!list.length) return p;
+    used++;
+    return Object.assign({}, p, { list, terms: Array.from(pTerms).sort(), advisoryId: p.advisoryId || (pr.adviserClass || '') });
+  });
+  const keep = new Set(); out.forEach(p => p.list.forEach(e => { if (e.gw) keep.add(e.gw); }));
+  return Object.assign({}, raw, { people: out, gw: raw.gw.filter(g => keep.has(g.key)), terms: Array.from(terms).sort(), fromGeneral: used });
+}
 function adApplyImport(parsed, choice, selTerms, useSy, fileName) {
   const prog = adProg(), sel = new Set(selTerms), gwMap = new Map(parsed.gw.map(g => [g.key, g]));
   let people = 0, periods = 0, linked = 0, ghosts = 0;
@@ -9307,6 +9339,7 @@ function adRenderPreview() {
     '<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Nothing is saved until you press Import. Choose which terms to bring in:</p>' +
     '<div class="flex flex-wrap gap-3 mt-2">' + d.terms.map(t => '<label class="inline-flex items-center gap-1.5 text-sm"><input type="checkbox" data-ad-term="' + t + '"' + (P.terms.has(t) ? ' checked' : '') + '> Term ' + t + ' <span class="text-xs text-slate-500">(' + teachersIn(t) + ' teachers)</span></label>').join('') + '</div>';
   if (d.sy && d.sy !== DB.settings.schoolYear) h += '<label class="inline-flex items-center gap-1.5 text-sm mt-3"><input type="checkbox" id="ad-use-sy"' + (P.useSy ? ' checked' : '') + '> Set the school year to ' + escapeHtml(d.sy) + ' (now ' + escapeHtml(DB.settings.schoolYear || '-') + ')</label>';
+  if (d.fromGeneral) h += '<p class="text-xs text-emerald-700 dark:text-emerald-400 mt-3">' + d.fromGeneral + ' teachers follow the General Class Program (sections and times).</p>';
   if (d.moved.length) h += '<p class="text-xs text-amber-700 dark:text-amber-400 mt-3">Matched by section name: ' + d.moved.map(escapeHtml).join('; ') + '.</p>';
   if (d.unmatched.length) h += '<p class="text-xs text-rose-600 dark:text-rose-400 mt-2">Skipped because the section is not in Attendly: ' + d.unmatched.map(escapeHtml).join(', ') + '.</p>';
   if (d.gw.length) h += '<details class="mt-3"><summary class="text-sm font-medium cursor-pointer">Subjects written without a section (' + d.gw.length + '): choose which sections get them</summary><div class="mt-2 divide-y divide-slate-100 dark:divide-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900">' +
@@ -9427,14 +9460,14 @@ document.addEventListener('click', ev => {
     saveDB(); renderAdminView();
     toast('Now Term ' + DB.settings.currentTerm + ', SY ' + DB.settings.schoolYear + '. Grade 11 and 12 follow it. Grades 7 to 10 keep the same schedule.', 'success'); return;
   }
-  if (g('#ad-import-cancel')) { adPending = null; adRenderPreview(); const f = document.getElementById('ad-file'); if (f) f.value = ''; return; }
+  if (g('#ad-import-cancel')) { adGen = null; { const gf = document.getElementById('ad-gen-file'), gn = document.getElementById('ad-gen-note'); if (gf) gf.value = ''; if (gn) gn.textContent = ''; } adPending = null; adRenderPreview(); const f = document.getElementById('ad-file'); if (f) f.value = ''; return; }
   if (g('#ad-import')) {
     if (!adPending) return;
     const P = adPending;
     if (!P.terms.size) { toast('Tick at least one term to import.', 'warning'); return; }
     const r = adApplyImport(P.parsed, P.choice, Array.from(P.terms), P.useSy, P.fileName);
     if (!saveDB()) return;
-    adPending = null; const f = document.getElementById('ad-file'); if (f) f.value = '';
+    adPending = null; adGen = null; const f = document.getElementById('ad-file'); if (f) f.value = ''; { const gf = document.getElementById('ad-gen-file'), gn = document.getElementById('ad-gen-note'); if (gf) gf.value = ''; if (gn) gn.textContent = ''; }
     adTab = 'teachers'; renderAdminView();
     toast('Imported ' + r.periods + ' periods for ' + r.people + ' teachers (' + r.linked + ' linked to accounts, ' + r.ghosts + ' kept on the school list). Teachers and students see them now.', 'success'); return;
   }
@@ -9461,15 +9494,27 @@ document.addEventListener('change', ev => {
     if (g) { if (t.checked) g.chosen.add(id); else g.chosen.delete(id); }
     return;
   }
+  if (t.id === 'ad-gen-file') {
+    const file = t.files && t.files[0], note = document.getElementById('ad-gen-note'); if (!file) { adGen = null; if (adPending) { adPending.parsed = adPending.raw; adPending.terms = new Set(adPending.raw.terms); adRenderPreview(); } if (note) note.textContent = ''; return; }
+    if (!/\.xls[xm]$/i.test(file.name)) { toast('Choose the General Class Program as an Excel (.xlsx) file.', 'warning'); t.value = ''; return; }
+    const rd = new FileReader();
+    rd.onload = e2 => readXlsxBook(e2.target.result).then(sheets => {
+      if (!sheets.some(sh => findGrid(sh.rows))) { adGen = null; t.value = ''; toast('No class program was found in that file.', 'warning'); return; }
+      adGen = { sheets, name: file.name };
+      if (adPending) { adPending.parsed = adMergeGeneral(adPending.raw, sheets); adPending.terms = new Set(adPending.parsed.terms); adPending.fileName += ' + ' + file.name; adRenderPreview(); }
+      if (note) note.textContent = 'Ready: ' + file.name + '. It is used for every teacher it can match.';
+    }).catch(() => toast('That Excel file could not be read.', 'error'));
+    rd.readAsArrayBuffer(file); return;
+  }
   if (t.id === 'ad-file') {
     const file = t.files && t.files[0]; if (!file) return;
     if (/\.xls$/i.test(file.name)) { toast('Please save the file as .xlsx (Excel Workbook) and try again.', 'warning'); t.value = ''; return; }
     const isX = /\.xls[xm]$/i.test(file.name), isC = /\.(csv|tsv|txt)$/i.test(file.name);
     if (!isX && !isC) { toast('Choose the school schedule as an Excel (.xlsx) or CSV file.', 'warning'); t.value = ''; return; }
     const done = sheets => {
-      const parsed = adParseAny(sheets);
+      const raw = adParseAny(sheets), parsed = adMergeGeneral(raw, adGen && adGen.sheets);
       if (!parsed.people.length) { adPending = null; adRenderPreview(); toast('No teacher schedule could be found in that file. Use the template, the school\'s Individual Teacher\'s Program workbook, or a timetable with the days across the top.', 'warning'); return; }
-      adPending = { parsed, fileName: file.name, choice: adAutoAccounts(parsed.people), terms: new Set(parsed.terms), useSy: true };
+      adPending = { raw, parsed, fileName: file.name, choice: adAutoAccounts(parsed.people), terms: new Set(parsed.terms), useSy: true };
       adRenderPreview();
     };
     const reader = new FileReader();
