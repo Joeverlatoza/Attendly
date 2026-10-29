@@ -673,18 +673,12 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
             <input id="stu-file" type="file" accept=".xlsx,.xlsm,.csv,.tsv,.txt,.pdf,.docx" class="block w-full text-xs text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-sm file:font-medium file:px-3 file:py-2 hover:file:bg-indigo-700">
             <div id="stu-prev" class="mt-3"></div>
           </div>
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-            <h2 class="text-sm font-semibold mb-3">Student directory</h2>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                    <th class="py-2 font-medium">Name</th><th class="py-2 font-medium">ID / LRN</th><th class="py-2 font-medium">Class</th><th class="py-2 font-medium">Section</th><th class="py-2 w-16"><span class="sr-only">Edit or delete</span></th>
-                  </tr>
-                </thead>
-                <tbody id="admin-students-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
-              </table>
+          <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+              <div><h2 class="text-sm font-semibold">Student directory</h2><p id="admin-students-count" class="text-xs text-slate-500 dark:text-slate-400"></p></div>
+              <input id="admin-students-q" type="search" placeholder="Search name or LRN" class="w-full sm:w-64 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm px-3 py-2">
             </div>
+            <div id="admin-students-list" class="space-y-5"></div>
             <p id="admin-students-empty" class="hidden text-sm text-slate-500 dark:text-slate-400 py-6 text-center">No students registered yet.</p>
           </div>
         </div>
@@ -8497,13 +8491,7 @@ function renderAdminView() {
     '<td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">—</td><td class="py-2.5 text-slate-500 dark:text-slate-400 hidden sm:table-cell">' + escapeHtml(classLabel(p.advisoryClassId) || '—') + '</td>' +
     '<td class="py-2.5 text-right whitespace-nowrap align-top">' + EDIT_BTN('g:' + p.id) + DEL_BTN('data-adm-del-ghost', p.id, 'Remove from school list') + '</td></tr>').join('');
 
-  const sBody = document.getElementById('admin-students-body');
-  document.getElementById('admin-students-empty').classList.toggle('hidden', DB.students.length > 0);
-  sBody.innerHTML = DB.students.slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map(s => {
-    const cls = DB.classes.find(c => c.id === s.classId);
-    return '<tr><td class="py-2.5">' + escapeHtml(s.name) + (s.email ? '' : '<div><span class="inline-block mt-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">No account yet</span></div>') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.studentId) +
-      '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + (cls ? escapeHtml(cls.name) : '—') + '</td><td class="py-2.5 text-slate-500 dark:text-slate-400">' + escapeHtml(s.section || '—') + '</td><td class="py-2.5 text-right whitespace-nowrap"><button data-adm-edit-student="' + s.id + '" title="Edit student" aria-label="Edit student" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button data-adm-del-student="' + s.id + '" title="Delete student" aria-label="Delete student" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>';
-  }).join('');
+  renderStudentDirectory();
 
   renderAdminSchedule();
   refreshIcons();
@@ -8798,6 +8786,42 @@ document.getElementById('edit-student-form').addEventListener('submit', e => {
     if (v && DB.auth) { fromPop = true; try { goToView(v); } finally { fromPop = false; } }
   });
 })();
+/* ---- admin: student directory, grouped by grade level and section ---- */
+let stuQ = '', stuOpen = new Set();
+function renderStudentDirectory() {
+  const box = document.getElementById('admin-students-list'); if (!box) return;
+  const q = stuQ.trim().toLowerCase(), all = DB.students;
+  document.getElementById('admin-students-empty').classList.toggle('hidden', all.length > 0);
+  const hit = s => !q || String(s.name || '').toLowerCase().includes(q) || String(s.studentId || '').includes(q);
+  const noAcct = all.filter(s => !s.email).length;
+  document.getElementById('admin-students-count').textContent = all.length + ' student' + (all.length === 1 ? '' : 's') + (noAcct ? ' · ' + noAcct + ' have not signed up yet' : '');
+  const groups = new Map();
+  const add = (gName, gNum, key, label, s) => { if (!groups.has(gName)) groups.set(gName, { num: gNum, secs: new Map() }); const g = groups.get(gName); if (!g.secs.has(key)) g.secs.set(key, { label, rows: [] }); g.secs.get(key).rows.push(s); };
+  all.forEach(s => {
+    const c = DB.classes.find(x => x.id === s.classId);
+    if (c) add(c.name, parseInt(String(c.name).replace(/\D/g, ''), 10) || 99, c.id, c.section || 'All', s);
+    else add('No class yet', 100, 'none', 'Not in a section', s);
+  });
+  const rowH = (s, n) => '<li class="flex items-center gap-2 px-3 py-2"><span class="w-6 text-[11px] text-slate-400 tabular-nums shrink-0">' + n + '</span>' +
+    '<div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">' + escapeHtml(s.name) + '</p><p class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">' + escapeHtml(s.studentId || 'No LRN') + (s.email ? '' : ' · <span class="text-amber-700 dark:text-amber-400">no account yet</span>') + '</p></div>' +
+    '<button data-adm-edit-student="' + s.id + '" title="Edit student" aria-label="Edit student" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 shrink-0"><i data-lucide="pencil" class="w-4 h-4"></i></button>' +
+    '<button data-adm-del-student="' + s.id + '" title="Delete student" aria-label="Delete student" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-rose-500 shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button></li>';
+  let html = '';
+  Array.from(groups.entries()).sort((a, b) => a[1].num - b[1].num).forEach(([gName, g]) => {
+    const secs = Array.from(g.secs.entries()).sort((a, b) => a[1].label.localeCompare(b[1].label)).map(([key, sec]) => {
+      const rows = sec.rows.filter(hit); if (!rows.length) return '';
+      const na = sec.rows.filter(x => !x.email).length, open = q || stuOpen.has(key);
+      return '<details data-stu-sec="' + key + '"' + (open ? ' open' : '') + ' class="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden"><summary class="flex items-center justify-between gap-2 px-3 py-2.5 cursor-pointer bg-slate-50 dark:bg-slate-800/50 select-none"><span class="text-sm font-semibold">' + escapeHtml(sec.label) + '</span><span class="text-xs text-slate-500 dark:text-slate-400">' + sec.rows.length + ' student' + (sec.rows.length === 1 ? '' : 's') + (na ? ' · ' + na + ' no account' : '') + '</span></summary>' +
+        '<ul class="divide-y divide-slate-100 dark:divide-slate-800">' + rows.map((r, n) => rowH(r, n + 1)).join('') + '</ul></details>';
+    }).join('');
+    if (secs) html += '<div><h3 class="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 mb-2">' + escapeHtml(gName) + ' · ' + Array.from(g.secs.values()).reduce((n, x) => n + x.rows.length, 0) + '</h3><div class="space-y-2">' + secs + '</div></div>';
+  });
+  box.innerHTML = html || (all.length ? '<p class="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No student matches your search.</p>' : '');
+  refreshIcons();
+}
+document.addEventListener('input', ev => { if (ev.target && ev.target.id === 'admin-students-q') { stuQ = ev.target.value; renderStudentDirectory(); } });
+document.addEventListener('toggle', ev => { const d = ev.target; if (d && d.dataset && d.dataset.stuSec) { if (d.open) stuOpen.add(d.dataset.stuSec); else stuOpen.delete(d.dataset.stuSec); } }, true);
+
 /* ---- admin: delete accounts (teacher / student) ---- */
 function markRemoved(id) { DB.removedIds = DB.removedIds || []; if (!DB.removedIds.includes(id)) DB.removedIds.push(id); }
 function removeTeacherAccount(id) {
