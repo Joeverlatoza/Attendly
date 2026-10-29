@@ -1670,7 +1670,7 @@ async function readXlsxBook(buf, opts) {
         let val = '';
         if (t === 's' && v) val = shared[Number(v.textContent)] || '';
         else if (t === 'inlineStr') val = Array.from(c.getElementsByTagName('t')).map(x => x.textContent).join('');
-        else if (v) val = v.textContent;
+        else if (v) { val = v.textContent; if ((!t || t === 'n') && /^-?\d*\.?\d+e[+-]?\d+$/i.test(val.trim())) val = String(Number(val)); }
         r[ci] = String(val).trim();
       });
       for (let i = 0; i < r.length; i++) if (r[i] == null) r[i] = '';
@@ -7726,7 +7726,7 @@ const SP_GRAD = [['#8b5cf6', '#6366f1'], ['#0ea5e9', '#06b6d4'], ['#f59e0b', '#f
 const SP_ICON = { calm: 'waves', focus: 'book-open', sleep: 'moon' };
 const sp = { cat: 'all', idx: -1, playing: false, shuffle: false, repeat: false, player: null, apiLoading: false, cbs: [], tick: null, errs: 0, timer: null, until: 0, state: 'idle' };
 function spBody() {
-  const a = document.querySelector('.view-section.active'), on = sp.idx >= 0 && !!(DB && DB.auth);
+  const a = document.querySelector('.view-section.active'), onC = !!(a && a.dataset.view === 'counseling'), on = sp.idx >= 0 && !!(DB && DB.auth) && onC;
   document.body.classList.toggle('sp-active', on);
   let m = document.getElementById('sp-mini');
   if (!m) {
