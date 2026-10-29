@@ -7726,9 +7726,32 @@ const SP_GRAD = [['#8b5cf6', '#6366f1'], ['#0ea5e9', '#06b6d4'], ['#f59e0b', '#f
 const SP_ICON = { calm: 'waves', focus: 'book-open', sleep: 'moon' };
 const sp = { cat: 'all', idx: -1, playing: false, shuffle: false, repeat: false, player: null, apiLoading: false, cbs: [], tick: null, errs: 0, timer: null, until: 0, state: 'idle' };
 function spBody() {
-  const a = document.querySelector('.view-section.active');
-  document.body.classList.toggle('sp-active', !!(sp.idx >= 0 && cn.tab === 'music' && a && a.dataset.view === 'counseling'));
+  const a = document.querySelector('.view-section.active'), on = sp.idx >= 0 && !!(DB && DB.auth);
+  document.body.classList.toggle('sp-active', on);
+  let m = document.getElementById('sp-mini');
+  if (!m) {
+    m = document.createElement('div'); m.id = 'sp-mini'; m.className = 'hidden fixed bottom-0 inset-x-0 md:left-64 z-40 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-3 py-2';
+    m.innerHTML = '<div class="flex items-center gap-3 max-w-3xl mx-auto"><button type="button" data-spm-open class="flex items-center gap-3 min-w-0 flex-1 text-left" aria-label="Open music"><span id="spm-cover"></span><span class="min-w-0"><span id="spm-title" class="block text-sm font-semibold truncate"></span><span id="spm-sub" class="block text-[11px] text-slate-500 dark:text-slate-400 truncate"></span></span></button>' +
+      '<button type="button" data-spm-main class="w-10 h-10 shrink-0 rounded-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center"></button>' +
+      '<button type="button" data-spm-close aria-label="Close music player" class="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><i data-lucide="x" class="w-5 h-5"></i></button></div>';
+    document.body.appendChild(m);
+  }
+  const inCard = !!(cn.tab === 'music' && a && a.dataset.view === 'counseling');
+  m.classList.toggle('hidden', !on || inCard);
+  if (on && !inCard) {
+    const cur = CN_TRACKS[sp.idx];
+    document.getElementById('spm-cover').innerHTML = spCover(sp.idx, 'w-10 h-10');
+    document.getElementById('spm-title').textContent = cur.title;
+    document.getElementById('spm-sub').textContent = sp.state === 'buffering' ? 'Loading...' : (sp.playing ? 'Playing' : 'Paused');
+    const b = m.querySelector('[data-spm-main]'); b.setAttribute('aria-label', sp.playing ? 'Pause' : 'Play');
+    b.innerHTML = '<i data-lucide="' + (sp.playing ? 'pause' : 'play') + '" class="w-5 h-5" style="fill:currentColor"></i>'; refreshIcons();
+  }
 }
+document.addEventListener('click', ev => {
+  if (ev.target.closest('[data-spm-main]')) { spToggle(); return; }
+  if (ev.target.closest('[data-spm-close]')) { cnStopMusic(); return; }
+  if (ev.target.closest('[data-spm-open]')) { cn.tab = 'music'; goToView('counseling'); try { cnShowTab('music'); } catch (e) {} spBody(); }
+});
 function spVis() { return CN_TRACKS.map((t, i) => i).filter(i => sp.cat === 'all' || SP_CAT[CN_TRACKS[i].id] === sp.cat); }
 function spFmt(sec) { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
 function spCover(i, size, extra) { const g = SP_GRAD[i % SP_GRAD.length], ic = SP_ICON[SP_CAT[CN_TRACKS[i].id]] || 'music'; return '<span class="' + size + ' rounded-lg shrink-0 flex items-center justify-center text-white ' + (extra || '') + '" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ')"><i data-lucide="' + ic + '" class="w-1/2 h-1/2"></i></span>'; }
@@ -7828,9 +7851,9 @@ function cnPlayTrack(i) { spPlay(i); }
 function cnStopMusic() {
   clearTimeout(sp.timer); sp.timer = null; sp.until = 0; sp.timerMin = 0; clearInterval(sp.tick); sp.tick = null;
   try { if (sp.player && sp.player.stopVideo) sp.player.stopVideo(); } catch (e) {}
-  sp.idx = -1; sp.playing = false; sp.state = 'idle'; cn.music = { id: null, timer: null }; spRender();
+  sp.idx = -1; sp.playing = false; sp.state = 'idle'; cn.music = { id: null, timer: null }; spRender(); spBody();
 }
-function spReset(drop) { try { if (sp.player && sp.player.stopVideo) sp.player.stopVideo(); } catch (e) {} if (drop) sp.player = null; clearTimeout(sp.timer); sp.timer = null; sp.until = 0; clearInterval(sp.tick); sp.tick = null; sp.idx = -1; sp.playing = false; sp.state = 'idle'; sp.errs = 0; }
+function spReset(drop) { setTimeout(() => { try { spBody(); } catch (e) {} }, 0); try { if (sp.player && sp.player.stopVideo) sp.player.stopVideo(); } catch (e) {} if (drop) sp.player = null; clearTimeout(sp.timer); sp.timer = null; sp.until = 0; clearInterval(sp.tick); sp.tick = null; sp.idx = -1; sp.playing = false; sp.state = 'idle'; sp.errs = 0; }
 function cnSetTimer(m) {
   clearTimeout(sp.timer); sp.timer = null; sp.until = 0; sp.timerMin = 0;
   if (m) { sp.timerMin = m; sp.until = Date.now() + m * 60000; sp.timer = setTimeout(() => { cnStopMusic(); toast('Music stopped. Rest well.', 'success'); }, m * 60000); }
@@ -8740,6 +8763,27 @@ document.getElementById('edit-student-form').addEventListener('submit', e => {
   saveDB(); closeModal('modal-edit-student'); renderAdminView(); toast('Student updated.', 'success');
 });
 
+/* ---- Back button: one step back inside the portal, not out of the website ---- */
+(function () {
+  const orig = goToView; let fromPop = false, cur = null, exitUntil = 0;
+  window.goToView = goToView = function (view) {
+    orig(view);
+    const now = (document.querySelector('.view-section.active') || {}).dataset ? document.querySelector('.view-section.active').dataset.view : view;
+    if (!fromPop && DB.auth && now && now !== cur) { try { if (cur === null) { history.replaceState({ guard: 1 }, ''); history.pushState({ pv: now }, ''); } else history.pushState({ pv: now }, ''); } catch (e) {} }
+    cur = now;
+  };
+  window.addEventListener('popstate', ev => {
+    const open = Array.from(document.querySelectorAll('div.fixed[id^="modal-"]:not(.hidden)'));
+    if (open.length) { open.forEach(m => m.classList.add('hidden')); try { history.pushState({ pv: cur }, ''); } catch (e) {} return; }
+    if (ev.state && ev.state.guard && DB.auth) {
+      if (Date.now() < exitUntil) { exitUntil = 0; history.back(); return; }
+      exitUntil = Date.now() + 2500; toast('Press back again to leave.', 'info');
+      try { history.pushState({ pv: cur }, ''); } catch (e) {} return;
+    }
+    const v = ev.state && ev.state.pv;
+    if (v && DB.auth) { fromPop = true; try { goToView(v); } finally { fromPop = false; } }
+  });
+})();
 /* ---- admin: delete accounts (teacher / student) ---- */
 function markRemoved(id) { DB.removedIds = DB.removedIds || []; if (!DB.removedIds.includes(id)) DB.removedIds.push(id); }
 function removeTeacherAccount(id) {
