@@ -20,6 +20,14 @@
     var sw = screen.width, iw = window.innerWidth;
     var touch = (navigator.maxTouchPoints || 0) > 0 || ('ontouchstart' in window) || (window.matchMedia && matchMedia('(pointer:coarse)').matches);
     if (touch && sw <= 900 && iw > sw * 1.25) {
+      /* 1st try: force the real phone width through the viewport tag (works in most browsers, no scaling needed). */
+      try {
+        var mv = document.querySelector('meta[name=viewport]');
+        if (mv) mv.setAttribute('content', 'width=' + sw + ', initial-scale=1, minimum-scale=1, maximum-scale=5');
+        iw = window.innerWidth;
+      } catch (e) {}
+    }
+    if (touch && sw <= 900 && iw > sw * 1.25) {
       var k = iw / sw;
       window.__fitK = k;
       var d = document.documentElement;
@@ -8838,64 +8846,105 @@ document.getElementById('edit-student-form').addEventListener('submit', e => {
 /* ==================== SECRET ROOM (easter egg) ==================== */
 // Tap the school seal 7 times quickly, or type the Konami code on a keyboard (up up down down left right left right B A).
 (function () {
-  let taps = 0, last = 0, kseq = 0, open = false, raf = 0, timer = 0;
+  let taps = 0, last = 0, kseq = 0, open = false, raf = 0, offKey = null;
   const KON = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   const best = () => { try { return Number(localStorage.getItem('sjbhs_secret_best')) || 0; } catch (e) { return 0; } };
   const saveBest = n => { try { localStorage.setItem('sjbhs_secret_best', String(n)); } catch (e) {} };
-  function close() { const d = document.getElementById('egg'); if (d) d.remove(); cancelAnimationFrame(raf); clearInterval(timer); open = false; }
+  function close() { const d = document.getElementById('egg'); if (d) d.remove(); cancelAnimationFrame(raf); if (offKey) offKey(); offKey = null; open = false; }
   function openEgg() {
     if (open) return; open = true;
     const d = document.createElement('div'); d.id = 'egg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'Secret room');
-    d.className = 'fixed inset-0 z-[120] overflow-hidden select-none';
-    d.style.cssText = 'background:radial-gradient(ellipse at 50% 20%,#312e81 0%,#0f172a 60%,#020617 100%);touch-action:manipulation';
-    d.innerHTML = '<div style="position:absolute;inset:0" id="egg-sky"></div><div class="relative z-10 p-4 flex items-start justify-between text-white"><div><p class="text-[11px] tracking-[.3em] uppercase text-indigo-200">Secret room</p><h2 class="text-xl font-bold mt-1">You found it!</h2><p class="text-xs text-indigo-200 mt-1">Mabuhay ang San Juan Baño High School. Catch the falling things. The apple is worth 3.</p></div><button id="egg-x" aria-label="Close" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl leading-none">×</button></div>' +
-      '<div class="relative z-10 px-4 flex gap-6 text-white text-sm"><span>Score <b id="egg-sc" class="tabular-nums">0</b></span><span>Time <b id="egg-t" class="tabular-nums">30</b></span><span>Best <b id="egg-b" class="tabular-nums">' + best() + '</b></span></div>' +
-      '<div id="egg-end" class="hidden absolute inset-0 z-20 flex items-center justify-center p-6"><div class="bg-white/10 backdrop-blur rounded-2xl p-6 text-center text-white max-w-xs"><p class="text-sm" id="egg-msg"></p><button id="egg-again" class="mt-4 rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-semibold">Play again</button></div></div>';
+    d.style.cssText = 'position:fixed;inset:0;z-index:120;background:#070b1a;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden';
+    d.innerHTML = '<canvas id="egg-c" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>' +
+      '<button id="egg-x" type="button" aria-label="Close" style="position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font:600 20px system-ui;cursor:pointer">&times;</button>' +
+      '<div id="egg-end" style="display:none;position:absolute;inset:0;z-index:2;align-items:center;justify-content:center;padding:24px;background:rgba(2,6,23,.6)"><div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:24px;text-align:center;color:#fff;max-width:300px;font-family:system-ui"><p id="egg-msg" style="font-size:15px;line-height:1.5"></p><button id="egg-again" type="button" style="margin-top:16px;padding:10px 20px;border:0;border-radius:10px;background:#6366f1;color:#fff;font:600 14px system-ui;cursor:pointer">Play again</button></div></div>';
     document.body.appendChild(d);
+    const cv = d.querySelector('#egg-c'), cx = cv.getContext('2d'), endEl = d.querySelector('#egg-end');
     d.querySelector('#egg-x').onclick = close;
-    d.querySelector('#egg-again').onclick = () => start();
-    burst(d.querySelector('#egg-sky'));
-    start();
-    function start() {
-      const sky = d.querySelector('#egg-sky'); sky.querySelectorAll('.egg-i').forEach(x => x.remove()); d.querySelector('#egg-end').classList.add('hidden');
-      let score = 0, left = 30, items = [], spawnAt = 0, prev = performance.now();
-      const sc = d.querySelector('#egg-sc'), tm = d.querySelector('#egg-t');
-      sc.textContent = 0; tm.textContent = left;
-      cancelAnimationFrame(raf); clearInterval(timer);
-      timer = setInterval(() => { left--; tm.textContent = Math.max(0, left); if (left <= 0) finish(); }, 1000);
-      function spawn() {
-        const e = document.createElement('button'), apple = Math.random() < 0.12, g = apple ? '🍎' : ['⭐', '📚', '✏️', '🎓', '🏫', '🔔'][Math.floor(Math.random() * 6)];
-        e.className = 'egg-i'; e.type = 'button'; e.setAttribute('aria-label', 'Catch'); e.textContent = g;
-        const x = 6 + Math.random() * 82; e.style.cssText = 'position:absolute;top:-48px;left:' + x + '%;font-size:' + (apple ? 38 : 30) + 'px;background:none;border:0;padding:6px;cursor:pointer;line-height:1';
-        const o = { e, y: -48, v: 70 + Math.random() * 90 + (30 - left) * 3, pts: apple ? 3 : 1 };
-        e.addEventListener('pointerdown', ev => { ev.preventDefault(); if (o.dead) return; o.dead = true; score += o.pts; sc.textContent = score; e.style.transition = 'transform .15s,opacity .15s'; e.style.transform = 'scale(1.8)'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
-        sky.appendChild(e); items.push(o);
+    let W = 0, H = 0, dpr = 1;
+    function fit() { dpr = Math.min(2, window.devicePixelRatio || 1); W = d.clientWidth; H = d.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    fit(); window.addEventListener('resize', fit);
+    const keys = {};
+    const kd = e => { keys[e.key] = true; }, ku = e => { keys[e.key] = false; };
+    window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
+    offKey = () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); window.removeEventListener('resize', fit); };
+    const stars = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + .3, s: Math.random() * 12 + 4 }));
+    let g, tx = 0;
+    function reset() {
+      g = { px: W / 2, pw: Math.min(120, W * .3), score: 0, lives: 3, combo: 0, mult: 1, t: 0, items: [], parts: [], pops: [], spawn: 0.6, over: false, shake: 0, flash: 0, prev: performance.now() };
+      tx = g.px; endEl.style.display = 'none';
+    }
+    d.querySelector('#egg-again').onclick = () => { reset(); };
+    const mv = e => { const r = cv.getBoundingClientRect(); tx = e.clientX - r.left; };
+    d.addEventListener('pointerdown', mv); d.addEventListener('pointermove', mv);
+    function puff(x, y, col, n, sp) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = (.3 + Math.random()) * sp; g.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, life: .6 + Math.random() * .4, max: 1, col, r: 1.5 + Math.random() * 2.5 }); } }
+    function star(x, y, r, rot) { cx.beginPath(); for (let i = 0; i < 10; i++) { const a = rot + i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r; cx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } cx.closePath(); }
+    function drawItem(o) {
+      cx.save(); cx.translate(o.x, o.y); cx.rotate(o.rot);
+      if (o.k === 'star') { star(0, 0, 15, 0); cx.fillStyle = '#facc15'; cx.shadowColor = '#fde047'; cx.shadowBlur = 14; cx.fill(); }
+      else if (o.k === 'gem') { cx.beginPath(); cx.moveTo(0, -18); cx.lineTo(14, 0); cx.lineTo(0, 18); cx.lineTo(-14, 0); cx.closePath(); cx.fillStyle = '#22d3ee'; cx.shadowColor = '#67e8f9'; cx.shadowBlur = 18; cx.fill(); cx.shadowBlur = 0; cx.strokeStyle = 'rgba(255,255,255,.7)'; cx.lineWidth = 1.5; cx.stroke(); }
+      else if (o.k === 'heart') { cx.beginPath(); cx.moveTo(0, 12); cx.bezierCurveTo(-22, -4, -10, -20, 0, -8); cx.bezierCurveTo(10, -20, 22, -4, 0, 12); cx.fillStyle = '#fb7185'; cx.shadowColor = '#fda4af'; cx.shadowBlur = 14; cx.fill(); }
+      else { cx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? 9 : 17; cx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } cx.closePath(); cx.fillStyle = '#1e1b4b'; cx.strokeStyle = '#f43f5e'; cx.lineWidth = 2.5; cx.shadowColor = '#f43f5e'; cx.shadowBlur = 12; cx.fill(); cx.stroke(); }
+      cx.restore();
+    }
+    function frame(now) {
+      const dt = Math.min(.04, (now - g.prev) / 1000); g.prev = now;
+      cx.save(); cx.clearRect(0, 0, W, H);
+      const bg = cx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1e1b4b'); bg.addColorStop(.6, '#0b1030'); bg.addColorStop(1, '#070b1a'); cx.fillStyle = bg; cx.fillRect(0, 0, W, H);
+      for (const s of stars) { s.y += s.s * dt / H * (g.over ? .2 : 1); if (s.y > 1) s.y = 0; cx.globalAlpha = .35 + s.r * .25; cx.fillStyle = '#c7d2fe'; cx.beginPath(); cx.arc(s.x * W, s.y * H, s.r, 0, 6.283); cx.fill(); }
+      cx.globalAlpha = 1;
+      if (g.shake > 0) { cx.translate((Math.random() - .5) * g.shake * 10, (Math.random() - .5) * g.shake * 10); g.shake = Math.max(0, g.shake - dt * 3); }
+      if (!g.over) {
+        g.t += dt;
+        if (keys.ArrowLeft || keys.a || keys.A) tx -= 520 * dt; if (keys.ArrowRight || keys.d || keys.D) tx += 520 * dt;
+        tx = Math.max(g.pw / 2, Math.min(W - g.pw / 2, tx)); g.px += (tx - g.px) * Math.min(1, dt * 18);
+        const lvl = 1 + g.t / 18;
+        g.spawn -= dt;
+        if (g.spawn <= 0) {
+          g.spawn = Math.max(.22, .75 / Math.sqrt(lvl)) * (.7 + Math.random() * .6);
+          const r = Math.random(), bad = Math.min(.38, .16 + g.t / 200);
+          const k = r < bad ? 'bad' : r < bad + .07 ? 'gem' : (r < bad + .1 && g.lives < 3) ? 'heart' : 'star';
+          g.items.push({ k, x: 24 + Math.random() * (W - 48), y: -24, v: (120 + Math.random() * 70) * Math.sqrt(lvl) * (k === 'gem' ? 1.35 : 1), rot: 0, w: (Math.random() - .5) * 3 });
+        }
+        const py = H - 62;
+        g.items = g.items.filter(o => {
+          o.y += o.v * dt; o.rot += o.w * dt;
+          if (o.y > py - 14 && o.y < py + 18 && Math.abs(o.x - g.px) < g.pw / 2 + 10) {
+            if (o.k === 'bad') { g.lives--; g.combo = 0; g.mult = 1; g.shake = 1; g.flash = 1; puff(o.x, o.y, '#f43f5e', 22, 220); g.pops.push({ x: o.x, y: o.y, t: 'Ouch', c: '#fda4af', life: .9 }); if (g.lives <= 0) finish(); }
+            else if (o.k === 'heart') { g.lives = Math.min(3, g.lives + 1); puff(o.x, o.y, '#fb7185', 16, 160); g.pops.push({ x: o.x, y: o.y, t: '+1 life', c: '#fecdd3', life: .9 }); }
+            else { g.combo++; g.mult = 1 + Math.floor(g.combo / 5); const pts = (o.k === 'gem' ? 5 : 1) * g.mult; g.score += pts; puff(o.x, o.y, o.k === 'gem' ? '#67e8f9' : '#fde047', 12, 170); g.pops.push({ x: o.x, y: o.y, t: '+' + pts, c: '#fff', life: .7 }); }
+            return false;
+          }
+          if (o.y > H + 30) { if (o.k !== 'bad') { g.combo = 0; g.mult = 1; } return false; }
+          return true;
+        });
       }
-      function frame(now) {
-        const dt = Math.min(0.05, (now - prev) / 1000); prev = now; spawnAt -= dt;
-        if (spawnAt <= 0 && left > 0) { spawn(); spawnAt = 0.45 + Math.random() * 0.4; }
-        const H = d.clientHeight;
-        items = items.filter(o => { if (o.dead) return false; o.y += o.v * dt; o.e.style.top = o.y + 'px'; if (o.y > H) { o.e.remove(); return false; } return true; });
-        if (left > 0) raf = requestAnimationFrame(frame);
+      for (const o of g.items) drawItem(o);
+      const py = H - 62;
+      if (!g.over) {
+        const x0 = g.px - g.pw / 2; cx.shadowColor = '#818cf8'; cx.shadowBlur = 16;
+        cx.fillStyle = '#6366f1'; cx.beginPath(); cx.roundRect ? cx.roundRect(x0, py, g.pw, 14, 7) : cx.rect(x0, py, g.pw, 14); cx.fill();
+        cx.shadowBlur = 0; cx.fillStyle = '#a5b4fc'; cx.fillRect(x0 + 10, py + 3, g.pw - 20, 3);
       }
+      cx.shadowBlur = 0;
+      g.parts = g.parts.filter(p => { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; if (p.life <= 0) return false; cx.globalAlpha = Math.min(1, p.life * 2); cx.fillStyle = p.col; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 6.283); cx.fill(); return true; });
+      cx.globalAlpha = 1; cx.font = '700 15px system-ui'; cx.textAlign = 'center';
+      g.pops = g.pops.filter(p => { p.life -= dt; p.y -= 40 * dt; if (p.life <= 0) return false; cx.globalAlpha = Math.min(1, p.life * 2); cx.fillStyle = p.c; cx.fillText(p.t, p.x, p.y); return true; });
+      cx.globalAlpha = 1;
+      cx.textAlign = 'left'; cx.fillStyle = '#fff'; cx.font = '700 26px system-ui'; cx.fillText(String(g.score), 16, 36);
+      cx.font = '500 12px system-ui'; cx.fillStyle = '#a5b4fc'; cx.fillText('BEST ' + Math.max(best(), g.score) + (g.mult > 1 ? '   COMBO x' + g.mult : ''), 16, 56);
+      for (let i = 0; i < 3; i++) { cx.beginPath(); cx.arc(24 + i * 22, 78, 7, 0, 6.283); if (i < g.lives) { cx.fillStyle = '#fb7185'; cx.fill(); } else { cx.strokeStyle = 'rgba(255,255,255,.3)'; cx.lineWidth = 1.5; cx.stroke(); } }
+      if (g.t < 5 && !g.over) { cx.globalAlpha = Math.max(0, 1 - g.t / 5); cx.textAlign = 'center'; cx.fillStyle = '#e0e7ff'; cx.font = '500 14px system-ui'; cx.fillText('Drag to move. Catch the stars, dodge the spiked orbs.', W / 2, H * .35); cx.globalAlpha = 1; }
+      if (g.flash > 0) { cx.fillStyle = 'rgba(244,63,94,' + (g.flash * .25) + ')'; cx.fillRect(0, 0, W, H); g.flash = Math.max(0, g.flash - dt * 3); }
+      cx.restore();
       raf = requestAnimationFrame(frame);
-      function finish() {
-        clearInterval(timer); cancelAnimationFrame(raf);
-        sky.querySelectorAll('.egg-i').forEach(x => x.remove());
-        const nb = score > best(); if (nb) { saveBest(score); d.querySelector('#egg-b').textContent = score; }
-        d.querySelector('#egg-msg').textContent = (nb && score > 0 ? 'New best: ' + score + '! ' : 'You caught ' + score + '. ') + 'Study hard, rest well, and keep going.';
-        d.querySelector('#egg-end').classList.remove('hidden'); if (nb && score > 0) burst(sky);
-      }
     }
-    function burst(sky) {
-      const cols = ['#f472b6', '#facc15', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
-      for (let i = 0; i < 46; i++) {
-        const c = document.createElement('span'), x = 50 + (Math.random() - .5) * 20, dx = (Math.random() - .5) * 120, dy = 30 + Math.random() * 60;
-        c.className = 'egg-i'; c.style.cssText = 'position:absolute;top:30%;left:' + x + '%;width:8px;height:12px;background:' + cols[i % cols.length] + ';border-radius:2px;pointer-events:none;transition:transform 1.4s cubic-bezier(.2,.7,.3,1),opacity 1.4s;opacity:1';
-        sky.appendChild(c); requestAnimationFrame(() => requestAnimationFrame(() => { c.style.transform = 'translate(' + dx + 'vw,' + dy + 'vh) rotate(' + (Math.random() * 720) + 'deg)'; c.style.opacity = '0'; }));
-        setTimeout(() => c.remove(), 1500);
-      }
+    function finish() {
+      g.over = true; const nb = g.score > best(); if (nb) saveBest(g.score);
+      d.querySelector('#egg-msg').textContent = (nb && g.score > 0 ? 'New best: ' + g.score + '. ' : 'Score: ' + g.score + '. ') + 'Study hard, rest well, and keep going.';
+      setTimeout(() => { if (open) endEl.style.display = 'flex'; }, 700);
     }
+    reset(); raf = requestAnimationFrame(frame);
   }
   document.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' && open) { close(); return; }
