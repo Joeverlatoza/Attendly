@@ -5952,9 +5952,32 @@ const LANG_FIL = {
 "Choose your grade level and section to see your teachers": "Piliin ang iyong baitang at section para makita ang iyong mga guro",
 "No teachers are assigned to your section yet.": "Wala pang gurong nakatalaga sa iyong section.",
 "Add your grade level and section to see your teachers.": "Idagdag ang iyong baitang at section para makita ang iyong mga guro.",
-"Pick a voice and tap Hear it. The natural voices are recorded, so they sound the same on every phone.": "Pumili ng boses at pindutin ang Pakinggan. Naka-record ang mga natural na boses, kaya pareho ang tunog sa bawat phone."
+"Pick a voice and tap Hear it. The natural voices are recorded, so they sound the same on every phone.": "Pumili ng boses at pindutin ang Pakinggan. Naka-record ang mga natural na boses, kaya pareho ang tunog sa bawat phone.",
+"Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others take their topics from the published instruments named on each bubble, with wording written for school, so they are not validated tests. A few questions give only a quick pulse, not a score.": "Ipinakita ng bawat tanong sa bubble check ang pinagmulan nito nang pumutok mo ito. Ginamit ayon sa pagkakalathala ang mga tanong ng PHQ-9 at GAD-7. Ang iba ay kumukuha ng paksa sa mga nailathalang instrumentong nakasaad sa bawat bubble, at isinulat ang pananalita para sa paaralan, kaya hindi sila napatunayang pagsusulit. May ilang tanong na mabilis na pulso lang ang ibinibigay, hindi marka.",
+"The other surveys take their topics from published instruments, which are listed under each question, and the wording is written for school. They are not validated tests, so their levels are only a guide.": "Ang ibang survey ay kumukuha ng paksa sa mga nailathalang instrumento, na nakalista sa ilalim ng bawat tanong, at isinulat ang pananalita para sa paaralan. Hindi sila napatunayang pagsusulit, kaya gabay lamang ang kanilang antas.",
+"The burnout topics follow the Copenhagen Burnout Inventory and the World Health Organization description of burnout as an occupational phenomenon, not a medical condition. The wording is written for school, so this is not a validated test.": "Ang mga paksa sa burnout ay sumusunod sa Copenhagen Burnout Inventory at sa paglalarawan ng World Health Organization sa burnout bilang phenomenon sa trabaho, hindi kondisyong medikal. Isinulat ang pananalita para sa paaralan, kaya hindi ito napatunayang pagsusulit."
 };
 const LANG_PATS = [
+[
+"^Topics informed by (?:the )?(.+)\\. Wording written for students; screening only, not a validated test\\.$",
+"Mga paksang hango sa $1. Isinulat ang pananalita para sa mga estudyante; pang-screening lamang, hindi napatunayang pagsusulit."
+],
+[
+"^Topics informed by (?:the )?(.+)\\. Wording written for teachers; screening only, not a validated test\\.$",
+"Mga paksang hango sa $1. Isinulat ang pananalita para sa mga guro; pang-screening lamang, hindi napatunayang pagsusulit."
+],
+[
+"^(.+)\\. Wording lightly adjusted for students\\. Screening only, not a diagnosis\\.$",
+"$1. Bahagyang inayos ang pananalita para sa mga estudyante. Pang-screening lamang, hindi diagnosis."
+],
+[
+"^(.+)\\. Wording lightly adjusted for teachers\\. Screening only, not a diagnosis\\.$",
+"$1. Bahagyang inayos ang pananalita para sa mga guro. Pang-screening lamang, hindi diagnosis."
+],
+[
+"^The topics follow (?:the )?(.+)\\. The wording is written for school, so this is not a validated test and gives no clinical score or diagnosis\\.$",
+"Ang mga paksa ay sumusunod sa $1. Isinulat ang pananalita para sa paaralan, kaya hindi ito napatunayang pagsusulit at walang klinikal na marka o diagnosis."
+],
 [
 "^(\\d+) of (\\d+) popped$",
 "$1 sa $2 ang naputok"
@@ -6528,8 +6551,56 @@ CN_SURVEYS.tfuture.levels[2].tip = 'Planning your time or your future feels hard
 const CN_REFS = {
   phq: { note: 'The questions, answer choices and scoring come from the PHQ-9, a published and widely used screening questionnaire. The wording is lightly adjusted for school.', cite: 'Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.' },
   gad: { note: 'The questions, answer choices and scoring come from the GAD-7, a published and widely used screening questionnaire. The wording is lightly adjusted for school.', cite: 'Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.' },
-  burn: { note: 'These burnout questions are original reflection prompts informed by the World Health Organization description of burnout as an occupational phenomenon, not a medical condition. They are not a validated test.', cite: 'World Health Organization. (2019, May 28). Burn-out an occupational phenomenon: International Classification of Diseases.' }
+  burn: { note: 'The burnout topics follow the Copenhagen Burnout Inventory and the World Health Organization description of burnout as an occupational phenomenon, not a medical condition. The wording is written for school, so this is not a validated test.', cite: 'World Health Organization. (2019, May 28). Burn-out an occupational phenomenon: International Classification of Diseases.' }
 };
+
+// Every survey names the published work it draws on. PHQ-9 and GAD-7 are used as published (wording lightly adjusted); the others take their topics from the instruments below and are written for school, so they are screening prompts, not validated tests.
+const CN_RF = {
+  who5: 'Topp, C. W., Østergaard, S. D., Søndergaard, S., & Bech, P. (2015). The WHO-5 Well-Being Index: A systematic review of the literature. Psychotherapy and Psychosomatics, 84(3), 167-176.',
+  gshs: 'World Health Organization & U.S. Centers for Disease Control and Prevention. Global School-based Student Health Survey (GSHS). Geneva: World Health Organization.',
+  olweus: 'Olweus, D. (1996). The Revised Olweus Bully/Victim Questionnaire. Bergen, Norway: Research Center for Health Promotion (HEMIL), University of Bergen.',
+  cbi: 'Kristensen, T. S., Borritz, M., Villadsen, E., & Christensen, K. B. (2005). The Copenhagen Burnout Inventory: A new tool for the assessment of burnout. Work & Stress, 19(3), 192-207.',
+  icd: 'World Health Organization. (2019, May 28). Burn-out an "occupational phenomenon": International Classification of Diseases.',
+  pss: 'Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. Journal of Health and Social Behavior, 24(4), 385-396.',
+  dass: 'Lovibond, S. H., & Lovibond, P. F. (1995). Manual for the Depression Anxiety Stress Scales (2nd ed.). Sydney: Psychology Foundation of Australia.',
+  promis: 'Buysse, D. J., Yu, L., Moul, D. E., et al. (2010). Development and validation of patient-reported outcome measures for sleep disturbance and sleep-related impairments. Sleep, 33(6), 781-792.',
+  psqi: 'Buysse, D. J., Reynolds, C. F., Monk, T. H., Berman, S. R., & Kupfer, D. J. (1989). The Pittsburgh Sleep Quality Index: A new instrument for psychiatric practice and research. Psychiatry Research, 28(2), 193-213.',
+  apgar: 'Smilkstein, G. (1978). The Family APGAR: A proposal for a family function test and its use by physicians. Journal of Family Practice, 6(6), 1231-1239.',
+  mspss: 'Zimet, G. D., Dahlem, N. W., Zimet, S. G., & Farley, G. K. (1988). The Multidimensional Scale of Perceived Social Support. Journal of Personality Assessment, 52(1), 30-41.',
+  chs: 'Snyder, C. R., Hoza, B., Pelham, W. E., et al. (1997). The development and validation of the Children\'s Hope Scale. Journal of Pediatric Psychology, 22(3), 399-421.',
+  mslq: 'Pintrich, P. R., Smith, D. A. F., Garcia, T., & McKeachie, W. J. (1991). A manual for the use of the Motivated Strategies for Learning Questionnaire (MSLQ). Ann Arbor: University of Michigan.',
+  tsi: 'Fimian, M. J. (1988). Teacher Stress Inventory. Brandon, VT: Clinical Psychology Publishing Company.',
+  njs: 'Hurrell, J. J., & McLaney, M. A. (1988). Exposure to job stress: A new psychometric instrument. Scandinavian Journal of Work, Environment & Health, 14(Suppl. 1), 27-28.',
+  naq: 'Einarsen, S., Hoel, H., & Notelaers, G. (2009). Measuring exposure to bullying and harassment at work: Validity, factor structure and psychometric properties of the Negative Acts Questionnaire-Revised. Work & Stress, 23(1), 24-44.',
+  wlb: 'Fisher, G. G., Bulger, C. A., & Smith, C. S. (2009). Beyond work and family: A measure of work/nonwork interference and enhancement. Journal of Occupational Health Psychology, 14(4), 441-456.',
+  phq: CN_REFS.phq.cite, gad: CN_REFS.gad.cite
+};
+// id: [short names for the Source line, reference keys, published? (true = questions used as published)]
+const CN_SRCDEF = {
+  quick: ['the WHO-5 Well-Being Index (Topp et al., 2015)', ['who5']],
+  phq: ['the PHQ-9 (Kroenke, Spitzer & Williams, 2001)', ['phq'], true], gad: ['the GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)', ['gad'], true],
+  burn: ['the Copenhagen Burnout Inventory (Kristensen et al., 2005) and the WHO description of burnout (2019)', ['cbi', 'icd']],
+  stress: ['the Perceived Stress Scale (Cohen et al., 1983) and the DASS-21 stress scale (Lovibond & Lovibond, 1995)', ['pss', 'dass']],
+  sleep: ['the PROMIS Sleep Disturbance measure (Buysse et al., 2010) and the Pittsburgh Sleep Quality Index (Buysse et al., 1989)', ['promis', 'psqi']],
+  safe: ['the WHO Global School-based Student Health Survey and the Olweus Bully/Victim Questionnaire (Olweus, 1996)', ['gshs', 'olweus']],
+  family: ['the Family APGAR (Smilkstein, 1978) and the Multidimensional Scale of Perceived Social Support (Zimet et al., 1988)', ['apgar', 'mspss']],
+  future: ['the Children\'s Hope Scale (Snyder et al., 1997) and the MSLQ (Pintrich et al., 1991)', ['chs', 'mslq']],
+  tquick: ['the WHO-5 Well-Being Index (Topp et al., 2015)', ['who5']],
+  tphq: ['the PHQ-9 (Kroenke, Spitzer & Williams, 2001)', ['phq'], true], tgad: ['the GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)', ['gad'], true],
+  tburn: ['the Copenhagen Burnout Inventory (Kristensen et al., 2005) and the WHO description of burnout (2019)', ['cbi', 'icd']],
+  tstress: ['the Teacher Stress Inventory (Fimian, 1988) and the NIOSH Generic Job Stress Questionnaire (Hurrell & McLaney, 1988)', ['tsi', 'njs']],
+  tsleep: ['the PROMIS Sleep Disturbance measure (Buysse et al., 2010) and the Pittsburgh Sleep Quality Index (Buysse et al., 1989)', ['promis', 'psqi']],
+  tsafe: ['the Negative Acts Questionnaire-Revised (Einarsen, Hoel & Notelaers, 2009)', ['naq']],
+  tfamily: ['the Family APGAR (Smilkstein, 1978) and the Multidimensional Scale of Perceived Social Support (Zimet et al., 1988)', ['apgar', 'mspss']],
+  tfuture: ['the work/nonwork measure of Fisher, Bulger & Smith (2009)', ['wlb']]
+};
+Object.keys(CN_SRCDEF).forEach(id => {
+  const sv = CN_SURVEYS[id], d = CN_SRCDEF[id]; if (!sv) return;
+  const who = sv.aud === 't' ? 'teachers' : 'students';
+  sv.srcRefs = d[1].map(k => CN_RF[k]);
+  sv.srcShort = d[2] ? ('Source: ' + d[0].replace(/^the /, '') + '. Wording lightly adjusted for ' + who + '. Screening only, not a diagnosis.').replace(/^Source: /, '') : ('Topics informed by ' + d[0] + '. Wording written for ' + who + '; screening only, not a validated test.');
+  sv.source = sv.srcShort;
+});
 const CN_GENERAL_IDEAS = ['Keep regular sleep and wake times when you can.', 'Move your body in a way that feels good, even briefly.', 'Spend time with people who make you feel at ease.'];
 function cnIntroHtml(sv) {
   return '<div class="' + CN_CARD + '"><p class="text-xs text-slate-500 dark:text-slate-400">Before you start</p><h3 class="text-base font-semibold mt-0.5">' + escapeHtml(sv.name) + '</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">' + escapeHtml(sv.blurb) + '</p>' +
@@ -6565,17 +6636,17 @@ function cnAnswersHtml(sv, s) {
   return '<details class="mt-4 text-sm"><summary class="cursor-pointer text-sm font-semibold">See my answers</summary><ul class="mt-2 divide-y divide-slate-200 dark:divide-slate-800 text-xs text-slate-600 dark:text-slate-300">' + rows + '</ul></details>';
 }
 function cnSourceHtml(sv) {
-  if (sv.pulse) return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others are original Attendly questions, not validated tests. A few questions give only a quick pulse, not a score.</p><p>' + escapeHtml(CN_REFS.phq.cite) + '</p><p>' + escapeHtml(CN_REFS.gad.cite) + '</p><p>' + escapeHtml(CN_REFS.burn.cite) + '</p></div></details>';
+  if (sv.pulse) return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>Each question in the bubble check showed its source when you popped it. The PHQ-9 and GAD-7 questions are used as published. The others take their topics from the published instruments named on each bubble, with wording written for school, so they are not validated tests. A few questions give only a quick pulse, not a score.</p>' + Object.keys(CN_RF).map(k => '<p>' + escapeHtml(CN_RF[k]) + '</p>').join('') + '</div></details>';
   const R = CN_REFS[sv.aud === 't' ? sv.id.slice(1) : sv.id];
-  return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>' + escapeHtml(R ? R.note : 'These are original Attendly reflection questions. They are not a validated test, so there is no clinical score or diagnosis.') + '</p>' + (R ? '<p>' + escapeHtml(R.cite) + '</p>' : '') + '<p>Attendly is a school tool for screening and self-reflection. It is not clinically validated and does not replace an assessment by a qualified professional.</p></div></details>';
+  return '<details class="mt-4 text-xs text-slate-500 dark:text-slate-400"><summary class="cursor-pointer font-medium text-slate-600 dark:text-slate-300">About these questions</summary><div class="mt-2 space-y-2"><p>' + escapeHtml(R ? R.note : 'The topics follow ' + (sv.srcShort ? sv.srcShort.replace(/^Topics informed by /, '').replace(/\. Wording.*$/, '') : 'published screening work') + '. The wording is written for school, so this is not a validated test and gives no clinical score or diagnosis.') + '</p>' + (R ? '<p>' + escapeHtml(R.cite) + '</p>' : (sv.srcRefs || []).map(x => '<p>' + escapeHtml(x) + '</p>').join('')) + '<p>Attendly is a school tool for screening and self-reflection. It is not clinically validated and does not replace an assessment by a qualified professional.</p></div></details>';
 }
 function cnAboutHtml() {
   return '<details class="mt-4 text-xs text-slate-600 dark:text-slate-300"><summary class="cursor-pointer text-sm font-semibold">About these surveys</summary><div class="mt-3 space-y-3">' +
-    '<div><p class="font-semibold">How they are scored</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.</li><li>Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.</li><li>The other surveys are original Attendly reflection questions. They are not validated tests, so their levels are only a guide.</li><li>The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.</li></ul></div>' +
+    '<div><p class="font-semibold">How they are scored</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression screen (PHQ-9): 0 to 27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe. The question about thoughts of self-harm is checked on its own, apart from the total.</li><li>Anxiety screen (GAD-7): 0 to 21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe. These are adult ranges, so for younger students treat the result as a conversation starter, not a verdict.</li><li>The other surveys take their topics from published instruments, which are listed under each question, and the wording is written for school. They are not validated tests, so their levels are only a guide.</li><li>The bubble check uses single questions from these surveys, so its result is only a quick pulse, not a score.</li></ul></div>' +
     '<div><p class="font-semibold">Understanding what you feel</p><ul class="list-disc pl-5 space-y-1 mt-1"><li>Depression symptoms: lasting sadness, loss of interest, changes in sleep, appetite or energy.</li><li>Anxiety symptoms: too much worry, restlessness, feeling on edge.</li><li>Stress: a response to demands that feel too heavy. It can ease when the demands change.</li><li>Burnout: exhaustion, mental distance from school or work, and feeling less able to cope. The World Health Organization describes it as an occupational phenomenon, not a medical condition.</li></ul></div>' +
     '<div><p class="font-semibold">When to seek professional support</p><p class="mt-1">Consider reaching out if feelings last for weeks, make school or work hard, or you feel unsafe. Start with the school counselor, a doctor or a licensed mental health professional. You do not need the right words. You can simply say, "I have not been feeling okay."</p></div>' +
     '<div><p class="font-semibold">Privacy and data</p><p class="mt-1">Your results are saved on this device, in your Progress tab. They are sent to the counselor only when you press Send, and only with your consent.</p></div>' +
-    '<div><p class="font-semibold">References</p><p class="mt-1">' + escapeHtml(CN_REFS.phq.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.gad.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.burn.cite) + '</p></div></div></details>';
+    '<div><p class="font-semibold">References</p><p class="mt-1">' + escapeHtml(CN_REFS.phq.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.gad.cite) + '</p><p class="mt-1">' + escapeHtml(CN_REFS.burn.cite) + '</p>' + Object.keys(CN_RF).filter(k => k !== 'phq' && k !== 'gad' && k !== 'icd').map(k => '<p class="mt-1">' + escapeHtml(CN_RF[k]) + '</p>').join('') + '</div></div></details>';
 }
 const CN_STEPS_T = {
   load: 'Write your top 3 tasks for tomorrow and let the rest wait. If a deadline is not realistic, tell the principal early and ask what can move.',
@@ -7495,9 +7566,7 @@ function cnPanelExplore() {
 const CN_BUBBLE_CITES = {
   gad: 'GAD-7 (Spitzer, Kroenke, Williams & Löwe, 2006)',
   phq: 'PHQ-9 (Kroenke, Spitzer & Williams, 2001)',
-  phq9: 'PHQ-9, question 9 (Kroenke, Spitzer & Williams, 2001)',
-  who: 'Original Attendly question, informed by the WHO description of burnout (2019). Not a validated test.',
-  orig: 'Original Attendly question. Not a validated test.'
+  phq9: 'PHQ-9, question 9 (Kroenke, Spitzer & Williams, 2001)'
 };
 const CN_BUBBLE_FULL = { gad: 'gad', phq: 'phq', phq9: 'phq', who: 'burn' };
 function cnPulseSv(T) {
@@ -7506,7 +7575,7 @@ function cnPulseSv(T) {
     : [['Anxiety', 'gad', 0, 'gad'], ['Anxiety', 'gad', 1, 'gad'], ['Low mood', 'phq', 1, 'phq'], ['Low mood', 'phq', 0, 'phq'], ['Stress', 'stress', 0, 'orig'], ['Grades', 'stress', 1, 'orig'], ['Burnout', 'burn', 1, 'who'], ['Sleep', 'sleep', 0, 'orig'], ['Friends', 'burn', 5, 'who'], ['Home', 'family', 0, 'orig'], ['Future', 'future', 0, 'orig'], ['Safety', 'phq', 8, 'phq9']];
   const items = defs.map(d => {
     const base = CN_SURVEYS[P + d[1]], it = base.items[d[2]];
-    return { q: it.q, area: it.area, opts: base.scale, lead: base.lead, bubble: d[0], cite: d[3], safety: d[0] === 'Safety', from: d[1], tip: base.tips ? base.tips[d[2]] : '' };
+    return { q: it.q, area: it.area, opts: base.scale, lead: base.lead, bubble: d[0], cite: d[3] === 'orig' ? P + d[1] : d[3] === 'who' ? P + 'burn' : d[3], safety: d[0] === 'Safety', from: d[1], tip: base.tips ? base.tips[d[2]] : '' };
   });
   const lv = CN_SURVEYS[T ? 'tquick' : 'quick'].levels;
   return { id: P + 'pulse', aud: T ? 't' : 's', hidden: true, pulse: true, kind: 'survey', name: 'Bubble check', short: 'Bubbles', minutes: 2, blurb: 'Pop the bubbles you want and answer one question for each.', source: 'Attendly bubble check. Every question shows its source (screening only)', items,
@@ -7529,11 +7598,11 @@ function cnBubbleSafetyBox() {
 function cnPanelBubbles() {
   const b = cn.bp, sv = CN_SURVEYS[cnIsT() ? 'tpulse' : 'pulse'];
   if (b.cur != null) {
-    const it = sv.items[b.cur], a = b.ans[b.cur], full = CN_REFS[CN_BUBBLE_FULL[it.cite]];
+    const it = sv.items[b.cur], a = b.ans[b.cur], full = (CN_SURVEYS[it.cite] && CN_SURVEYS[it.cite].srcRefs) || (CN_REFS[CN_BUBBLE_FULL[it.cite]] ? [CN_REFS[CN_BUBBLE_FULL[it.cite]].cite] : null);
     return '<div class="' + CN_CARD + ' relative overflow-hidden"><div class="flex items-center justify-between mb-3"><span>' + cnChip(it.bubble, it.safety ? 'rose' : 'teal') + '</span><button data-bp-back class="text-xs text-slate-500 hover:underline">Back to bubbles</button></div><div class="cn-pop">' +
       (it.lead ? '<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1">' + escapeHtml(it.lead) + '</p>' : '') + '<h3 class="text-base font-semibold mb-3">' + escapeHtml(it.q) + '</h3><div class="space-y-2">' +
       it.opts.map((o, k) => '<button data-bp-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (a === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div></div>' +
-      '<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-4"><span class="font-semibold">Source:</span> <span>' + escapeHtml(CN_BUBBLE_CITES[it.cite]) + '</span></p>' + (full ? '<details class="text-[11px] text-slate-400 mt-1"><summary class="cursor-pointer">Full reference</summary><p class="mt-1">' + escapeHtml(full.cite) + '</p></details>' : '') +
+      '<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-4"><span class="font-semibold">Source:</span> <span>' + escapeHtml(CN_BUBBLE_CITES[it.cite] || (CN_SURVEYS[it.cite] || {}).srcShort || '') + '</span></p>' + (full ? '<details class="text-[11px] text-slate-400 mt-1"><summary class="cursor-pointer">Full reference</summary>' + full.map(x => '<p class="mt-1">' + escapeHtml(x) + '</p>').join('') + '</details>' : '') +
       '<div class="flex gap-2 mt-4"><button data-bp-done class="' + CN_BTN + '"' + (a == null ? ' disabled' : '') + '>Save answer</button></div></div>';
   }
   const answered = sv.items.map((x, i) => i).filter(i => b.ans[i] != null), left = sv.items.map((x, i) => i).filter(i => b.ans[i] == null);
@@ -7599,6 +7668,7 @@ function cnPanelSurveys() {
       opts.map((o, k) => '<button data-cn-ans="' + k + '" class="w-full text-left text-sm rounded-lg border px-3 py-2.5 ' + (s.ans[i] === k ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400') + '">' + escapeHtml(o) + '</button>').join('') + '</div>' : '') + '</div>' +
       '<label for="cn-ans-txt" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mt-4 mb-1">' + hint + '</label>' +
       '<textarea id="cn-ans-txt" rows="' + (type === 'text' ? 4 : 2) + '" maxlength="500" placeholder="Write here..." class="' + CN_INP + '">' + escapeHtml(txt) + '</textarea>' +
+      '<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-4"><span class="font-semibold">Source:</span> <span>' + escapeHtml(sv.srcShort || sv.source) + '</span></p>' + (sv.srcRefs ? '<details class="text-[11px] text-slate-400 mt-1"><summary class="cursor-pointer">Full reference</summary>' + sv.srcRefs.map(r => '<p class="mt-1">' + escapeHtml(r) + '</p>').join('') + '</details>' : '') +
       '<div class="flex gap-2 mt-4"><button data-cn-next class="' + CN_BTN + '">' + (last ? 'Finish' : (type === 'text' && !txt.trim() ? 'Skip' : 'Next')) + '</button></div></div></div>';
   }
   const r = s.rec, res = cnSurveyResult(sv, s.ans), cs = cnIsT() ? (cnTRecipients()[0] || {}).p : cnCounselor(), urgent = res.safety >= 1;
@@ -8764,6 +8834,81 @@ document.getElementById('edit-student-form').addEventListener('submit', e => {
   st.name = name; st.studentId = lrn; const c = DB.classes.find(x => x.id === cid); st.classId = c ? c.id : ''; st.section = c ? (c.section || '') : '';
   saveDB(); closeModal('modal-edit-student'); renderAdminView(); toast('Student updated.', 'success');
 });
+
+/* ==================== SECRET ROOM (easter egg) ==================== */
+// Tap the school seal 7 times quickly, or type the Konami code on a keyboard (up up down down left right left right B A).
+(function () {
+  let taps = 0, last = 0, kseq = 0, open = false, raf = 0, timer = 0;
+  const KON = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  const best = () => { try { return Number(localStorage.getItem('sjbhs_secret_best')) || 0; } catch (e) { return 0; } };
+  const saveBest = n => { try { localStorage.setItem('sjbhs_secret_best', String(n)); } catch (e) {} };
+  function close() { const d = document.getElementById('egg'); if (d) d.remove(); cancelAnimationFrame(raf); clearInterval(timer); open = false; }
+  function openEgg() {
+    if (open) return; open = true;
+    const d = document.createElement('div'); d.id = 'egg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'Secret room');
+    d.className = 'fixed inset-0 z-[120] overflow-hidden select-none';
+    d.style.cssText = 'background:radial-gradient(ellipse at 50% 20%,#312e81 0%,#0f172a 60%,#020617 100%);touch-action:manipulation';
+    d.innerHTML = '<div style="position:absolute;inset:0" id="egg-sky"></div><div class="relative z-10 p-4 flex items-start justify-between text-white"><div><p class="text-[11px] tracking-[.3em] uppercase text-indigo-200">Secret room</p><h2 class="text-xl font-bold mt-1">You found it!</h2><p class="text-xs text-indigo-200 mt-1">Mabuhay ang San Juan Baño High School. Catch the falling things. The apple is worth 3.</p></div><button id="egg-x" aria-label="Close" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl leading-none">×</button></div>' +
+      '<div class="relative z-10 px-4 flex gap-6 text-white text-sm"><span>Score <b id="egg-sc" class="tabular-nums">0</b></span><span>Time <b id="egg-t" class="tabular-nums">30</b></span><span>Best <b id="egg-b" class="tabular-nums">' + best() + '</b></span></div>' +
+      '<div id="egg-end" class="hidden absolute inset-0 z-20 flex items-center justify-center p-6"><div class="bg-white/10 backdrop-blur rounded-2xl p-6 text-center text-white max-w-xs"><p class="text-sm" id="egg-msg"></p><button id="egg-again" class="mt-4 rounded-lg bg-indigo-500 hover:bg-indigo-400 px-4 py-2 text-sm font-semibold">Play again</button></div></div>';
+    document.body.appendChild(d);
+    d.querySelector('#egg-x').onclick = close;
+    d.querySelector('#egg-again').onclick = () => start();
+    burst(d.querySelector('#egg-sky'));
+    start();
+    function start() {
+      const sky = d.querySelector('#egg-sky'); sky.querySelectorAll('.egg-i').forEach(x => x.remove()); d.querySelector('#egg-end').classList.add('hidden');
+      let score = 0, left = 30, items = [], spawnAt = 0, prev = performance.now();
+      const sc = d.querySelector('#egg-sc'), tm = d.querySelector('#egg-t');
+      sc.textContent = 0; tm.textContent = left;
+      cancelAnimationFrame(raf); clearInterval(timer);
+      timer = setInterval(() => { left--; tm.textContent = Math.max(0, left); if (left <= 0) finish(); }, 1000);
+      function spawn() {
+        const e = document.createElement('button'), apple = Math.random() < 0.12, g = apple ? '🍎' : ['⭐', '📚', '✏️', '🎓', '🏫', '🔔'][Math.floor(Math.random() * 6)];
+        e.className = 'egg-i'; e.type = 'button'; e.setAttribute('aria-label', 'Catch'); e.textContent = g;
+        const x = 6 + Math.random() * 82; e.style.cssText = 'position:absolute;top:-48px;left:' + x + '%;font-size:' + (apple ? 38 : 30) + 'px;background:none;border:0;padding:6px;cursor:pointer;line-height:1';
+        const o = { e, y: -48, v: 70 + Math.random() * 90 + (30 - left) * 3, pts: apple ? 3 : 1 };
+        e.addEventListener('pointerdown', ev => { ev.preventDefault(); if (o.dead) return; o.dead = true; score += o.pts; sc.textContent = score; e.style.transition = 'transform .15s,opacity .15s'; e.style.transform = 'scale(1.8)'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
+        sky.appendChild(e); items.push(o);
+      }
+      function frame(now) {
+        const dt = Math.min(0.05, (now - prev) / 1000); prev = now; spawnAt -= dt;
+        if (spawnAt <= 0 && left > 0) { spawn(); spawnAt = 0.45 + Math.random() * 0.4; }
+        const H = d.clientHeight;
+        items = items.filter(o => { if (o.dead) return false; o.y += o.v * dt; o.e.style.top = o.y + 'px'; if (o.y > H) { o.e.remove(); return false; } return true; });
+        if (left > 0) raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+      function finish() {
+        clearInterval(timer); cancelAnimationFrame(raf);
+        sky.querySelectorAll('.egg-i').forEach(x => x.remove());
+        const nb = score > best(); if (nb) { saveBest(score); d.querySelector('#egg-b').textContent = score; }
+        d.querySelector('#egg-msg').textContent = (nb && score > 0 ? 'New best: ' + score + '! ' : 'You caught ' + score + '. ') + 'Study hard, rest well, and keep going.';
+        d.querySelector('#egg-end').classList.remove('hidden'); if (nb && score > 0) burst(sky);
+      }
+    }
+    function burst(sky) {
+      const cols = ['#f472b6', '#facc15', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
+      for (let i = 0; i < 46; i++) {
+        const c = document.createElement('span'), x = 50 + (Math.random() - .5) * 20, dx = (Math.random() - .5) * 120, dy = 30 + Math.random() * 60;
+        c.className = 'egg-i'; c.style.cssText = 'position:absolute;top:30%;left:' + x + '%;width:8px;height:12px;background:' + cols[i % cols.length] + ';border-radius:2px;pointer-events:none;transition:transform 1.4s cubic-bezier(.2,.7,.3,1),opacity 1.4s;opacity:1';
+        sky.appendChild(c); requestAnimationFrame(() => requestAnimationFrame(() => { c.style.transform = 'translate(' + dx + 'vw,' + dy + 'vh) rotate(' + (Math.random() * 720) + 'deg)'; c.style.opacity = '0'; }));
+        setTimeout(() => c.remove(), 1500);
+      }
+    }
+  }
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && open) { close(); return; }
+    const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+    kseq = k === KON[kseq] ? kseq + 1 : (k === KON[0] ? 1 : 0);
+    if (kseq === KON.length) { kseq = 0; openEgg(); }
+  });
+  document.addEventListener('click', ev => {
+    const im = ev.target && ev.target.closest && ev.target.closest('img.app-seal, #start-seal, #login-seal'); if (!im) return;
+    const now = Date.now(); taps = now - last < 700 ? taps + 1 : 1; last = now;
+    if (taps >= 7) { taps = 0; openEgg(); }
+  });
+})();
 
 /* ---- Back button: one step back inside the portal, not out of the website ---- */
 (function () {
