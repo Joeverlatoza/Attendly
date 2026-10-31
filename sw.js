@@ -1,10 +1,19 @@
 /* SJBHS Portal service worker: network-first so updates show right away; the app shell and libraries are kept for offline use. */
-const CACHE = 'attendly-v31';
+const CACHE = 'attendly-v32';
 const SHELL = ['./', './index.html'];
+// Libraries the page needs. They are saved on install so the portal still has its styling, icons and scanner in airplane mode.
+const LIBS = [
+  'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+  'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
+];
 const OFFLINE = '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title><body style="font-family:system-ui;padding:2rem;text-align:center"><h2>You are offline</h2><p>Open the portal once while online so it can be saved on this phone, then it works offline.</p><button onclick="location.reload()" style="padding:.6rem 1rem;font-size:1rem">Try again</button>';
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil((async () => { const c = await caches.open(CACHE); await Promise.all(SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {}))); })());
+  e.waitUntil((async () => { const c = await caches.open(CACHE); await Promise.all(SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {}))); await Promise.all(LIBS.map(async (u) => { try { const r = await fetch(new Request(u, { mode: 'no-cors' })); await c.put(u, r); } catch (e) {} })); })());
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {

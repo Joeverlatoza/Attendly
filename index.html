@@ -783,8 +783,14 @@ html[data-calm="1"] *{animation-duration:.001ms!important;animation-iteration-co
               <div id="qr-full" class="hidden fixed inset-0 z-[70] bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center" style="display:none">
                 <p id="qr-full-title" class="text-xl font-semibold"></p>
                 <p id="qr-full-sub" class="text-sm text-slate-500 dark:text-slate-400 mb-5"></p>
-                <div class="p-4 bg-white rounded-xl border border-slate-200"><div id="qr-full-box"></div></div>
+                <div class="p-5 bg-white rounded-xl border border-slate-200"><div id="qr-full-box"></div></div>
                 <p id="qr-full-code" class="mt-5 text-2xl font-semibold tracking-[0.3em] tabular-nums"></p>
+                <div id="qr-full-ctl" class="mt-4 flex items-center gap-2">
+                  <button type="button" id="qr-smaller" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm font-medium">Smaller</button>
+                  <button type="button" id="qr-bigger" class="rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 text-sm font-medium">Bigger</button>
+                  <button type="button" id="qr-close" class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm font-medium">Close</button>
+                </div>
+                <p id="qr-full-hint" class="mt-2 text-xs text-slate-500 dark:text-slate-400">For the TV: raise the screen brightness and tap Bigger until the code fills the screen.</p>
                 <p class="mt-6 text-xs text-slate-400">Tap anywhere to close</p>
               </div>
             </div>
@@ -1464,7 +1470,7 @@ function mergeOfflineWork(local) {
     local[k].forEach(x => {
       if (!x || !x.id) return;
       const i = DB[k].findIndex(y => y.id === x.id);
-      if (i < 0) DB[k].push(x); else DB[k][i] = x;
+      if (i < 0) DB[k].push(x); else if (k === 'logs') DB[k][i] = x;
     });
   });
   ['students', 'teachers'].forEach(k => {
@@ -2240,17 +2246,37 @@ document.getElementById('session-copy').addEventListener('click', () => {
   const done = () => toast('Code ' + code + ' copied.', 'success');
   try { navigator.clipboard.writeText(code).then(done, () => toast('Could not copy. Code is ' + code, 'warning')); } catch (err) { toast('Could not copy. Code is ' + code, 'warning'); }
 });
-document.getElementById('session-qr-btn').addEventListener('click', () => {
+let qrScale = 0.8, qrWake = null;
+function drawFullQr() {
   const session = findSession(curPeriod.classId, curPeriod.slotId);
   if (!session) return;
   const box = document.getElementById('qr-full-box'); box.innerHTML = '';
-  new QRCode(box, { text: ['ATTENDLY', 'SESSION', curPeriod.classId, session.date, session.sessionKey, session.id].join('|'), width: 280, height: 280, colorDark: '#0f172a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  const fill = qrScale > 1.05;   // fill-screen mode for the TV: only the code and a small control bar
+  const room = fill ? Math.min(window.innerWidth, window.innerHeight) - 56 : Math.min(window.innerWidth - 56, window.innerHeight - 250);
+  const size = Math.max(180, Math.min(1400, Math.round(room * (fill ? 1 : qrScale))));
+  ['qr-full-title', 'qr-full-sub', 'qr-full-code', 'qr-full-hint'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = fill ? 'none' : ''; });
+  const ctl = document.getElementById('qr-full-ctl'); if (ctl) { ctl.style.position = fill ? 'fixed' : ''; ctl.style.top = fill ? '8px' : ''; ctl.style.right = fill ? '8px' : ''; ctl.style.opacity = fill ? '.55' : ''; ctl.style.margin = fill ? '0' : ''; }
+  // Level L keeps the squares as big as possible so the code scans from across the room.
+  new QRCode(box, { text: ['ATTENDLY', 'SESSION', curPeriod.classId, session.date, session.sessionKey, session.id, (session.subject || '').replace(/\|/g, ' '), session.startTime || '', session.slotId || '', ((session.slotId && findSlot(session.slotId) ? findSlot(session.slotId).entry.classIds : null) || []).join(',')].join('|'), width: size, height: size, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.L });
   document.getElementById('qr-full-title').textContent = session.subject || 'Attendance';
   document.getElementById('qr-full-sub').textContent = classLabel(curPeriod.classId);
-  document.getElementById('qr-full-code').textContent = document.getElementById('session-code').textContent;
+  document.getElementById('qr-full-code').textContent = session.sessionKey.slice(-6).toUpperCase();
+}
+function closeFullQr() {
+  const f = document.getElementById('qr-full'); f.style.display = 'none'; f.classList.add('hidden');
+  try { if (qrWake) { qrWake.release(); qrWake = null; } } catch (e) {}
+}
+document.getElementById('session-qr-btn').addEventListener('click', () => {
+  if (!findSession(curPeriod.classId, curPeriod.slotId)) return;
+  qrScale = 0.9; drawFullQr();
   const f = document.getElementById('qr-full'); f.classList.remove('hidden'); f.style.display = 'flex';
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { qrWake = w; }).catch(() => {}); } catch (e) {}
 });
-document.getElementById('qr-full').addEventListener('click', e => { e.currentTarget.style.display = 'none'; e.currentTarget.classList.add('hidden'); });
+document.getElementById('qr-bigger').addEventListener('click', e => { e.stopPropagation(); qrScale = Math.min(1.5, qrScale + 0.2); drawFullQr(); });
+document.getElementById('qr-smaller').addEventListener('click', e => { e.stopPropagation(); qrScale = Math.max(0.4, qrScale - 0.2); drawFullQr(); });
+document.getElementById('qr-close').addEventListener('click', e => { e.stopPropagation(); closeFullQr(); });
+document.getElementById('qr-full').addEventListener('click', closeFullQr);
+window.addEventListener('resize', () => { const f = document.getElementById('qr-full'); if (f && f.style.display === 'flex') drawFullQr(); });
 
 function renderDashboardStats() {
   const classId = curPeriod.classId;
@@ -2520,16 +2546,22 @@ function handleStudentScan(decodedText) {
   if (parts[0] !== 'ATTENDLY' || parts[1] !== 'SESSION') { toast('This is not a valid session code.', 'error'); beep(220, 200); return; }
   const classId = parts[2], date = parts[3], sessionKey = parts[4];
   if (date !== todayStr()) { toast('This code is not valid for today.', 'error'); beep(220, 200); return; }
-  const session = parts[5] ? DB.sessions.find(s => s.id === parts[5] && s.classId === classId && s.date === date)
+  let session = parts[5] ? DB.sessions.find(s => s.id === parts[5] && s.classId === classId && s.date === date)
                            : DB.sessions.find(s => s.classId === classId && s.date === date && !(s.slotId));
+  // This phone may be offline or not synced yet and so not know today's session. The code itself carries what is needed.
+  if (!session && parts[5]) {
+    session = { id: parts[5], classId, date, slotId: parts[8] || '', subject: parts[6] || '', sessionKey, startTime: parts[7] || DB.settings.sessionStartTime || '08:00', createdAt: new Date().toISOString(), fromCode: true, classIds: (parts[9] || '').split(',').filter(Boolean) };
+    DB.sessions.push(session);
+  }
   if (!session || session.sessionKey !== sessionKey) { toast("Session code has expired. Ask your teacher to refresh it.", 'error'); beep(220, 200); return; }
   const myId = DB.auth ? DB.auth.userId : null;
   const student = DB.students.find(s => s.id === myId);
   if (!student) { toast('Save your student details first (name, ID and class) before checking in.', 'warning'); return; }
   const slot = session.slotId ? findSlot(session.slotId) : null;
-  const sameCombined = student.classId !== classId && slot && (slot.entry.classIds || []).includes(student.classId);
+  const sameCombined = student.classId !== classId && ((slot && (slot.entry.classIds || []).includes(student.classId)) || (session.classIds || []).includes(student.classId));
   if (student.classId !== classId && !sameCombined) { toast('Your saved profile is not enrolled in this class.', 'error'); beep(220, 200); return; }
   const target = sameCombined ? getOrCreateSession(student.classId, session.slotId) : session;
+  if (sameCombined) { if (!target.subject) target.subject = session.subject || ''; if (session.startTime) target.startTime = session.startTime; }
   let already = activeLog(target.id, student.id);
   if (already && already.status === 'pending') { DB.logs = DB.logs.filter(l => l !== already); already = null; }
   if (already) { toast('You are already checked in for this class.', 'warning'); beep(440, 150); return; }
